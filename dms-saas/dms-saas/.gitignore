@@ -1,0 +1,9 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+*.iml
+/.idea/
+/dmsGatway/target/
+/dmsRegistry/target/
+/tenantService/target/
+/userService/target/
