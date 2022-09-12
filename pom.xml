@@ -3,10 +3,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<modules>
-		<module>userService</module>
-		<module>tenantService</module>
-		<module>dmsRegistry</module>
-		<module>dmsGatway</module>
+		<module>userManagement</module>
+		<module>tenantServices</module>
+		<module>servicesDirectory</module>
+		<module>apiGateway</module>
 	</modules>
 
 	<parent>
@@ -17,10 +17,10 @@
 	</parent>
 
 	<groupId>com.infotech</groupId>
-	<artifactId>dms-saas</artifactId>
+	<artifactId>docyard</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	<name>dms-saas</name>
+	<name>Docyard</name>
 	<description>Demo project for Spring Boot</description>
 
 	<properties>
