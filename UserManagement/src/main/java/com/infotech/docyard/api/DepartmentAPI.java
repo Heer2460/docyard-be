@@ -26,16 +26,17 @@ public class DepartmentAPI {
 
 
     @RequestMapping(value = "/search", method = RequestMethod.GET)
-    public CustomResponse getDepartmentByName(HttpServletRequest request,
+    public CustomResponse searchDepartment(HttpServletRequest request,
                                               @RequestParam String code,
+                                              @RequestParam String name,
                                               @RequestParam String status
     )
             throws CustomException, NoDataFoundException {
-        log.info("getDepartmentByName API initiated...");
+        log.info("searchDepartment API initiated...");
 
         List<Department> departments = null;
         try {
-            departments = departmentService.searchDepartmentByCodeAndDescription(code, status);
+            departments = departmentService.searchDepartmentByCodeAndDescription(code, name, status);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }

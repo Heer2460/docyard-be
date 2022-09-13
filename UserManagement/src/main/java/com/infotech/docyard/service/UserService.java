@@ -22,10 +22,10 @@ public class UserService {
     @Autowired
     private AdvSearchRepository advSearchRepository;
 
-    public List<User> searchUser(String username, String email, String name, String phoneNumber) {
+    public List<User> searchUser(String username,String name, String status) {
         log.info("searchUser method called..");
 
-        return advSearchRepository.searchUser(username, email, name, phoneNumber);
+        return advSearchRepository.searchUser(username, name, status);
     }
 
     public List<User> getAllUsers() {
@@ -51,7 +51,6 @@ public class UserService {
         return userRepository.save(userDTO.convertToEntity());
     }
 
-    @Transactional
     public void deleteUser(Long id) {
         log.info("deleteUser method called..");
 

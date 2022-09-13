@@ -18,7 +18,7 @@ public class AdvSearchRepository {
     @Autowired
     EntityManager em;
 
-    public List<Department> searchDepartment(String code, String status) {
+    public List<Department> searchDepartment(String code, String name, String status) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Department> cq = cb.createQuery(Department.class);
 
@@ -27,6 +27,9 @@ public class AdvSearchRepository {
         List<Predicate> predicates = new ArrayList<>();
         if (!AppUtility.isEmpty(code)) {
             predicates.add(cb.like(dptRoot.get("code"), "%" + code + "%"));
+        }
+        if (!AppUtility.isEmpty(name)) {
+            predicates.add(cb.like(dptRoot.get("name"), "%" + name + "%"));
         }
         if (!AppUtility.isEmpty(status)) {
             predicates.add(cb.like(dptRoot.get("status"), "%" + status + "%"));
@@ -38,7 +41,7 @@ public class AdvSearchRepository {
         return em.createQuery(cq).getResultList();
     }
 
-    public List<User> searchUser(String username, String email, String name, String phoneNumber) {
+    public List<User> searchUser(String username, String name, String status) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<User> cq = cb.createQuery(User.class);
 
@@ -46,20 +49,17 @@ public class AdvSearchRepository {
 
         List<Predicate> predicates = new ArrayList<>();
         if (!AppUtility.isEmpty(username)) {
-            predicates.add(cb.like(dptRoot.get("code"), "%" + username + "%"));
-        }
-        if (!AppUtility.isEmpty(email)) {
-            predicates.add(cb.like(dptRoot.get("status"), "%" + email + "%"));
+            predicates.add(cb.like(dptRoot.get("username"), "%" + username + "%"));
         }
         if (!AppUtility.isEmpty(name)) {
-            predicates.add(cb.like(dptRoot.get("status"), "%" + name + "%"));
+            predicates.add(cb.like(dptRoot.get("name"), "%" + name + "%"));
         }
-        if (!AppUtility.isEmpty(phoneNumber)) {
-            predicates.add(cb.like(dptRoot.get("status"), "%" + phoneNumber + "%"));
+        if (!AppUtility.isEmpty(status)) {
+            predicates.add(cb.like(dptRoot.get("status"), "%" + status + "%"));
         }
         cq.where(predicates.toArray(new Predicate[0]))
                 .distinct(true);
-        cq.orderBy(cb.asc(dptRoot.get("code")));
+        cq.orderBy(cb.asc(dptRoot.get("username")));
 
         return em.createQuery(cq).getResultList();
     }

@@ -34,6 +34,15 @@ public class User extends BaseEntity implements Serializable {
     @Column(name = "GROUP_ID")
     private Long groupId;
 
+    @Column(name="STATUS")
+    private String status;
+
+    @Column(name="ADDRESS")
+    private String address;
+
+    @Column(name="DEPARTMENT_ID")
+    private Long departmentId;
+
     public User() {
     }
 

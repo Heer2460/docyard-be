@@ -22,10 +22,10 @@ public class DepartmentService {
     @Autowired
     private AdvSearchRepository advSearchRepository;
 
-    public List<Department> searchDepartmentByCodeAndDescription(String code, String status) {
+    public List<Department> searchDepartmentByCodeAndDescription(String code, String name, String status) {
         log.info("searchDepartmentByName method called..");
 
-        return advSearchRepository.searchDepartment(code, status);
+        return advSearchRepository.searchDepartment(code, name, status);
     }
 
     public List<Department> getAllDepartments() {

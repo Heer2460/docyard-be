@@ -9,6 +9,7 @@ import java.time.ZonedDateTime;
 @Data
 public class DepartmentDTO  extends BaseDTO<DepartmentDTO, Department> {
 
+    private Long id;
     private String code;
     private String description;
     private String status;
@@ -17,6 +18,7 @@ public class DepartmentDTO  extends BaseDTO<DepartmentDTO, Department> {
     @Override
     public Department convertToEntity() {
         Department department = new Department();
+        department.setId(this.id);
         department.setCode(this.code);
         department.setStatus(this.status);
         department.setDescription(this.description);
