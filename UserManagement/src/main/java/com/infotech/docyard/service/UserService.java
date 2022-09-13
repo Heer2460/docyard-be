@@ -3,6 +3,7 @@ package com.infotech.docyard.service;
 import com.infotech.docyard.dl.entity.User;
 import com.infotech.docyard.dl.repository.AdvSearchRepository;
 import com.infotech.docyard.dl.repository.UserRepository;
+import com.infotech.docyard.dto.UserDTO;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,11 +44,18 @@ public class UserService {
         return null;
     }
 
-//    @Transactional
-//    public Department saveAndUpdateUser(UserDTO userDTO) {
-//        log.info("saveAndUpdateUser method called..");
-//
-//        return null;//userRepository.save(userDTO.convertToEntity());
-//    }
+    @Transactional
+    public User saveAndUpdateUser(UserDTO userDTO) {
+        log.info("saveAndUpdateUser method called..");
+
+        return userRepository.save(userDTO.convertToEntity());
+    }
+
+    @Transactional
+    public void deleteUser(Long id) {
+        log.info("deleteUser method called..");
+
+        userRepository.deleteById(id);
+    }
 
 }
