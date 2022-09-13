@@ -19,8 +19,8 @@ public class Department extends BaseEntity implements Serializable {
     @Column(name = "CODE")
     private String code;
 
-    @Column(name = "DESCRIPTION")
-    private String description;
+    @Column(name = "NAME")
+    private String name;
 
     @Column(name = "STATUS")
     private String status;
