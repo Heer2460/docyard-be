@@ -17,11 +17,20 @@ public class Group extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @Column(name = "CODE")
+    private String code;
+
     @Column(name = "NAME")
     private String name;
 
+    @Column(name = "ROLE")
+    private String role;
+
     @Column(name = "STATUS")
     private String status;
+
+    @Column(name = "REMARKS")
+    private String remarks;
 
     @OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GroupRole> groupRoles;

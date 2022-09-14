@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
+import java.time.ZonedDateTime;
 
 @EqualsAndHashCode(callSuper = false)
 @Data
@@ -25,5 +26,14 @@ public class RolePermission extends BaseEntity {
     private Permission permission;
 
     public RolePermission() {
+    }
+
+    public RolePermission(Role role, Permission permission) {
+        this.role = role;
+        this.permission = permission;
+        this.setCreatedOn(ZonedDateTime.now());
+        this.setUpdatedOn(ZonedDateTime.now());
+        this.setUpdatedBy(role.getUpdatedBy());
+        this.setCreatedBy(role.getCreatedBy());
     }
 }

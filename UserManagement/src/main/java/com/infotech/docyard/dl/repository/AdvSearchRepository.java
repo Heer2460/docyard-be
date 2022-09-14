@@ -2,6 +2,8 @@ package com.infotech.docyard.dl.repository;
 
 
 import com.infotech.docyard.dl.entity.Department;
+import com.infotech.docyard.dl.entity.Group;
+import com.infotech.docyard.dl.entity.Role;
 import com.infotech.docyard.dl.entity.User;
 import com.infotech.docyard.util.AppUtility;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +62,52 @@ public class AdvSearchRepository {
         cq.where(predicates.toArray(new Predicate[0]))
                 .distinct(true);
         cq.orderBy(cb.asc(dptRoot.get("username")));
+
+        return em.createQuery(cq).getResultList();
+    }
+
+    public List<Role> searchRole(String code, String name, String status) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Role> cq = cb.createQuery(Role.class);
+
+        Root<Role> dptRoot = cq.from(Role.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+        if (!AppUtility.isEmpty(code)) {
+            predicates.add(cb.like(dptRoot.get("code"), "%" + code + "%"));
+        }
+        if (!AppUtility.isEmpty(name)) {
+            predicates.add(cb.like(dptRoot.get("name"), "%" + name + "%"));
+        }
+        if (!AppUtility.isEmpty(status)) {
+            predicates.add(cb.like(dptRoot.get("status"), "%" + status + "%"));
+        }
+        cq.where(predicates.toArray(new Predicate[0]))
+                .distinct(true);
+        cq.orderBy(cb.asc(dptRoot.get("code")));
+
+        return em.createQuery(cq).getResultList();
+    }
+
+    public List<Group> searchGroup(String code, String name, String status) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Group> cq = cb.createQuery(Group.class);
+
+        Root<Group> dptRoot = cq.from(Group.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+        if (!AppUtility.isEmpty(code)) {
+            predicates.add(cb.like(dptRoot.get("code"), "%" + code + "%"));
+        }
+        if (!AppUtility.isEmpty(name)) {
+            predicates.add(cb.like(dptRoot.get("name"), "%" + name + "%"));
+        }
+        if (!AppUtility.isEmpty(status)) {
+            predicates.add(cb.like(dptRoot.get("status"), "%" + status + "%"));
+        }
+        cq.where(predicates.toArray(new Predicate[0]))
+                .distinct(true);
+        cq.orderBy(cb.asc(dptRoot.get("code")));
 
         return em.createQuery(cq).getResultList();
     }

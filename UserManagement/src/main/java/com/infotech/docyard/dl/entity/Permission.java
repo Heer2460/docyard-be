@@ -21,4 +21,11 @@ public class Permission extends BaseEntity implements Serializable {
     @OneToMany(mappedBy = "permission", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RolePermission> rolePermissionList;
 
+    public Permission(Long id) {
+        this.setId(id);
+    }
+
+    public Permission() {
+    }
+
 }

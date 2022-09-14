@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 
 @Data
 @Entity
@@ -28,5 +29,14 @@ public class GroupRole extends BaseEntity implements Serializable {
     private Role role;
 
     public GroupRole() {
+    }
+
+    public GroupRole(Group group,Role role) {
+        this.group = group;
+        this.role = role;
+        this.setCreatedOn(ZonedDateTime.now());
+        this.setUpdatedOn(ZonedDateTime.now());
+        this.setUpdatedBy(group.getUpdatedBy());
+        this.setCreatedBy(group.getCreatedBy());
     }
 }
