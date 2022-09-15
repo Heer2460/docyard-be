@@ -39,15 +39,15 @@ public class RoleDTO extends BaseDTO<RoleDTO, Role> {
 
     @Override
     public void convertToDTO(Role entity, boolean partialFill) {
-        this.id = entity.getId();
-        this.code = entity.getCode();
-        this.status = entity.getStatus();
-        this.name = entity.getName();
-        this.remarks = entity.getRemarks();
-        this.updatedOn = entity.getUpdatedOn();
-        this.createdOn = entity.getCreatedOn();
-        this.updatedBy = entity.getUpdatedBy();
-        this.createdBy = entity.getCreatedBy();
+           this.id = entity.getId();
+           this.code = entity.getCode();
+           this.status = entity.getStatus();
+           this.name = entity.getName();
+           this.remarks = entity.getRemarks();
+           this.updatedOn = entity.getUpdatedOn();
+           this.createdOn = entity.getCreatedOn();
+           this.updatedBy = entity.getUpdatedBy();
+           this.createdBy = entity.getCreatedBy();
     }
 
     @Override

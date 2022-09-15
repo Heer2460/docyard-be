@@ -23,9 +23,6 @@ public class Group extends BaseEntity implements Serializable {
     @Column(name = "NAME")
     private String name;
 
-    @Column(name = "ROLE")
-    private String role;
-
     @Column(name = "STATUS")
     private String status;
 
