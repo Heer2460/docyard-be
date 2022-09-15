@@ -1,0 +1,15 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: UM-SERVICE
+          uri: lb://UM-SERVICE
+          predicates:
+            - Path=/user/**
+  #        - id: TENANT-SERVICE
+  #          uri: lb://TENANT-SERVICE
+  #          predicates:
+  #              - Path=/tenants/**
+
+
+
