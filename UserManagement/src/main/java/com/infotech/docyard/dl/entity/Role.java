@@ -37,4 +37,9 @@ public class Role extends BaseEntity implements Serializable {
     public Role(Long id) {
         this.setId(id);
     }
+
+    @Override
+    public String toString() {
+        return "code: " + code + "name: " + name + "status: " + status + "remarks" + remarks;
+    }
 }

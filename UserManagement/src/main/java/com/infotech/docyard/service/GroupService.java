@@ -54,9 +54,6 @@ public class GroupService {
         log.info("saveAndUpdateGroup method called..");
         Group group = groupDTO.convertToEntity();
         if(AppUtility.isEmpty(group.getGroupRoles())){
-            group.setGroupRoles(new ArrayList<>());
-        }
-        else{
             group.setGroupRoles(groupDTO.groupRoles(group));
         }
         Group groups = groupRepository.save(group);

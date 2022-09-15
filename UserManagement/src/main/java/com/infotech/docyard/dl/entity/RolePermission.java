@@ -36,4 +36,12 @@ public class RolePermission extends BaseEntity {
         this.setUpdatedBy(role.getUpdatedBy());
         this.setCreatedBy(role.getCreatedBy());
     }
+
+    public RolePermission(Role role) {
+        this.role = role;
+        this.setCreatedOn(ZonedDateTime.now());
+        this.setUpdatedOn(ZonedDateTime.now());
+        this.setUpdatedBy(role.getUpdatedBy());
+        this.setCreatedBy(role.getCreatedBy());
+    }
 }

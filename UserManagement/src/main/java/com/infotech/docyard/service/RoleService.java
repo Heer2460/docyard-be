@@ -1,6 +1,7 @@
 package com.infotech.docyard.service;
 
 import com.infotech.docyard.dl.entity.Role;
+import com.infotech.docyard.dl.entity.RolePermission;
 import com.infotech.docyard.dl.repository.AdvSearchRepository;
 import com.infotech.docyard.dl.repository.RoleRepository;
 import com.infotech.docyard.dto.RoleDTO;
@@ -51,7 +52,7 @@ public class RoleService {
         log.info("saveAndUpdateRole method called..");
         Role role = roleDTO.convertToEntity();
         if(AppUtility.isEmpty(role.getRolePermissions())){
-            role.setRolePermissions(new ArrayList<>());
+            role.setRolePermissions(roleDTO.RolePermission(role));
         }
         else{
             role.setRolePermissions(roleDTO.RolePermission(role));
