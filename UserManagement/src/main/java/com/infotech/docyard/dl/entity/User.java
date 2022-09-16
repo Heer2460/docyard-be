@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 
 @Data
 @Entity
@@ -42,6 +43,24 @@ public class User extends BaseEntity implements Serializable {
 
     @Column(name="DEPARTMENT_ID")
     private Long departmentId;
+
+    @Column(name = "IS_ONLINE", columnDefinition = "boolean default false")
+    private Boolean online;
+
+    @Column(name = "FORCE_PASSWORD_CHANGE", columnDefinition = "boolean default false")
+    private Boolean forcePasswordChange;
+
+    @Column(name = "LAST_LOGIN", columnDefinition = "TIMESTAMP")
+    private ZonedDateTime lastLogin;
+
+    @Column(name = "LAST_PASS_UPDATED_ON", columnDefinition = "TIMESTAMP")
+    private ZonedDateTime lastPassUpdatedOn;
+
+    @Column(name = "IS_PASS_EXPIRED", columnDefinition = "boolean default false")
+    private Boolean passwordExpired;
+
+
+
 
     public User() {
     }

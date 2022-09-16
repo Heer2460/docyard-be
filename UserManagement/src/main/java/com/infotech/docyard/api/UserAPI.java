@@ -2,6 +2,8 @@ package com.infotech.docyard.api;
 
 
 import com.infotech.docyard.dl.entity.User;
+import com.infotech.docyard.dto.ChangePasswordDTO;
+import com.infotech.docyard.dto.ResetPasswordDTO;
 import com.infotech.docyard.dto.UserDTO;
 import com.infotech.docyard.exceptions.CustomException;
 import com.infotech.docyard.exceptions.DataValidationException;
@@ -117,6 +119,26 @@ public class UserAPI {
             ResponseUtility.exceptionResponse(e);
         }
         return ResponseUtility.deleteSuccessResponse(null, AppUtility.getResourceMessage("deleted.success"));
+    }
+
+    @RequestMapping(value = "/change-password", method = RequestMethod.PUT)
+    public CustomResponse changePassword(HttpServletRequest request,
+                                         @RequestBody ChangePasswordDTO changePasswordDTO)
+            throws DataValidationException, NoDataFoundException {
+        log.info("changePassword API initiated...");
+        User user = userService.changePassword(changePasswordDTO);
+
+        return ResponseUtility.buildResponseObject(user, new UserDTO(), true);
+    }
+
+    @RequestMapping(value = "/reset-password", method = RequestMethod.PUT)
+    public CustomResponse resetPassword(HttpServletRequest request,
+                                         @RequestBody ResetPasswordDTO resetPasswordDTO)
+            throws DataValidationException, NoDataFoundException {
+        log.info("changePassword API initiated...");
+        User user = userService.resetPassword(resetPasswordDTO);
+
+        return ResponseUtility.buildResponseObject(user, new UserDTO(), true);
     }
 
 }
