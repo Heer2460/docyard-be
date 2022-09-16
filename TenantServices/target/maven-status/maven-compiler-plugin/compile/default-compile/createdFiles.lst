@@ -1,0 +1,4 @@
+com\infotech\tenant\service\service\TenantService.class
+com\infotech\tenant\service\api\TenantApi.class
+com\infotech\tenant\service\repository\TenantRepository.class
+com\infotech\tenant\service\entity\Tenant.class

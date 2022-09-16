@@ -7,7 +7,7 @@
 /dms-saas/dmsRegistry/target/
 /dms-saas/tenantService/target/
 /dms-saas/userService/target/
-
+*/target
 ### STS ###
 .apt_generated
 .classpath
