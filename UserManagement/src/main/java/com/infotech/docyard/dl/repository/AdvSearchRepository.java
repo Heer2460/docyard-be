@@ -89,25 +89,29 @@ public class AdvSearchRepository {
         return em.createQuery(cq).getResultList();
     }
 
-    public List<Group> searchGroup(String code, String name, String status) {
+    public List<Group> searchGroup(String code, String name, String status, List<Long>role) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Group> cq = cb.createQuery(Group.class);
 
-        Root<Group> dptRoot = cq.from(Group.class);
+        Root<Group> group = cq.from(Group.class);
+        Join<Object, Object> groupRoles = group.join("groupRoles", JoinType.LEFT);
 
         List<Predicate> predicates = new ArrayList<>();
         if (!AppUtility.isEmpty(code)) {
-            predicates.add(cb.like(dptRoot.get("code"), "%" + code + "%"));
+            predicates.add(cb.like(group.get("code"), "%" + code + "%"));
         }
         if (!AppUtility.isEmpty(name)) {
-            predicates.add(cb.like(dptRoot.get("name"), "%" + name + "%"));
+            predicates.add(cb.like(group.get("name"), "%" + name + "%"));
         }
         if (!AppUtility.isEmpty(status)) {
-            predicates.add(cb.like(dptRoot.get("status"), "%" + status + "%"));
+            predicates.add(cb.like(group.get("status"), "%" + status + "%"));
+        }
+        if (!AppUtility.isEmpty(role)) {
+            predicates.add(groupRoles.get("role").in(role));
         }
         cq.where(predicates.toArray(new Predicate[0]))
                 .distinct(true);
-        cq.orderBy(cb.asc(dptRoot.get("code")));
+        cq.orderBy(cb.asc(group.get("code")));
 
         return em.createQuery(cq).getResultList();
     }

@@ -30,16 +30,17 @@ public class GroupAPI {
 
     @RequestMapping(value = "/search", method = RequestMethod.GET)
     public CustomResponse searchGroup(HttpServletRequest request,
-                                              @RequestParam String code,
-                                              @RequestParam String name,
-                                              @RequestParam String status
-    )
+                                      @RequestParam (value = "code",required = false)String code,
+                                      @RequestParam (value = "name",required = false)String name,
+                                      @RequestParam (value = "status",required = false)String status,
+                                      @RequestParam (value = "role",required = false) List<Long> role
+                                      )
             throws CustomException, NoDataFoundException {
         log.info("searchGroup API initiated...");
 
         List<Group> groupList = null;
         try {
-            groupList = groupService.searchGroup(code, name, status);
+            groupList = groupService.searchGroup(code, name, status,role);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -79,7 +80,7 @@ public class GroupAPI {
 
     @RequestMapping(value = "/", method = RequestMethod.POST)
     public CustomResponse createGroup(HttpServletRequest request,
-                                           @RequestBody GroupDTO groupDTO)
+                                      @RequestBody GroupDTO groupDTO)
             throws CustomException, NoDataFoundException {
         log.info("createGroup API initiated...");
         Group group = null;
@@ -93,7 +94,7 @@ public class GroupAPI {
 
     @RequestMapping(value = "/", method = RequestMethod.PUT)
     public CustomResponse updateGroup(HttpServletRequest request,
-                                           @RequestBody GroupDTO groupDTO)
+                                      @RequestBody GroupDTO groupDTO)
             throws CustomException, NoDataFoundException {
         log.info("updateGroup API initiated...");
 
@@ -108,7 +109,7 @@ public class GroupAPI {
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public CustomResponse deleteGroup(HttpServletRequest request,
-                                           @PathVariable("id") Long id)
+                                      @PathVariable("id") Long id)
             throws DataValidationException, NoDataFoundException, CustomException {
         log.info("deleteGroup API initiated...");
 
