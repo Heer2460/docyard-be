@@ -7,6 +7,7 @@ import lombok.Data;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 public class GroupDTO extends BaseDTO<GroupDTO, Group> {
@@ -16,7 +17,8 @@ public class GroupDTO extends BaseDTO<GroupDTO, Group> {
     private String name;
     private String status;
     private String remarks;
-    private List<Long> roleId;
+    private List<Long> role;
+    private List<String> rolesNameList;
 
 
     @Override
@@ -42,6 +44,8 @@ public class GroupDTO extends BaseDTO<GroupDTO, Group> {
         this.status = entity.getStatus();
         this.name = entity.getName();
         this.remarks = entity.getRemarks();
+        this.role = entity.getGroupRoles().stream().map(GroupRole::getRole).map(Role::getId).collect(Collectors.toList());
+        this.rolesNameList = entity.getGroupRoles().stream().map(GroupRole::getRole).map(Role::getCode).collect(Collectors.toList());
         this.updatedOn = entity.getUpdatedOn();
         this.createdOn = entity.getCreatedOn();
         this.updatedBy = entity.getUpdatedBy();
@@ -57,8 +61,8 @@ public class GroupDTO extends BaseDTO<GroupDTO, Group> {
 
     public List<GroupRole> groupRoles(Group group) {
         List<GroupRole> groupRoleList = new ArrayList<>();
-        if (!AppUtility.isEmpty(this.roleId)) {
-            for (Long id : this.roleId) {
+        if (!AppUtility.isEmpty(this.role)) {
+            for (Long id : this.role) {
                 Role role = new Role(id);
                 GroupRole gr = new GroupRole(group,role);
                 groupRoleList.add(gr);

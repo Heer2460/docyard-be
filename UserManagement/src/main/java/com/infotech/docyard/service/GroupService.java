@@ -27,10 +27,10 @@ public class GroupService {
     @Autowired
     private AdvSearchRepository advSearchRepository;
 
-    public List<Group> searchGroup(String code, String name, String status) {
+    public List<Group> searchGroup(String code, String name, String status, List<Long>role) {
         log.info("searchGroup method called..");
 
-        return advSearchRepository.searchGroup(code, name, status);
+        return advSearchRepository.searchGroup(code, name, status,role);
     }
 
     public List<Group> getAllGroup() {
@@ -52,6 +52,7 @@ public class GroupService {
     @Transactional
     public Group saveAndUpdateGroup(GroupDTO groupDTO) {
         log.info("saveAndUpdateGroup method called..");
+
         Group group = groupDTO.convertToEntity();
         if(AppUtility.isEmpty(group.getGroupRoles())){
             group.setGroupRoles(groupDTO.groupRoles(group));

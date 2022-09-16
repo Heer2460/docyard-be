@@ -29,7 +29,7 @@ public class Group extends BaseEntity implements Serializable {
     @Column(name = "REMARKS")
     private String remarks;
 
-    @OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "group", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GroupRole> groupRoles;
 
     public Group() {
