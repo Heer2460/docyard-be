@@ -1,12 +1,15 @@
 package com.infotech.docyard.dl.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.infotech.docyard.dto.DepartmentDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 @Data
 @Entity
@@ -32,6 +35,9 @@ public class User extends BaseEntity implements Serializable {
     @Column(name = "PHONE_NUMBER")
     private Long phoneNumber;
 
+    @Column(name = "MOBILE_NUMBER")
+    private Long mobileNumber;
+
     @Column(name = "GROUP_ID")
     private Long groupId;
 
@@ -41,8 +47,8 @@ public class User extends BaseEntity implements Serializable {
     @Column(name="ADDRESS")
     private String address;
 
-    @Column(name="DEPARTMENT_ID")
-    private Long departmentId;
+    @Column(name="DEPARTMENT_IDS")
+    private String departmentIds;
 
     @Column(name = "IS_ONLINE", columnDefinition = "boolean default false")
     private Boolean online;
@@ -59,8 +65,10 @@ public class User extends BaseEntity implements Serializable {
     @Column(name = "IS_PASS_EXPIRED", columnDefinition = "boolean default false")
     private Boolean passwordExpired;
 
-
-
+    @JsonIgnore
+    @Lob
+    @Column(name = "PROFILE_PHOTO")
+    private byte[] profilePhoto;
 
     public User() {
     }

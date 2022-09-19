@@ -2,6 +2,8 @@ package com.infotech.docyard.service;
 
 import com.infotech.docyard.dl.entity.User;
 import com.infotech.docyard.dl.repository.AdvSearchRepository;
+import com.infotech.docyard.dl.repository.DepartmentRepository;
+import com.infotech.docyard.dl.repository.GroupRepository;
 import com.infotech.docyard.dl.repository.UserRepository;
 import com.infotech.docyard.dto.ChangePasswordDTO;
 import com.infotech.docyard.dto.ResetPasswordDTO;
@@ -9,12 +11,14 @@ import com.infotech.docyard.dto.UserDTO;
 import com.infotech.docyard.exceptions.DataValidationException;
 import com.infotech.docyard.exceptions.NoDataFoundException;
 import com.infotech.docyard.util.AppUtility;
+import com.netflix.discovery.converters.Auto;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -28,6 +32,12 @@ public class UserService {
     private UserRepository userRepository;
 
     @Autowired
+    private DepartmentRepository departmentRepository;
+
+    @Autowired
+    private GroupRepository groupRepository;
+
+    @Autowired
     private AdvSearchRepository advSearchRepository;
 
     public List<User> searchUser(String username,String name, String status) {
@@ -38,9 +48,7 @@ public class UserService {
 
     public List<User> getAllUsers() {
         log.info("getAllUsers method called..");
-
-        return userRepository.findAll();
-    }
+        return userRepository.findAll();}
 
     public User getUserById(Long id) {
         log.info("getUserById method called..");
@@ -53,10 +61,22 @@ public class UserService {
     }
 
     @Transactional
-    public User saveAndUpdateUser(UserDTO userDTO) {
+    public User saveAndUpdateUser(UserDTO userDTO, MultipartFile profileImg) throws Exception {
         log.info("saveAndUpdateUser method called..");
 
+        userDTO.setProfilePhotoReceived(profileImg);
+        User user = userDTO.convertToEntity();
+        if (!AppUtility.isEmpty(userDTO.getId())) {
+            Optional<User> dbUser = userRepository.findById(userDTO.getId());
+            if (!AppUtility.isEmpty(dbUser)){
+                user.setPassword(dbUser.get().getPassword());
+            }
+        }
+        user.setUpdatedOn(ZonedDateTime.now());
+        user.setLastPassUpdatedOn(ZonedDateTime.now());
+
         return userRepository.save(userDTO.convertToEntity());
+
     }
 
     public void deleteUser(Long id) {

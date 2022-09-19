@@ -15,6 +15,7 @@ import com.infotech.docyard.util.ResponseUtility;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -77,12 +78,13 @@ public class UserAPI {
 
     @RequestMapping(value = "/", method = RequestMethod.POST)
     public CustomResponse createUser(HttpServletRequest request,
-                                           @RequestBody UserDTO userDTO)
+                                           @RequestPart("data") UserDTO userDTO,
+                                     @RequestPart(value = "logo", required = false) MultipartFile profileImg)
             throws CustomException, NoDataFoundException {
         log.info("createUser API initiated...");
         User user = null;
         try {
-            user = userService.saveAndUpdateUser(userDTO);
+            user = userService.saveAndUpdateUser(userDTO, profileImg);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -97,7 +99,7 @@ public class UserAPI {
 
         User user = null;
         try {
-            user = userService.saveAndUpdateUser(userDTO);
+            user = userService.saveAndUpdateUser(userDTO, null);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }

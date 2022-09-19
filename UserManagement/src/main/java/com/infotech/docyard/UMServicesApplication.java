@@ -13,7 +13,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 @SpringBootApplication
-@EnableEurekaClient
+//@EnableEurekaClient
 public class UMServicesApplication extends SpringBootServletInitializer {
 
     public static void main(String[] args) {
