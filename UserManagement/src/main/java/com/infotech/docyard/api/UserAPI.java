@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
@@ -29,16 +30,16 @@ public class UserAPI {
 
     @RequestMapping(value = "/search", method = RequestMethod.GET)
     public CustomResponse searchUser(HttpServletRequest request,
-                                              @RequestParam String username,
-                                              @RequestParam String name,
-                                              @RequestParam String status
+                                     @RequestParam String username,
+                                     @RequestParam String name,
+                                     @RequestParam String status
     )
             throws CustomException, NoDataFoundException {
         log.info("getDepartmentByName API initiated...");
 
         List<User> users = null;
         try {
-            users = userService.searchUser(username,name,status);
+            users = userService.searchUser(username, name, status);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -78,13 +79,13 @@ public class UserAPI {
 
     @RequestMapping(value = "/", method = RequestMethod.POST)
     public CustomResponse createUser(HttpServletRequest request,
-                                           @RequestPart("data") UserDTO userDTO,
+                                     @RequestPart("data") UserDTO userDTO,
                                      @RequestPart(value = "logo", required = false) MultipartFile profileImg)
             throws CustomException, NoDataFoundException {
         log.info("createUser API initiated...");
         User user = null;
         try {
-            user = userService.saveAndUpdateUser(userDTO, profileImg);
+            user = userService.saveUser(userDTO, profileImg);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -93,13 +94,29 @@ public class UserAPI {
 
     @RequestMapping(value = "/", method = RequestMethod.PUT)
     public CustomResponse updateUser(HttpServletRequest request,
-                                           @RequestBody UserDTO userDTO)
+                                     @RequestPart("data") UserDTO userDTO,
+                                     @RequestPart(value = "logo", required = false) MultipartFile profileImg)
             throws CustomException, NoDataFoundException {
         log.info("updateUser API initiated...");
 
         User user = null;
         try {
-            user = userService.saveAndUpdateUser(userDTO, null);
+            user = userService.updateUser(userDTO, profileImg);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.buildResponseObject(user, new UserDTO(), false);
+    }
+
+    @RequestMapping(value = "/updateUserStatus", method = RequestMethod.PUT)
+    public CustomResponse updateUserStatus(HttpServletRequest request,
+                                           @RequestBody UserDTO userDTO)
+            throws CustomException, NoDataFoundException {
+        log.info("updateUserStatus API initiated...");
+
+        User user = null;
+        try {
+            user = userService.updateUserStatus(userDTO);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -108,7 +125,7 @@ public class UserAPI {
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public CustomResponse deleteUser(HttpServletRequest request,
-                                           @PathVariable("id") Long id)
+                                     @PathVariable("id") Long id)
             throws DataValidationException, NoDataFoundException, CustomException {
         log.info("deleteUser API initiated...");
 
@@ -135,7 +152,7 @@ public class UserAPI {
 
     @RequestMapping(value = "/reset-password", method = RequestMethod.PUT)
     public CustomResponse resetPassword(HttpServletRequest request,
-                                         @RequestBody ResetPasswordDTO resetPasswordDTO)
+                                        @RequestBody ResetPasswordDTO resetPasswordDTO)
             throws DataValidationException, NoDataFoundException {
         log.info("changePassword API initiated...");
         User user = userService.resetPassword(resetPasswordDTO);
