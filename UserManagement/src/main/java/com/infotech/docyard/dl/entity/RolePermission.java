@@ -22,23 +22,15 @@ public class RolePermission extends BaseEntity {
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "PERMISSION_ID", nullable = false)
-    private Permission permission;
+    @JoinColumn(name = "MA_ID", nullable = false)
+    private ModuleAction moduleAction;
 
     public RolePermission() {
     }
 
-    public RolePermission(Role role, Permission permission) {
+    public RolePermission(Role role, ModuleAction moduleAction) {
         this.role = role;
-        this.permission = permission;
-        this.setCreatedOn(ZonedDateTime.now());
-        this.setUpdatedOn(ZonedDateTime.now());
-        this.setUpdatedBy(role.getUpdatedBy());
-        this.setCreatedBy(role.getCreatedBy());
-    }
-
-    public RolePermission(Role role) {
-        this.role = role;
+        this.moduleAction = moduleAction;
         this.setCreatedOn(ZonedDateTime.now());
         this.setUpdatedOn(ZonedDateTime.now());
         this.setUpdatedBy(role.getUpdatedBy());
