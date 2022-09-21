@@ -1,5 +1,6 @@
 package com.infotech.docyard.dto;
 
+import com.infotech.docyard.dl.entity.GroupRole;
 import com.infotech.docyard.dl.entity.Permission;
 import com.infotech.docyard.dl.entity.Role;
 import com.infotech.docyard.dl.entity.RolePermission;
@@ -9,6 +10,7 @@ import lombok.Data;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 public class RoleDTO extends BaseDTO<RoleDTO, Role> {
@@ -44,6 +46,7 @@ public class RoleDTO extends BaseDTO<RoleDTO, Role> {
            this.status = entity.getStatus();
            this.name = entity.getName();
            this.remarks = entity.getRemarks();
+           this.permissionId = entity.getRolePermissions().stream().map(RolePermission::getPermission).map(Permission::getId).collect(Collectors.toList());
            this.updatedOn = entity.getUpdatedOn();
            this.createdOn = entity.getCreatedOn();
            this.updatedBy = entity.getUpdatedBy();
