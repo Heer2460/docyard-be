@@ -160,4 +160,14 @@ public class UserAPI {
         return ResponseUtility.buildResponseObject(user, new UserDTO(), true);
     }
 
+    @RequestMapping(value = "/forget-password", method = RequestMethod.PUT)
+    public CustomResponse forgetPassword(HttpServletRequest request,
+                                         @RequestBody ResetPasswordDTO resetPasswordDTO)
+            throws DataValidationException, NoDataFoundException {
+        log.info("forgetPassword API initiated...");
+        User user = userService.forgetPassword(resetPasswordDTO);
+
+        return ResponseUtility.buildResponseObject(user, new UserDTO(), true);
+    }
+
 }
