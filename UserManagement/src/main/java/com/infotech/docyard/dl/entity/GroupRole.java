@@ -31,7 +31,7 @@ public class GroupRole extends BaseEntity implements Serializable {
     public GroupRole() {
     }
 
-    public GroupRole(Group group,Role role) {
+    public GroupRole(Group group, Role role) {
         this.group = group;
         this.role = role;
         this.setCreatedOn(ZonedDateTime.now());

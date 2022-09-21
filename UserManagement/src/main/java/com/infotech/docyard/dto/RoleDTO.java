@@ -1,6 +1,8 @@
 package com.infotech.docyard.dto;
 
 import com.infotech.docyard.dl.entity.ModuleAction;
+import com.infotech.docyard.dl.entity.GroupRole;
+import com.infotech.docyard.dl.entity.Permission;
 import com.infotech.docyard.dl.entity.Role;
 import com.infotech.docyard.dl.entity.RolePermission;
 import com.infotech.docyard.util.AppUtility;
