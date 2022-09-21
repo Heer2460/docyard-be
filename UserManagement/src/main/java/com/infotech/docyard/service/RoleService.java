@@ -52,7 +52,6 @@ public class RoleService {
         log.info("saveAndUpdateRole method called..");
         Role role = roleDTO.convertToEntity();
         if(AppUtility.isEmpty(role.getRolePermissions())){
-            role.setRolePermissions(null);
             role.setRolePermissions(roleDTO.RolePermission(role));
         }
         Role roles = roleRepository.save(role);

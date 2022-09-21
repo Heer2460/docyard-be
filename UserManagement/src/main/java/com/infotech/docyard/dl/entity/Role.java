@@ -28,10 +28,7 @@ public class Role extends BaseEntity implements Serializable {
     @Column(name = "REMARKS")
     private String remarks;
 
-    @OneToMany(mappedBy = "role", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = false)
-    private List<GroupRole> groupRoles;
-
-    @OneToMany(mappedBy = "role", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = false)
+    @OneToMany(mappedBy = "role", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RolePermission> rolePermissions;
 
     public Role() {
