@@ -38,9 +38,6 @@ public class User extends BaseEntity implements Serializable {
     @Column(name = "MOBILE_NUMBER")
     private Long mobileNumber;
 
-    @Column(name = "GROUP_ID")
-    private Long groupId;
-
     @Column(name="STATUS")
     private String status;
 
@@ -69,6 +66,10 @@ public class User extends BaseEntity implements Serializable {
     @Lob
     @Column(name = "PROFILE_PHOTO")
     private byte[] profilePhoto;
+
+    @OneToOne(targetEntity = Group.class)
+    @JoinColumn(name = "GROUP_ID")
+    private Group group;
 
     public User() {
     }

@@ -203,4 +203,26 @@ public class UserService {
         return user.get();
     }
 
+    public User forgetPassword(ResetPasswordDTO resetPasswordDTO) {
+        log.info("forgetPassword method called..");
+
+        User user = resetPassword(resetPasswordDTO);
+        SimpleMailMessage msg = new SimpleMailMessage();
+//            msg.setTo(user.getEmail());
+//            msg.setText(
+//                    "Dear " + user.getName()
+//                            + ", Your password has been reset with the following credentials, "
+//                            + user.getEmail()
+//                            + user.getUsername()
+//                            + ", link to the system is as follows: "
+//                            + "link: www.abc.com"
+//            );
+//            try{
+//                this.mailSender.send(msg);
+//            }
+//            catch(MailException e) {
+//                ResponseUtility.exceptionResponse(e);
+//            }
+        return user;
+    }
 }

@@ -2,6 +2,7 @@ package com.infotech.docyard.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.infotech.docyard.dl.entity.Group;
 import com.infotech.docyard.dl.entity.User;
 import com.infotech.docyard.util.AppUtility;
 import lombok.Data;
@@ -40,6 +41,7 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
     private ZonedDateTime lastPassUpdatedOn;
     private Boolean passwordExpired;
 
+
     public UserDTO() {
 
     }
@@ -60,7 +62,9 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
         user.setName(this.name);
         user.setPhoneNumber(this.phoneNumber);
         user.setMobileNumber(this.mobileNumber);
-        user.setGroupId(this.groupId);
+        if(!AppUtility.isEmpty(this.groupId)){
+            user.setGroup(new Group(this.groupId));
+        }
         if(!AppUtility.isEmpty(this.departmentIds)){
             user.setDepartmentIds(this.getDepartmentIds().stream().collect(Collectors.joining(",")));
         }
@@ -84,7 +88,9 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
         user.setName(this.name);
         user.setPhoneNumber(this.phoneNumber);
         user.setMobileNumber(this.mobileNumber);
-        user.setGroupId(this.groupId);
+        if(!AppUtility.isEmpty(this.groupId)){
+            user.setGroup(new Group(this.groupId));
+        }
         if(!AppUtility.isEmpty(this.departmentIds)){
             user.setDepartmentIds(this.getDepartmentIds().stream().collect(Collectors.joining(",")));
         }
@@ -92,10 +98,7 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
         user.setProfilePhoto(this.profilePhoto);
         user.setStatus(this.status);
         user.setAddress(this.address);
-        user.setPassword(this.password);
-        user.setCreatedOn(AppUtility.isEmpty(this.createdOn) ? ZonedDateTime.now() : this.createdOn);
         user.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
-        user.setCreatedBy(this.getCreatedBy());
         user.setUpdatedBy(this.getUpdatedBy());
         return user;
     }
@@ -108,7 +111,7 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
         this.name = entity.getName();
         this.phoneNumber = entity.getPhoneNumber();
         this.mobileNumber = entity.getMobileNumber();
-        this.groupId = entity.getGroupId();
+        this.groupId = AppUtility.isEmpty(entity.getGroup()) ? null : entity.getGroup().getId();
         if (!AppUtility.isEmpty(entity.getDepartmentIds())) {
             this.setDepartmentIds(Arrays.asList(entity.getDepartmentIds().split(",")));
         }
