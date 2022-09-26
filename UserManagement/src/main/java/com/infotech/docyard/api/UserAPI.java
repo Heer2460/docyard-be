@@ -2,9 +2,7 @@ package com.infotech.docyard.api;
 
 
 import com.infotech.docyard.dl.entity.User;
-import com.infotech.docyard.dto.ChangePasswordDTO;
-import com.infotech.docyard.dto.ResetPasswordDTO;
-import com.infotech.docyard.dto.UserDTO;
+import com.infotech.docyard.dto.*;
 import com.infotech.docyard.exceptions.CustomException;
 import com.infotech.docyard.exceptions.DataValidationException;
 import com.infotech.docyard.exceptions.NoDataFoundException;
@@ -19,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -105,7 +104,23 @@ public class UserAPI {
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return ResponseUtility.buildResponseObject(user, new UserDTO(), false);
+        return ResponseUtility.successResponse(user, "User successfully updated.");
+    }
+
+    @RequestMapping(value = "/profile-picture", method = RequestMethod.PUT)
+    public CustomResponse updateProfilePicture(HttpServletRequest request,
+                                               @RequestPart("data") UserDTO userDTO,
+                                               @RequestPart(value = "profilePicture", required = false) MultipartFile profileImg)
+            throws CustomException, NoDataFoundException {
+        log.info("updateProfilePicture API initiated...");
+
+        User user = null;
+        try {
+            user = userService.updateProfilePicture(userDTO, profileImg);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.successResponse(user, "User profile successfully updated.");
     }
 
     @RequestMapping(value = "/updateUserStatus", method = RequestMethod.PUT)
@@ -120,7 +135,7 @@ public class UserAPI {
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return ResponseUtility.buildResponseObject(user, new UserDTO(), false);
+        return ResponseUtility.successResponse(user, "Profile picture successfully updated.");
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
@@ -143,31 +158,64 @@ public class UserAPI {
     @RequestMapping(value = "/change-password", method = RequestMethod.PUT)
     public CustomResponse changePassword(HttpServletRequest request,
                                          @RequestBody ChangePasswordDTO changePasswordDTO)
-            throws DataValidationException, NoDataFoundException {
+            throws DataValidationException, NoDataFoundException, CustomException {
         log.info("changePassword API initiated...");
-        User user = userService.changePassword(changePasswordDTO);
 
-        return ResponseUtility.buildResponseObject(user, new UserDTO(), true);
+        User user = null;
+        try {
+            user = userService.changePassword(changePasswordDTO);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.successResponse(user, "Password successfully updated.");
     }
 
     @RequestMapping(value = "/reset-password", method = RequestMethod.PUT)
     public CustomResponse resetPassword(HttpServletRequest request,
                                         @RequestBody ResetPasswordDTO resetPasswordDTO)
-            throws DataValidationException, NoDataFoundException {
-        log.info("changePassword API initiated...");
-        User user = userService.resetPassword(resetPasswordDTO);
+            throws DataValidationException, NoDataFoundException, CustomException {
+        log.info("resetPassword API initiated...");
 
-        return ResponseUtility.buildResponseObject(user, new UserDTO(), true);
+        User user = null;
+        try {
+            user = userService.resetPassword(resetPasswordDTO);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.successResponse(user, "Password successfully reset.");
     }
 
-    @RequestMapping(value = "/forget-password", method = RequestMethod.PUT)
-    public CustomResponse forgetPassword(HttpServletRequest request,
-                                         @RequestBody ResetPasswordDTO resetPasswordDTO)
-            throws DataValidationException, NoDataFoundException {
-        log.info("forgetPassword API initiated...");
-        User user = userService.forgetPassword(resetPasswordDTO);
+    @RequestMapping(value = "/forgot-password", method = RequestMethod.PUT)
+    public CustomResponse forgotPassword(HttpServletRequest request,
+                                         @RequestParam String email,
+                                         @RequestBody PasswordResetLinkDTO passwordResetLinkDTO)
+            throws DataValidationException, NoDataFoundException, IOException, CustomException {
+        log.info("forgotPassword API initiated...");
 
-        return ResponseUtility.buildResponseObject(user, new UserDTO(), true);
+        try {
+            userService.forgotPassword(email, passwordResetLinkDTO);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.successResponseForPut(null,"Password reset Link and Token successfully mailed.");
+    }
+
+    @RequestMapping(value = "/validate-password-token", method = RequestMethod.PUT)
+    public CustomResponse verifyResetPasswordToken(HttpServletRequest request,
+                                                   @RequestBody UserDTO userDTO)
+            throws DataValidationException, NoDataFoundException, IOException, CustomException {
+        log.info("updateResetPasswordToken API initiated...");
+
+        Boolean ifVerified = null;
+        try{
+            ifVerified = userService.verifyPasswordResetToken(userDTO);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        if (Boolean.TRUE.equals(ifVerified)){
+            return ResponseUtility.successResponseForPut(null,"Password can be reset now.");
+        }
+        return ResponseUtility.successResponseForPut(null,"Password reset token provided is not correct.");
     }
 
 }

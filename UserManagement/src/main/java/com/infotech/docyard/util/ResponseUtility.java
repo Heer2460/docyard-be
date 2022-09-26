@@ -164,10 +164,10 @@ public class ResponseUtility {
      * @return
      */
     @SuppressWarnings("rawtypes")
-    public static CustomResponse successResponseForPut(Object data) throws CustomException, DBConstraintViolationException {
+    public static CustomResponse successResponseForPut(Object data, String responseMessage) throws CustomException, DBConstraintViolationException {
         return CustomResponse
                 .status(HttpStatus.RESET_CONTENT)
-                .body(data);
+                .body(buildAPIResponse(data, responseMessage));
     }
 
     /**
