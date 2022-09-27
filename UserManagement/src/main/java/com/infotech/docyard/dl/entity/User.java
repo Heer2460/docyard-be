@@ -62,12 +62,15 @@ public class User extends BaseEntity implements Serializable {
     @Column(name = "IS_PASS_EXPIRED", columnDefinition = "boolean default false")
     private Boolean passwordExpired;
 
+    @Column(name = "PASSWORD_REST_TOKEN")
+    private String passwordResetToken;
+
     @JsonIgnore
     @Lob
     @Column(name = "PROFILE_PHOTO")
     private byte[] profilePhoto;
 
-    @OneToOne(targetEntity = Group.class)
+    @OneToOne(targetEntity = Group.class )
     @JoinColumn(name = "GROUP_ID")
     private Group group;
 

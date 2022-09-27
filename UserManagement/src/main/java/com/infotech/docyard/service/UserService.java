@@ -1,18 +1,24 @@
 package com.infotech.docyard.service;
 
+import com.infotech.docyard.dl.entity.EmailInstance;
+import com.infotech.docyard.dl.entity.ForgotPasswordLink;
 import com.infotech.docyard.dl.entity.User;
-import com.infotech.docyard.dl.repository.AdvSearchRepository;
-import com.infotech.docyard.dl.repository.DepartmentRepository;
-import com.infotech.docyard.dl.repository.GroupRepository;
-import com.infotech.docyard.dl.repository.UserRepository;
-import com.infotech.docyard.dto.ChangePasswordDTO;
-import com.infotech.docyard.dto.ResetPasswordDTO;
-import com.infotech.docyard.dto.UserDTO;
+import com.infotech.docyard.dl.repository.*;
+import com.infotech.docyard.dto.*;
+import com.infotech.docyard.enums.EmailStatusEnum;
+import com.infotech.docyard.enums.EmailTypeEnum;
+import com.infotech.docyard.exceptions.CustomException;
 import com.infotech.docyard.exceptions.DataValidationException;
 import com.infotech.docyard.exceptions.NoDataFoundException;
+import com.infotech.docyard.util.AppConstants;
 import com.infotech.docyard.util.AppUtility;
+import com.infotech.docyard.util.NotificationUtility;
+import com.infotech.docyard.util.ResponseUtility;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -21,9 +27,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Log4j2
 @Service
@@ -31,27 +39,24 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private DepartmentRepository departmentRepository;
-
     @Autowired
     private GroupRepository groupRepository;
-
     @Autowired
     private AdvSearchRepository advSearchRepository;
+    @Autowired
+    private ForgotPasswordLinkRepository forgotPasswordLinkRepository;
+    @Autowired
+    private EmailInstanceRepository emailInstanceRepository;
 
-    private MailSender mailSender;
+    @Value("${fe.base.link}")
+    private String baseFELink;
+    @Autowired
+    private NotificationService notificationService;
 
-    private SimpleMailMessage mailMessage;
-
-    public void setMailSender(MailSender mailSender) {
-        this.mailSender = mailSender;
-    }
-
-    public void setMailMessage(SimpleMailMessage mailMessage) {
-        this.mailMessage = new SimpleMailMessage(mailMessage);
-    }
+    @Value("${fe.reset.pass.base.link}")
+    private String resetPassBaseFELink;
 
     public List<User> searchUser(String username, String name, String status) {
         log.info("searchUser method called..");
@@ -129,12 +134,24 @@ public class UserService {
             if (!AppUtility.isEmpty(profileImg)) {
                 userDTO.setProfilePhotoReceived(profileImg);
             }
-            userDTO.setPassword(dbUser.get().getPassword());
-            userDTO.setLastPassUpdatedOn(ZonedDateTime.now());
             return userRepository.save(userDTO.convertToEntityForUpdate());
         } else {
             throw new DataValidationException(AppUtility.getResourceMessage("user.can.not.change.username"));
         }
+    }
+
+    public User updateProfilePicture(UserDTO userDTO, MultipartFile profileImg) throws Exception {
+        log.info("updateProfilePicture method called..");
+
+        Optional<User> dbUser = userRepository.findById(userDTO.getId());
+        userDTO.convertToDTO(dbUser.get(), false);
+        if (AppUtility.isEmpty(dbUser)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("user.not.found"));
+        }
+        if (!AppUtility.isEmpty(profileImg)) {
+            userDTO.setProfilePhotoReceived(profileImg);
+        }
+        return userRepository.save(userDTO.convertToEntityForUpdate());
     }
 
     public User updateUserStatus(UserDTO userDTO) throws Exception {
@@ -203,19 +220,27 @@ public class UserService {
         return user.get();
     }
 
-    public User forgetPassword(ResetPasswordDTO resetPasswordDTO) {
-        log.info("forgetPassword method called..");
 
-        User user = resetPassword(resetPasswordDTO);
-        SimpleMailMessage msg = new SimpleMailMessage();
+//    public void updateResetPasswordToken(ForgetPasswordDTO forgetPasswordDTO) throws IOException, CustomException {
+//        log.info("updateResetPasswordToken method called..");
+//
+//        Optional<User> dbUser = userRepository.findByEmail(forgetPasswordDTO.getUserDTO().getEmail());
+//        if (AppUtility.isEmpty(dbUser)){
+//            throw new NoDataFoundException(AppUtility.getResourceMessage("user.not.found"));
+//        }
+//        String token = UUID.randomUUID().toString();
+//        forgetPasswordDTO.getUserDTO().convertToDTO(dbUser.get(), true);
+//        forgetPasswordDTO.getUserDTO().setPasswordResetToken(token);
+//        User user = userRepository.save(forgetPasswordDTO.getUserDTO().convertToEntityForUpdate());
+//        SimpleMailMessage msg = new SimpleMailMessage();
 //            msg.setTo(user.getEmail());
 //            msg.setText(
 //                    "Dear " + user.getName()
-//                            + ", Your password has been reset with the following credentials, "
-//                            + user.getEmail()
-//                            + user.getUsername()
-//                            + ", link to the system is as follows: "
-//                            + "link: www.abc.com"
+//                            + ", Your password reset token is, "
+//                            + forgetPasswordDTO.getUserDTO().getPasswordResetToken()
+//                            + ", link to reset your password is as follows: "
+//                            + forgetPasswordDTO.getPasswordResetLink()
+//                            + "."
 //            );
 //            try{
 //                this.mailSender.send(msg);
@@ -223,6 +248,80 @@ public class UserService {
 //            catch(MailException e) {
 //                ResponseUtility.exceptionResponse(e);
 //            }
-        return user;
+//    }
+
+    @Transactional(rollbackFor = {Throwable.class})
+    public HttpStatus forgotPassword(String email, PasswordResetLinkDTO passwordResetLinkDTO) {
+        log.info("forgotPassword method called..");
+
+        HttpStatus status = HttpStatus.NOT_FOUND;
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (AppUtility.isEmpty(userOptional)){
+            throw new NoDataFoundException(AppUtility.getResourceMessage("user.not.found"));
+        }
+        User user = userOptional.get();
+        if (!AppUtility.isEmpty(user)) {
+            String token = UUID.randomUUID().toString();
+            String content = NotificationUtility.buildForgotPasswordEmailContent(user, passwordResetLinkDTO.getPasswordResetLink(), token);
+            if (!AppUtility.isEmpty(content)) {
+                EmailInstance emailInstance = new EmailInstance();
+                emailInstance.setToEmail(email);
+                emailInstance.setType(EmailTypeEnum.FORGOT_PASSWORD.getValue());
+                emailInstance.setSubject(AppConstants.EmailSubjectConstants.FORGOT_PASSWORD);
+                emailInstance.setContent(content);
+                emailInstance.setStatus(EmailStatusEnum.NOT_SENT.getValue());
+                emailInstance.setCreatedOn(ZonedDateTime.now());
+                emailInstance.setUpdatedOn(ZonedDateTime.now());
+                emailInstance.setCreatedBy(1L);
+                emailInstance.setUpdatedBy(1L);
+
+                ForgotPasswordLink fpl = new ForgotPasswordLink(token);
+                forgotPasswordLinkRepository.save(fpl);
+                emailInstanceRepository.save(emailInstance);
+                notificationService.sendEmail(emailInstance);
+                status = HttpStatus.OK;
+            }
+        }
+        return status;
+    }
+
+    @Transactional(rollbackFor = {Throwable.class})
+    public HttpStatus checkTokenExpiry(String token) {
+        log.info("checkTokenExpiry method called..");
+
+        ForgotPasswordLink fpl = forgotPasswordLinkRepository.findByToken(token);
+        HttpStatus status;
+        if (!AppUtility.isEmpty(fpl)) {
+            if (fpl.getExpired()) {
+                status = HttpStatus.NON_AUTHORITATIVE_INFORMATION;
+            } else {
+                if (fpl.getExpiredOn().isBefore(ZonedDateTime.now())) {
+                    status = HttpStatus.NON_AUTHORITATIVE_INFORMATION;
+                } else {
+                    status = HttpStatus.OK;
+                }
+            }
+        } else {
+            status = HttpStatus.NOT_FOUND;
+        }
+        return status;
+    }
+
+    public Boolean verifyPasswordResetToken(UserDTO userDTO) throws IOException {
+        log.info("forgetPassword method called..");
+
+        User user = null;
+        Optional<User> dbUser = userRepository.findByEmail(userDTO.getEmail());
+        if (AppUtility.isEmpty(dbUser.get())){
+            throw new NoDataFoundException(AppUtility.getResourceMessage("user.not.found"));
+        }
+        if (dbUser.get().getPasswordResetToken().equals(userDTO.getPasswordResetToken())){
+            userDTO.setPasswordExpired(true);
+            userDTO.convertToDTO(dbUser.get(), true);
+            user = userDTO.convertToEntityForUpdate();
+            userRepository.save(user);
+            return true;
+        }
+        return false;
     }
 }

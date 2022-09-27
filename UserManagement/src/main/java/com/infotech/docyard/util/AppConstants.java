@@ -19,4 +19,17 @@ public class AppConstants {
         public final static String DATE_FORMAT_FOUR = "d/M/yyyy";
     }
 
+    public static class EmailSubjectConstants {
+        public final static String PASSWORD_EXPIRED = "Password Expired";
+        public final static String FORGOT_PASSWORD = "Forgot Password";
+        public final static String USER_CREATED = "User Created";
+        public final static String GD_ASSIGNED_EXAMINER = "Goods Declaration Assigned";
+    }
+
+    public static class EmailConstants {
+        public static final String EMAIL_STATUS_NOT_SEND = "NOT_SENT";
+        public static final String EMAIL_STATUS_SEND = "SENT";
+
+    }
+
 }
