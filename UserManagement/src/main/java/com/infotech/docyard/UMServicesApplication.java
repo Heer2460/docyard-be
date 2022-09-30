@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SpringBootApplication
-@EnableEurekaClient
+//@EnableEurekaClient
 public class UMServicesApplication extends SpringBootServletInitializer {
 
     public static void main(String[] args) {

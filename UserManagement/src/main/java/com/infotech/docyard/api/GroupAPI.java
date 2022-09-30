@@ -1,14 +1,11 @@
 package com.infotech.docyard.api;
 
 import com.infotech.docyard.dl.entity.Group;
-import com.infotech.docyard.dl.entity.Role;
 import com.infotech.docyard.dto.GroupDTO;
-import com.infotech.docyard.dto.RoleDTO;
 import com.infotech.docyard.exceptions.CustomException;
 import com.infotech.docyard.exceptions.DataValidationException;
 import com.infotech.docyard.exceptions.NoDataFoundException;
 import com.infotech.docyard.service.GroupService;
-import com.infotech.docyard.service.RoleService;
 import com.infotech.docyard.util.AppUtility;
 import com.infotech.docyard.util.CustomResponse;
 import com.infotech.docyard.util.ResponseUtility;

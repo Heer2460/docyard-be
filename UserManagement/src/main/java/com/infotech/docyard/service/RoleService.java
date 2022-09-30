@@ -54,9 +54,6 @@ public class RoleService {
         if(AppUtility.isEmpty(role.getRolePermissions())){
             role.setRolePermissions(roleDTO.RolePermission(role));
         }
-        else{
-            role.setRolePermissions(roleDTO.RolePermission(role));
-        }
         Role roles = roleRepository.save(role);
         return roles;
     }

@@ -7,6 +7,8 @@ spring:
   main:
     web-application-type: reactive
   cloud:
+    discovery:
+      enabled: true
     gateway:
       routes:
         - id: UM-SERVICE
@@ -19,8 +21,8 @@ spring:
           uri: lb://authentication-service
           predicates:
               - Path=/oauth/**
-    discovery:
-      enabled: true
+      discovery:
+        enabled: true
   #        - id: TENANT-SERVICE
   #          uri: lb://TENANT-SERVICE
   #          predicates:

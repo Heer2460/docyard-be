@@ -1,19 +1,15 @@
 package com.infotech.docyard.service;
 
 import com.infotech.docyard.dl.entity.Group;
-import com.infotech.docyard.dl.entity.Role;
 import com.infotech.docyard.dl.repository.AdvSearchRepository;
 import com.infotech.docyard.dl.repository.GroupRepository;
-import com.infotech.docyard.dl.repository.RoleRepository;
 import com.infotech.docyard.dto.GroupDTO;
-import com.infotech.docyard.dto.RoleDTO;
 import com.infotech.docyard.util.AppUtility;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
