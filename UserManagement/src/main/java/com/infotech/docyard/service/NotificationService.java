@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -38,8 +39,9 @@ public class NotificationService {
             properties.put("mail.transport.protocol", "smtp");
             properties.put("mail.smtp.host", configSMTP.getSmtpServer()); // smtp.gmail.com?
             properties.put("mail.smtp.port", configSMTP.getSmtpPort());
-            properties.put("mail.smtp.auth", "true");
-            properties.put("mail.smtp.starttls.enable", "true");
+            properties.put("mail.smtp.auth", true);
+            properties.put("mail.smtp.ssl.protocols", "TLSv1.2");
+            properties.put("mail.smtp.starttls.enable", true);
             fromEmail = configSMTP.getSmtpUsername();
             fromPassword = configSMTP.getSmtpPassword();
         }

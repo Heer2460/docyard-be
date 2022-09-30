@@ -4,23 +4,20 @@ import com.infotech.docyard.dl.entity.EmailInstance;
 import com.infotech.docyard.dl.entity.ForgotPasswordLink;
 import com.infotech.docyard.dl.entity.User;
 import com.infotech.docyard.dl.repository.*;
-import com.infotech.docyard.dto.*;
+import com.infotech.docyard.dto.ChangePasswordDTO;
+import com.infotech.docyard.dto.ResetPasswordDTO;
+import com.infotech.docyard.dto.UserDTO;
 import com.infotech.docyard.enums.EmailStatusEnum;
 import com.infotech.docyard.enums.EmailTypeEnum;
-import com.infotech.docyard.exceptions.CustomException;
 import com.infotech.docyard.exceptions.DataValidationException;
 import com.infotech.docyard.exceptions.NoDataFoundException;
 import com.infotech.docyard.util.AppConstants;
 import com.infotech.docyard.util.AppUtility;
 import com.infotech.docyard.util.NotificationUtility;
-import com.infotech.docyard.util.ResponseUtility;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.mail.MailException;
-import org.springframework.mail.MailSender;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -251,18 +248,23 @@ public class UserService {
 //    }
 
     @Transactional(rollbackFor = {Throwable.class})
-    public HttpStatus forgotPassword(String email, PasswordResetLinkDTO passwordResetLinkDTO) {
+    public HttpStatus forgotPassword(String email) {
         log.info("forgotPassword method called..");
 
         HttpStatus status = HttpStatus.NOT_FOUND;
         Optional<User> userOptional = userRepository.findByEmail(email);
-        if (AppUtility.isEmpty(userOptional)){
+        if (AppUtility.isEmpty(userOptional)) {
             throw new NoDataFoundException(AppUtility.getResourceMessage("user.not.found"));
         }
-        User user = userOptional.get();
+        User user = null;
+        if (userOptional.isPresent()) {
+            user = userOptional.get();
+        }
         if (!AppUtility.isEmpty(user)) {
             String token = UUID.randomUUID().toString();
-            String content = NotificationUtility.buildForgotPasswordEmailContent(user, passwordResetLinkDTO.getPasswordResetLink(), token);
+            user.setPasswordResetToken(token);
+            user.setPasswordExpired(true);
+            String content = NotificationUtility.buildForgotPasswordEmailContent(user, resetPassBaseFELink, token);
             if (!AppUtility.isEmpty(content)) {
                 EmailInstance emailInstance = new EmailInstance();
                 emailInstance.setToEmail(email);
@@ -281,7 +283,9 @@ public class UserService {
                 notificationService.sendEmail(emailInstance);
                 status = HttpStatus.OK;
             }
+            userRepository.save(user);
         }
+
         return status;
     }
 
@@ -307,20 +311,24 @@ public class UserService {
         return status;
     }
 
-    public Boolean verifyPasswordResetToken(UserDTO userDTO) throws IOException {
+    public Boolean verifyTokenAndResetPassword(ResetPasswordDTO resetPasswordDTO) throws IOException {
         log.info("forgetPassword method called..");
 
         User user = null;
-        Optional<User> dbUser = userRepository.findByEmail(userDTO.getEmail());
-        if (AppUtility.isEmpty(dbUser.get())){
+        Optional<User> dbUser = userRepository.findById(resetPasswordDTO.getUserId());
+        if (AppUtility.isEmpty(dbUser.get())) {
             throw new NoDataFoundException(AppUtility.getResourceMessage("user.not.found"));
-        }
-        if (dbUser.get().getPasswordResetToken().equals(userDTO.getPasswordResetToken())){
-            userDTO.setPasswordExpired(true);
-            userDTO.convertToDTO(dbUser.get(), true);
-            user = userDTO.convertToEntityForUpdate();
-            userRepository.save(user);
-            return true;
+        } else {
+            user = dbUser.get();
+            if (user.getPasswordResetToken().equals(resetPasswordDTO.getToken())) {
+                user.setForcePasswordChange(false);
+                user.setPasswordExpired(false);
+                user.setPassword(new BCryptPasswordEncoder().encode(resetPasswordDTO.getNewPassword()));
+                user.setStatus("Active");
+                user.setLastPassUpdatedOn(ZonedDateTime.now());
+                userRepository.save(user);
+                return true;
+            }
         }
         return false;
     }

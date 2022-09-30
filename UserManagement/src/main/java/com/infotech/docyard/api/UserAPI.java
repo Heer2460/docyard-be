@@ -2,7 +2,9 @@ package com.infotech.docyard.api;
 
 
 import com.infotech.docyard.dl.entity.User;
-import com.infotech.docyard.dto.*;
+import com.infotech.docyard.dto.ChangePasswordDTO;
+import com.infotech.docyard.dto.ResetPasswordDTO;
+import com.infotech.docyard.dto.UserDTO;
 import com.infotech.docyard.exceptions.CustomException;
 import com.infotech.docyard.exceptions.DataValidationException;
 import com.infotech.docyard.exceptions.NoDataFoundException;
@@ -15,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
@@ -187,33 +188,32 @@ public class UserAPI {
 
     @RequestMapping(value = "/forgot-password", method = RequestMethod.PUT)
     public CustomResponse forgotPassword(HttpServletRequest request,
-                                         @RequestParam String email,
-                                         @RequestBody PasswordResetLinkDTO passwordResetLinkDTO)
+                                         @RequestParam(value = "email") String email)
             throws DataValidationException, NoDataFoundException, IOException, CustomException {
         log.info("forgotPassword API initiated...");
 
         try {
-            userService.forgotPassword(email, passwordResetLinkDTO);
+            userService.forgotPassword(email);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
         return ResponseUtility.successResponseForPut(null,"Password reset Link and Token successfully mailed.");
     }
 
-    @RequestMapping(value = "/validate-password-token", method = RequestMethod.PUT)
-    public CustomResponse verifyResetPasswordToken(HttpServletRequest request,
-                                                   @RequestBody UserDTO userDTO)
+    @RequestMapping(value = "/validate-token-reset-password", method = RequestMethod.PUT)
+    public CustomResponse verifyTokenAndResetPassword(HttpServletRequest request,
+                                                   @RequestBody ResetPasswordDTO resetPasswordDTO)
             throws DataValidationException, NoDataFoundException, IOException, CustomException {
         log.info("updateResetPasswordToken API initiated...");
 
         Boolean ifVerified = null;
         try{
-            ifVerified = userService.verifyPasswordResetToken(userDTO);
+            ifVerified = userService.verifyTokenAndResetPassword(resetPasswordDTO);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
         if (Boolean.TRUE.equals(ifVerified)){
-            return ResponseUtility.successResponseForPut(null,"Password can be reset now.");
+            return ResponseUtility.successResponseForPut(null,"Password has been reset.");
         }
         return ResponseUtility.successResponseForPut(null,"Password reset token provided is not correct.");
     }

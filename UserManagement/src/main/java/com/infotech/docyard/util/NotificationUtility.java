@@ -11,9 +11,14 @@ public class NotificationUtility {
         log.info("buildForgotPasswordEmailContent API initiated...");
 
         String completeLink = baseFELink + "?token=" + token + "&userId=" + user.getId();
-        StringBuilder content = new StringBuilder("Dear " + user.getName() + ", ");
+        StringBuilder content = new StringBuilder("Dear " + user.getName() + ", </br>");
         content.append("click on below link to reset your password ");
+        content.append("</br> ");
         content.append(completeLink);
+        content.append("</br> ");
+        content.append("</br> ");
+
+        content.append("Thanks ");
 
         return content.toString();
     }
