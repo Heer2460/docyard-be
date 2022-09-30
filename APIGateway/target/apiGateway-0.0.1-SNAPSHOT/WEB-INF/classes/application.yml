@@ -4,23 +4,27 @@ server:
 spring:
   application:
     name: DMS-GATEWAY
-#  datasource:
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-#  main:
-#    web-application-type: reactive
+  main:
+    web-application-type: reactive
   cloud:
-    discovery:
-      enabled: true
     gateway:
       routes:
         - id: UM-SERVICE
           uri: lb://UM-SERVICE
           predicates:
-            - Path=/user/**
-#        - id: TENANT-SERVICE
-#          uri: lb://TENANT-SERVICE
-#          predicates:
-#              - Path=/tenants/**
+            - Path=/um/user/**
+          filters:
+            - AuthFilter
+        - id: authentication-service
+          uri: lb://authentication-service
+          predicates:
+              - Path=/oauth/**
+    discovery:
+      enabled: true
+  #        - id: TENANT-SERVICE
+  #          uri: lb://TENANT-SERVICE
+  #          predicates:
+  #              - Path=/tenants/**
 
 eureka:
   client:
@@ -28,6 +32,11 @@ eureka:
     fetch-registry: true
     service-url:
       defaultZone: http://localhost:8761/eureka/
-#  instance:
-#    prefer-ip-address: true
 
+infotech:
+  gw:
+    oauth:
+      clientId: oauth
+      clientSecret: oauth
+    services:
+      authentication: authentication-service

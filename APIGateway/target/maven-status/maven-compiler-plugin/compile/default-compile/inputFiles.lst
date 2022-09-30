@@ -1,6 +1,4 @@
-<<<<<<< HEAD
-D:\Workspace\docyard-be\APIGateway\src\main\java\com\infotech\dms\gateway\ServletInitializer.java
-D:\Workspace\docyard-be\APIGateway\src\main\java\com\infotech\dms\gateway\DmsGatewayApplication.java
-=======
+D:\workspace\docyard-be\APIGateway\src\main\java\com\infotech\dms\gateway\config\WebClientConfig.java
+D:\workspace\docyard-be\APIGateway\src\main\java\com\infotech\dms\gateway\util\AppUtility.java
 D:\workspace\docyard-be\APIGateway\src\main\java\com\infotech\dms\gateway\DmsGatewayApplication.java
->>>>>>> b9a2a44bddf52cf4c24e3e99152e07f7bbed4a0f
+D:\workspace\docyard-be\APIGateway\src\main\java\com\infotech\dms\gateway\config\AuthFilter.java

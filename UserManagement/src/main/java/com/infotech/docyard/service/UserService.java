@@ -111,4 +111,9 @@ public class UserService {
         return user.get();
     }
 
+    public User searchUserByUserName(String username) {
+        log.info("searchUserByUserName method called..");
+
+        return userRepository.findByUsername(username);
+    }
 }
