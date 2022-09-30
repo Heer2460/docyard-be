@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -337,4 +338,35 @@ public class UserService {
         }
         return false;
     }
+
+    @Transactional(rollbackFor = {Throwable.class})
+    public UserDTO userSignIn(String username) {
+        log.info("userSignIn method called..");
+        UserDTO userDTO = null;
+        User user = userRepository.findByUsername(username);
+        if (!AppUtility.isEmpty(user)) {
+            userDTO = new UserDTO();
+            userDTO.convertToDTO(user, false);
+
+            if(user.getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND) || user.getGroup().getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND)){
+                throw new DataValidationException("User is suspended please contact administration. ");
+            }
+        } else {
+            throw new NoDataFoundException("User not found.");
+        }
+        return userDTO;
+    }
+
+    @Transactional(rollbackFor = {Throwable.class})
+    public void getLoggedOutUser(Principal principal, String authHeader) {
+        log.info("getLoggedOutUser method called..");
+        User user = userRepository.findByUsername(principal.getName());
+        if (!AppUtility.isEmpty(user)) {
+            userRepository.save(user);
+        }
+        //String tokenValue = authHeader.replace("Bearer", "").trim();
+        //OAuth2AccessToken accessToken = tokenStore.readAccessToken(tokenValue);
+        //tokenStore.removeAccessToken(accessToken);
+    }
+
 }

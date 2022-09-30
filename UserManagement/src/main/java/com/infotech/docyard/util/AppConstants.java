@@ -10,6 +10,12 @@ public class AppConstants {
 
     }
 
+    public static class Status {
+        public final static String ACTIVE = "Active";
+        public final static String SUSPEND = "Suspend";
+
+    }
+
     public static class DateFormats {
         public final static String DATE_FORMAT_ONE = "dd-MM-yyyy";
         public final static String MONTH_DATE_YEAR = "M/d/yyyy";
