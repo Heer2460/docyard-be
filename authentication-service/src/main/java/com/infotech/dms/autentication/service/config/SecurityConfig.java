@@ -21,7 +21,6 @@ import javax.annotation.Resource;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     SecurityConfig() {
-        System.out.println("\n\nConstructor SecurityConfig Called -------------------------------");
     }
 
     @Autowired
@@ -60,7 +59,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         config.setAllowCredentials(true);
         config.addAllowedOriginPattern(CorsConfiguration.ALL);
         config.addAllowedHeader("*");
-        config.addAllowedMethod("GET");
+        config.addAllowedMethod("*");
         source.registerCorsConfiguration("/**", config);
         FilterRegistrationBean bean = new FilterRegistrationBean(new CorsFilter(source));
         bean.setOrder(Ordered.HIGHEST_PRECEDENCE);

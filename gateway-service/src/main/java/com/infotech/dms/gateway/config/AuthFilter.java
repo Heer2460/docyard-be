@@ -12,7 +12,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> {
 
     private final WebClient.Builder webClientBuilder;
-    public static final String  AUTHORIZATION_TOKEN= "auth_token";
+    public static final String AUTHORIZATION_TOKEN = "auth_token";
 
     @Value("${infotech.gw.oauth.clientId}")
     private String clientID;

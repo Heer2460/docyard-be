@@ -31,7 +31,6 @@ public class SecurityAuth2Configuration extends AuthorizationServerConfigurerAda
     private AuthenticationManager authenticationManager;
 
     SecurityAuth2Configuration() {
-        System.out.println("\n\nConstructor SecurityAuth2Configuration Called -------------------------------");
     }
 
     @Bean
