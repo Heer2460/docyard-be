@@ -1,6 +1,0 @@
-com\infotech\dms\gateway\CorsConfiguration.class
-com\infotech\dms\gateway\util\AppUtility.class
-com\infotech\dms\gateway\config\AuthFilter.class
-com\infotech\dms\gateway\config\AuthFilter$Config.class
-com\infotech\dms\gateway\config\WebClientConfig.class
-com\infotech\dms\gateway\DmsGatewayApplication.class

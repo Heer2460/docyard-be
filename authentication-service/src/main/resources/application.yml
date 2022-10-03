@@ -6,14 +6,14 @@ spring:
       name: admin
       password: admin
 server:
-  port: 8484
+  port: 8081
 eureka:
   instance:
     hostname: localhost
   client:
     fetchRegistry: true
     serviceUrl:
-      defaultZone : http://${eureka.instance.hostname}:8761/eureka/
+      defaultZone: http://${eureka.instance.hostname}:8761/eureka/
 
 infotech:
   gw:

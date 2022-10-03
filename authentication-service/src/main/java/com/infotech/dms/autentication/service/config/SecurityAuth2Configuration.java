@@ -20,17 +20,17 @@ public class SecurityAuth2Configuration extends AuthorizationServerConfigurerAda
 
     @Value("${infotech.gw.oauth.clientId}")
     private String clientID;
-
     @Value("${infotech.gw.oauth.clientSecret}")
     private String clientSecret;
-
     @Value("${infotech.gw.oauth.accessTokenValidity}")
     private int accessTokenValidity;
-
     @Value("${infotech.gw.oauth.refreshTokenValidity}")
     private int refreshTokenValidity;
 
-    SecurityAuth2Configuration(){
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    SecurityAuth2Configuration() {
         System.out.println("\n\nConstructor SecurityAuth2Configuration Called -------------------------------");
     }
 
@@ -40,9 +40,10 @@ public class SecurityAuth2Configuration extends AuthorizationServerConfigurerAda
     }
 
     @Override
-    public void configure(final AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
+    public void configure(final AuthorizationServerSecurityConfigurer oauthServer) {
         oauthServer.tokenKeyAccess("permitAll()").checkTokenAccess("permitAll()").allowFormAuthenticationForClients();
     }
+
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         clients.inMemory()
@@ -53,8 +54,6 @@ public class SecurityAuth2Configuration extends AuthorizationServerConfigurerAda
                 .scopes("read", "write")
                 .authorizedGrantTypes("password", "refresh_token");
     }
-    @Autowired
-    private AuthenticationManager authenticationManager;
 
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
