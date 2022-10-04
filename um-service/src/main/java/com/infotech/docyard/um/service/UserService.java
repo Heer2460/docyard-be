@@ -344,6 +344,8 @@ public class UserService {
     @Autowired
     private RolePermissionRepository rolePermissionRepository;
     @Autowired
+    private ModuleRepository moduleRepository;
+    @Autowired
     private ModuleActionRepository moduleActionRepository;
 
     @Transactional(rollbackFor = {Throwable.class})
@@ -367,6 +369,12 @@ public class UserService {
             Set<Long> moduleActionIds = rolePermissionList.stream().map(RolePermission::getModuleAction).map(ModuleAction::getId).collect(Collectors.toSet());
 
             List<ModuleAction> moduleActionList = moduleActionRepository.findAllById(moduleActionIds);
+
+            Set<Long> moduleIds = moduleActionList.stream().map(ModuleAction::getModule).map(Module::getId).collect(Collectors.toSet());
+
+            List<Module> moduleList = moduleRepository.findAllById(moduleIds);
+
+            userDTO.setModuleList(moduleList);
 
             userDTO.setModuleActionList(moduleActionList);
 

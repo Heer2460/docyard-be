@@ -1,4 +1,4 @@
-package com.infotech.docyard.gateway.config;
+package com.infotech.docyard.um.config;
 
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
