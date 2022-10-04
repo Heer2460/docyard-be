@@ -32,9 +32,7 @@ public class UserAPI {
     public CustomResponse searchUser(HttpServletRequest request,
                                      @RequestParam String username,
                                      @RequestParam String name,
-                                     @RequestParam String status
-    )
-            throws CustomException, NoDataFoundException {
+                                     @RequestParam String status) throws CustomException, NoDataFoundException {
         log.info("getDepartmentByName API initiated...");
 
         List<User> users = null;
@@ -48,7 +46,7 @@ public class UserAPI {
 
     @RequestMapping(value = "/username/{username}", method = RequestMethod.GET)
     public User searchByUserName(HttpServletRequest request,
-                                           @PathVariable(name = "username") String username) throws CustomException {
+                                 @PathVariable(name = "username") String username) throws CustomException {
         log.info("searchByUserName API initiated...");
 
         User user = null;
@@ -119,7 +117,7 @@ public class UserAPI {
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return ResponseUtility.successResponse(user, "User successfully updated.");
+        return ResponseUtility.successResponse(user, AppUtility.getResourceMessage("user.update.success"));
     }
 
     @RequestMapping(value = "/profile-picture", method = RequestMethod.PUT)
@@ -135,10 +133,10 @@ public class UserAPI {
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return ResponseUtility.successResponse(user, "User profile successfully updated.");
+        return ResponseUtility.successResponse(user, AppUtility.getResourceMessage("user.profile.update"));
     }
 
-    @RequestMapping(value = "/updateUserStatus", method = RequestMethod.PUT)
+    @RequestMapping(value = "/update-user-status", method = RequestMethod.PUT)
     public CustomResponse updateUserStatus(HttpServletRequest request,
                                            @RequestBody UserDTO userDTO)
             throws CustomException, NoDataFoundException {
@@ -150,7 +148,7 @@ public class UserAPI {
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return ResponseUtility.successResponse(user, "Profile picture successfully updated.");
+        return ResponseUtility.successResponse(user, AppUtility.getResourceMessage("user.status.update"));
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
@@ -182,7 +180,7 @@ public class UserAPI {
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return ResponseUtility.successResponse(user, "Password successfully updated.");
+        return ResponseUtility.successResponse(user, AppUtility.getResourceMessage("update.password.success"));
     }
 
     @RequestMapping(value = "/reset-password", method = RequestMethod.PUT)
@@ -197,7 +195,7 @@ public class UserAPI {
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return ResponseUtility.successResponse(user, "Password successfully reset.");
+        return ResponseUtility.successResponse(user, AppUtility.getResourceMessage("password.reset.success"));
     }
 
     @RequestMapping(value = "/forgot-password", method = RequestMethod.PUT)
@@ -211,25 +209,25 @@ public class UserAPI {
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return ResponseUtility.successResponseForPut(null,"Password reset Link and Token successfully mailed.");
+        return ResponseUtility.successResponseForPut(null, AppUtility.getResourceMessage("password.reset.link.token"));
     }
 
     @RequestMapping(value = "/validate-token-reset-password", method = RequestMethod.PUT)
     public CustomResponse verifyTokenAndResetPassword(HttpServletRequest request,
-                                                   @RequestBody ResetPasswordDTO resetPasswordDTO)
+                                                      @RequestBody ResetPasswordDTO resetPasswordDTO)
             throws DataValidationException, NoDataFoundException, IOException, CustomException {
         log.info("updateResetPasswordToken API initiated...");
 
         Boolean ifVerified = null;
-        try{
+        try {
             ifVerified = userService.verifyTokenAndResetPassword(resetPasswordDTO);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        if (Boolean.TRUE.equals(ifVerified)){
-            return ResponseUtility.successResponseForPut(null,"Password has been reset.");
+        if (Boolean.TRUE.equals(ifVerified)) {
+            return ResponseUtility.successResponseForPut(null, AppUtility.getResourceMessage("password.reset.success"));
         }
-        return ResponseUtility.successResponseForPut(null,"Password reset token provided is not correct.");
+        return ResponseUtility.successResponseForPut(null, AppUtility.getResourceMessage("password.reset.token.incorrect"));
     }
 
 }
