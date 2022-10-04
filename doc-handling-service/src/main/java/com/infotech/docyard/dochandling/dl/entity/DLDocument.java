@@ -23,11 +23,11 @@ public class DLDocument extends BaseEntity implements Serializable {
     private Long parentId;
 
     @Column(name = "IS_FOLDER")
-    private Boolean isFolder;
+    private Boolean folder;
 
     @Column(name = "IS_ARCHIVED", columnDefinition = "boolean default false")
     @NotNull
-    private Boolean isArchived;
+    private Boolean archived;
 
     @Column(name = "ARCCHIVED_ON")
     private ZonedDateTime archivedOn;
@@ -50,7 +50,7 @@ public class DLDocument extends BaseEntity implements Serializable {
 
     @Column(name = "IS_LEAF_NODE")
     @NotNull
-    private Boolean isLeafNode;
+    private Boolean leafNode;
 
     @Column(name = "NAME")
     @NotNull
@@ -60,7 +60,7 @@ public class DLDocument extends BaseEntity implements Serializable {
     private String shareType;
 
     @Column(name = "IS_SHARED")
-    private Boolean isShared;
+    private Boolean shared;
 
     @Column(name = "SUBJECT")
     private String subject;
@@ -82,6 +82,9 @@ public class DLDocument extends BaseEntity implements Serializable {
 
     @Column(name = "SIZE")
     private String size;
+
+    @Column(name = "SIZE_BYTES")
+    private Long sizeBytes;
 
     @Column(name = "TITLE")
     @NotNull

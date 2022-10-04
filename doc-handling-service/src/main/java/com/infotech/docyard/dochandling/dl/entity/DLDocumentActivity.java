@@ -1,11 +1,12 @@
 package com.infotech.docyard.dochandling.dl.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serializable;
 
 @Data
@@ -29,12 +30,15 @@ public class DLDocumentActivity extends BaseEntity implements Serializable {
     @Column(name = "ACTIVITY_TYPE")
     private String activityType;
 
-    @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID", nullable = false)
-    private DLDocument dlDocument;
-
     public DLDocumentActivity() {
     }
+
+    public DLDocumentActivity(Long actorId, String activityType, long entityId, long docId) {
+        this.userId = actorId;
+        this.activityType = activityType;
+        this.entityId = entityId;
+        this.docId = docId;
+    }
+
 
 }

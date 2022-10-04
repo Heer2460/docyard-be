@@ -18,14 +18,11 @@ public class DLDocumentVersion extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Column(name = "DOC_ID")
-    private Long docId;
-
     @Column(name = "USER_ID")
     private Long userId;
 
     @Column(name = "IS_VISIBLE")
-    private Boolean isVisible;
+    private Boolean visible;
 
     @Column(name = "KEY_STRING")
     private String keyString;
@@ -35,11 +32,11 @@ public class DLDocumentVersion extends BaseEntity implements Serializable {
     private String guId;
 
     @Column(name = "VERSION")
-    private Boolean version;
+    private Double version;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID", nullable = false)
+    @JoinColumn(name = "DOC_ID", nullable = false)
     private DLDocument dlDocument;
 
     public DLDocumentVersion() {
