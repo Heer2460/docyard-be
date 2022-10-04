@@ -1,8 +1,6 @@
 package com.infotech.docyard.um.service;
 
-import com.infotech.docyard.um.dl.entity.EmailInstance;
-import com.infotech.docyard.um.dl.entity.ForgotPasswordLink;
-import com.infotech.docyard.um.dl.entity.User;
+import com.infotech.docyard.um.dl.entity.*;
 import com.infotech.docyard.um.dl.repository.*;
 import com.infotech.docyard.um.dto.ChangePasswordDTO;
 import com.infotech.docyard.um.dto.ResetPasswordDTO;
@@ -29,7 +27,9 @@ import java.security.Principal;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -339,6 +339,15 @@ public class UserService {
         return false;
     }
 
+    @Autowired
+    private GroupRoleRepository groupRoleRepository;
+    @Autowired
+    private RolePermissionRepository rolePermissionRepository;
+    @Autowired
+    private ModuleRepository moduleRepository;
+    @Autowired
+    private ModuleActionRepository moduleActionRepository;
+
     @Transactional(rollbackFor = {Throwable.class})
     public UserDTO userSignIn(String username) {
         log.info("userSignIn method called..");
@@ -351,6 +360,24 @@ public class UserService {
             if (user.getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND) || user.getGroup().getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND)) {
                 throw new DataValidationException("User is suspended please contact administration. ");
             }
+
+            List<GroupRole> groupRoleList = groupRoleRepository.findAllByGroup_id(user.getGroup().getId());
+            Set<Long> roleIds = groupRoleList.stream().map(GroupRole::getRole).map(Role::getId).collect(Collectors.toSet());
+
+            List<RolePermission> rolePermissionList = rolePermissionRepository.findAllRole_idIn(roleIds);
+
+            Set<Long> moduleActionIds = rolePermissionList.stream().map(RolePermission::getModuleAction).map(ModuleAction::getId).collect(Collectors.toSet());
+
+            List<ModuleAction> moduleActionList = moduleActionRepository.findAllById(moduleActionIds);
+
+            Set<Long> moduleIds = moduleActionList.stream().map(ModuleAction::getModule).map(Module::getId).collect(Collectors.toSet());
+
+            List<Module> moduleList = moduleRepository.findAllById(moduleIds);
+
+            userDTO.setModuleList(moduleList);
+
+            userDTO.setModuleActionList(moduleActionList);
+
         } else {
             throw new NoDataFoundException("User not found.");
         }

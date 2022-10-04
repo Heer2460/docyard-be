@@ -7,17 +7,25 @@ spring:
     web-application-type: reactive
   cloud:
     gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedHeaders: "*"
+            allowedMethods: "*"
       routes:
         - id: UM-SERVICE
           uri: lb://UM-SERVICE
           predicates:
-            - Path=/um/user/**
+            - Path=/um/**
           filters:
             - AuthFilter
         - id: authentication-service
           uri: lb://authentication-service
           predicates:
             - Path=/oauth/**
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
     discovery:
       enabled: true
 eureka:
@@ -30,7 +38,7 @@ eureka:
 infotech:
   gw:
     oauth:
-      clientId: oauth
-      clientSecret: oauth
+      clientId: docyard
+      clientSecret: docyard
     services:
       authentication: authentication-service

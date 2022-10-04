@@ -2,6 +2,8 @@ package com.infotech.docyard.um.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.infotech.docyard.um.dl.entity.Group;
+import com.infotech.docyard.um.dl.entity.Module;
+import com.infotech.docyard.um.dl.entity.ModuleAction;
 import com.infotech.docyard.um.dl.entity.User;
 import com.infotech.docyard.um.util.AppUtility;
 import lombok.Data;
@@ -38,6 +40,8 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
     private ZonedDateTime lastPassUpdatedOn;
     private Boolean passwordExpired;
     private String passwordResetToken;
+    private List<ModuleAction> moduleActionList;
+    private List<Module> moduleList;
 
 
     public UserDTO() {
