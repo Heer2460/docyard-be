@@ -1,4 +1,4 @@
-package com.infotech.docyard.um.gateway.util;
+package com.infotech.docyard.gateway.util;
 
 import java.util.Collection;
 import java.util.Map;

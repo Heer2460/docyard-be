@@ -1,12 +1,12 @@
-package com.infotech.docyard.um.auth.service;
+package com.infotech.docyard.auth.service;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.infotech.docyard.um.auth.entity.User;
-import com.infotech.docyard.um.auth.entity.repository.UserRepository;
-import com.infotech.docyard.um.auth.util.AppUtility;
+import com.infotech.docyard.auth.entity.User;
+import com.infotech.docyard.auth.entity.repository.UserRepository;
+import com.infotech.docyard.auth.util.AppUtility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

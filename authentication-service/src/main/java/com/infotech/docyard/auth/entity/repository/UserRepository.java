@@ -1,7 +1,7 @@
-package com.infotech.docyard.um.auth.entity.repository;
+package com.infotech.docyard.auth.entity.repository;
 
 
-import com.infotech.docyard.um.auth.entity.User;
+import com.infotech.docyard.auth.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<User, Long> {

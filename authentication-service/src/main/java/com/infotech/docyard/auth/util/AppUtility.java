@@ -1,10 +1,10 @@
-package com.infotech.docyard.um.auth.util;
+package com.infotech.docyard.auth.util;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.infotech.docyard.um.auth.entity.BaseEntity;
+import com.infotech.docyard.auth.entity.BaseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.io.UnsupportedEncodingException;

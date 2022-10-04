@@ -1,4 +1,4 @@
-package com.infotech.docyard.um.gateway.config;
+package com.infotech.docyard.gateway.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;

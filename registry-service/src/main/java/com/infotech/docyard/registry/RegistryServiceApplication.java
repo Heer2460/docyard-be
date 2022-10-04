@@ -1,4 +1,4 @@
-package com.infotech.docyard.um.registry;
+package com.infotech.docyard.registry;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -1,4 +1,4 @@
-package com.infotech.docyard.um.auth.entity;
+package com.infotech.docyard.auth.entity;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

@@ -1,4 +1,4 @@
-package com.infotech.docyard.um.auth;
+package com.infotech.docyard.auth;
 
 
 import org.springframework.boot.SpringApplication;

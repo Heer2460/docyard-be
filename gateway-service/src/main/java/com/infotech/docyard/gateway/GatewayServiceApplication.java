@@ -1,4 +1,4 @@
-package com.infotech.docyard.um.gateway;
+package com.infotech.docyard.gateway;
 
 import io.netty.resolver.DefaultAddressResolverGroup;
 import org.springframework.boot.SpringApplication;

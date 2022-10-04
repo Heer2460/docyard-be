@@ -1,4 +1,4 @@
-package com.infotech.docyard.um.auth.config;
+package com.infotech.docyard.auth.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
