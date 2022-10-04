@@ -12,6 +12,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,14 +28,14 @@ public class AuthAPI {
     @Autowired
     private UserService umService;
 
-    @RequestMapping(value = "/sign-in", method = RequestMethod.POST)
+    @RequestMapping(value = "/sign-in/{username}", method = RequestMethod.POST)
     public ResponseEntity<?> getSignIn(HttpServletRequest request,
-                                       Principal principal) throws NoDataFoundException {
+                                       @PathVariable(name = "username") String username) throws NoDataFoundException {
         UserDTO userDTO = null;
         log.info("User Sign In API initiated...");
 
-        if(!AppUtility.isEmpty(principal)){
-            userDTO = umService.userSignIn(principal.getName());
+        if(!AppUtility.isEmpty(username)){
+            userDTO = umService.userSignIn(username);
             if (!AppUtility.isEmpty(userDTO)) {
                 if (userDTO.getId() == -1) {
                     return new ResponseEntity<>(userDTO, HttpStatus.LOCKED);

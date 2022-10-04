@@ -11,7 +11,7 @@ spring:
         - id: UM-SERVICE
           uri: lb://UM-SERVICE
           predicates:
-            - Path=/um/user/**
+            - Path=/um/**
           filters:
             - AuthFilter
         - id: authentication-service
