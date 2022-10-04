@@ -30,7 +30,7 @@ eureka:
 infotech:
   gw:
     oauth:
-      clientId: oauth
-      clientSecret: oauth
+      clientId: docyard
+      clientSecret: docyard
     services:
       authentication: authentication-service

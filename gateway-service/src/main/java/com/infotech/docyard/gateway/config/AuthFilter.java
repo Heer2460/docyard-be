@@ -1,5 +1,6 @@
 package com.infotech.docyard.gateway.config;
 
+import com.infotech.docyard.gateway.util.AppConstants;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -35,21 +36,17 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
             }
 
             String authHeader = exchange.getRequest().getHeaders().get(AUTHORIZATION_TOKEN).get(0);
-
             String[] parts = authHeader.split(" ");
 
             if (parts.length != 2 || !"Bearer".equals(parts[0])) {
                 throw new RuntimeException("Incorrect authorization structure");
             }
-
             String token = parts[1];
-
-            StringBuffer uri = new StringBuffer("http://");
-            uri.append(authenticationService).append("/oauth/check_token?token=").append(token);
+            String uri = AppConstants.OAUTH_TOKEN_API_PROTOCOL + authenticationService + AppConstants.OAUTH_TOKEN_CHECK_API + token;
 
             return webClientBuilder.build()
                     .post()
-                    .uri(uri.toString())
+                    .uri(uri)
                     .retrieve().bodyToMono(Object.class)
                     .map(userDto -> {
                         exchange.getRequest()
