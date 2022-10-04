@@ -1,6 +1,6 @@
-package com.infotech.docyard.um.exceptions;
+package com.infotech.docyard.dochandling.exceptions;
 
-import com.infotech.docyard.um.util.ExceptionResponse;
+import com.infotech.docyard.dochandling.util.ExceptionResponse;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

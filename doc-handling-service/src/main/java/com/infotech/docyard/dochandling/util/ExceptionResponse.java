@@ -1,4 +1,4 @@
-package com.infotech.docyard.um.util;
+package com.infotech.docyard.dochandling.util;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

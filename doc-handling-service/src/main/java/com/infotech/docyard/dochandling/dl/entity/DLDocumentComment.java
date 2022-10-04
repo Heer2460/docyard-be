@@ -17,9 +17,6 @@ public class DLDocumentComment extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Column(name = "DOC_ID")
-    private Long docId;
-
     @Column(name = "USER_ID")
     private Long userId;
 
@@ -28,7 +25,7 @@ public class DLDocumentComment extends BaseEntity implements Serializable {
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID", nullable = false)
+    @JoinColumn(name = "DOC_ID", nullable = false)
     private DLDocument dlDocument;
 
     public DLDocumentComment() {

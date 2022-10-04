@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.infotech.docyard.dochandling.dl.entity.BaseEntity;
-import com.infotech.docyard.um.exceptions.CustomException;
+import com.infotech.docyard.dochandling.exceptions.CustomException;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;

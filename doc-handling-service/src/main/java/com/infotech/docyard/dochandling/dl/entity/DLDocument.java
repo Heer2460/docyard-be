@@ -36,7 +36,7 @@ public class DLDocument extends BaseEntity implements Serializable {
     private String description;
 
     @Column(name = "IS_FAVOURITE", columnDefinition = "boolean default false")
-    private Boolean isFavourite;
+    private Boolean favourite;
 
     @Column(name = "GUID")
     @NotNull
@@ -89,9 +89,6 @@ public class DLDocument extends BaseEntity implements Serializable {
     @Column(name = "TITLE")
     @NotNull
     private String title;
-
-    @OneToMany(mappedBy = "dlDocument", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DLDocumentActivity> documentActivities;
 
     @OneToMany(mappedBy = "dlDocument", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DLDocumentComment> documentComments;

@@ -1,7 +1,7 @@
 package com.infotech.docyard.dochandling.dto;
 
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentVersion;
-import com.infotech.docyard.um.util.AppUtility;
+import com.infotech.docyard.dochandling.util.AppUtility;
 import lombok.Data;
 
 import java.io.IOException;
@@ -12,7 +12,7 @@ import java.time.ZonedDateTime;
 public class DLDocumentVersionDTO extends BaseDTO<DLDocumentVersionDTO, DLDocumentVersion> implements Serializable {
     private Long userId;
     private Long docId;
-    private Boolean version;
+    private Double version;
     private String guId;
     private String keyString;
     private Boolean isVisible;
@@ -27,9 +27,8 @@ public class DLDocumentVersionDTO extends BaseDTO<DLDocumentVersionDTO, DLDocume
         dlDocumentVersion.setVersion(this.version);
         dlDocumentVersion.setGuId(this.guId);
         dlDocumentVersion.setKeyString(this.keyString);
-        dlDocumentVersion.setIsVisible(this.isVisible);
+        dlDocumentVersion.setVisible(this.isVisible);
         dlDocumentVersion.setUserId(this.userId);
-        dlDocumentVersion.setDocId(this.docId);
         dlDocumentVersion.setCreatedOn(AppUtility.isEmpty(this.createdOn) ? ZonedDateTime.now() : this.createdOn);
         dlDocumentVersion.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
         dlDocumentVersion.setCreatedBy(this.getCreatedBy());
@@ -43,9 +42,8 @@ public class DLDocumentVersionDTO extends BaseDTO<DLDocumentVersionDTO, DLDocume
         this.version = entity.getVersion();
         this.guId = entity.getGuId();
         this.keyString = entity.getKeyString();
-        this.isVisible = entity.getIsVisible();
+        this.isVisible = entity.getVisible();
         this.userId = entity.getUserId();
-        this.docId = entity.getDocId();
         this.updatedOn = entity.getUpdatedOn();
         this.createdOn = entity.getCreatedOn();
         this.updatedBy = entity.getUpdatedBy();

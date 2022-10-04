@@ -1,7 +1,7 @@
 package com.infotech.docyard.dochandling.dto;
 
 import com.infotech.docyard.dochandling.dl.entity.DLDocument;
-import com.infotech.docyard.um.util.AppUtility;
+import com.infotech.docyard.dochandling.util.AppUtility;
 import lombok.Data;
 
 import java.io.IOException;
@@ -46,18 +46,18 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         DLDocument dlDocument = new DLDocument();
         dlDocument.setId(this.id);
         dlDocument.setParentId(this.parentId);
-        dlDocument.setIsFolder(this.isFolder);
-        dlDocument.setIsArchived(this.isArchived);
+        dlDocument.setFolder(this.isFolder);
+        dlDocument.setArchived(this.isArchived);
         dlDocument.setArchivedOn(this.archivedOn);
         dlDocument.setDescription(this.description);
-        dlDocument.setIsFavourite(this.isFavourite);
+        dlDocument.setFavourite(this.isFavourite);
         dlDocument.setGuId(this.guId);
         dlDocument.setVersion(this.version);
         dlDocument.setVersionGUId(this.versionGUId);
-        dlDocument.setIsLeafNode(this.isLeafNode);
+        dlDocument.setLeafNode(this.isLeafNode);
         dlDocument.setName(this.name);
         dlDocument.setShareType(this.shareType);
-        dlDocument.setIsShared(this.isShared);
+        dlDocument.setShared(this.isShared);
         dlDocument.setSubject(this.subject);
         dlDocument.setContent(this.content);
         dlDocument.setCurrentVersion(this.currentVersion);
@@ -77,18 +77,18 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
     public void convertToDTO(DLDocument entity, boolean partialFill) {
         this.id = entity.getId();
         this.parentId = entity.getParentId();
-        this.isFolder = entity.getIsFolder();
-        this.isArchived = entity.getIsArchived();
+        this.isFolder = entity.getFolder();
+        this.isArchived = entity.getArchived();
         this.archivedOn = entity.getArchivedOn();
         this.description = entity.getDescription();
-        this.isFavourite = entity.getIsFavourite();
+        this.isFavourite = entity.getFavourite();
         this.guId = entity.getGuId();
         this.version = entity.getVersion();
         this.versionGUId = entity.getVersionGUId();
-        this.isLeafNode = entity.getIsLeafNode();
+        this.isLeafNode = entity.getLeafNode();
         this.name = entity.getName();
         this.shareType = entity.getShareType();
-        this.isShared = entity.getIsShared();
+        this.isShared = entity.getShared();
         this.subject = entity.getSubject();
         this.content = entity.getContent();
         this.currentVersion = entity.getCurrentVersion();

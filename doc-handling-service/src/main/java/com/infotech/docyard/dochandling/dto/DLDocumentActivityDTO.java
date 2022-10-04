@@ -1,7 +1,7 @@
 package com.infotech.docyard.dochandling.dto;
 
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentActivity;
-import com.infotech.docyard.um.util.AppUtility;
+import com.infotech.docyard.dochandling.util.AppUtility;
 import lombok.Data;
 
 import java.io.IOException;
