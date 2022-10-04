@@ -24,7 +24,6 @@ public class RoleAPI {
     @Autowired
     private RoleService roleService;
 
-
     @RequestMapping(value = "/search", method = RequestMethod.GET)
     public CustomResponse searchRole(HttpServletRequest request,
                                      @RequestParam String code,
@@ -76,7 +75,7 @@ public class RoleAPI {
 
     @RequestMapping(value = "/", method = RequestMethod.POST)
     public CustomResponse createRole(HttpServletRequest request,
-                                           @RequestBody RoleDTO roleDTO)
+                                     @RequestBody RoleDTO roleDTO)
             throws CustomException, NoDataFoundException {
         log.info("createRole API initiated...");
         Role role = null;
@@ -90,7 +89,7 @@ public class RoleAPI {
 
     @RequestMapping(value = "/", method = RequestMethod.PUT)
     public CustomResponse updateRole(HttpServletRequest request,
-                                           @RequestBody RoleDTO roleDTO)
+                                     @RequestBody RoleDTO roleDTO)
             throws CustomException, NoDataFoundException {
         log.info("updateRole API initiated...");
 
@@ -105,7 +104,7 @@ public class RoleAPI {
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public CustomResponse deleteRole(HttpServletRequest request,
-                                           @PathVariable("id") Long id)
+                                     @PathVariable("id") Long id)
             throws DataValidationException, NoDataFoundException, CustomException {
         log.info("deleteRole API initiated...");
 
