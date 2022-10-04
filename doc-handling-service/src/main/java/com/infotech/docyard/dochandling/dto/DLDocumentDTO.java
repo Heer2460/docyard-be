@@ -1,0 +1,113 @@
+package com.infotech.docyard.dochandling.dto;
+
+import com.infotech.docyard.dochandling.dl.entity.DLDocument;
+import com.infotech.docyard.um.util.AppUtility;
+import lombok.Data;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.time.ZonedDateTime;
+import java.util.List;
+
+@Data
+public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements Serializable {
+
+    private String title;
+    private String size;
+    private String mimeType;
+    private String location;
+    private String extension;
+    private Double currentVersion;
+    private String content;
+    private String subject;
+    private Boolean isShared;
+    private String shareType;
+    private String name;
+    private Boolean isLeafNode;
+    private String versionGUId;
+    private Double version;
+    private String guId;
+    private Boolean isFavourite;
+    private String description;
+    private ZonedDateTime archivedOn;
+    private Boolean isArchived;
+    private Boolean isFolder;
+    private Long parentId;
+    private List<Long> documentActivityIds;
+    private List<Long> documentCommentIds;
+    private List<Long> documentTagIds;
+
+    public DLDocumentDTO() {
+
+    }
+
+    @Override
+    public DLDocument convertToEntity() throws IOException {
+        DLDocument dlDocument = new DLDocument();
+        dlDocument.setId(this.id);
+        dlDocument.setParentId(this.parentId);
+        dlDocument.setIsFolder(this.isFolder);
+        dlDocument.setIsArchived(this.isArchived);
+        dlDocument.setArchivedOn(this.archivedOn);
+        dlDocument.setDescription(this.description);
+        dlDocument.setIsFavourite(this.isFavourite);
+        dlDocument.setGuId(this.guId);
+        dlDocument.setVersion(this.version);
+        dlDocument.setVersionGUId(this.versionGUId);
+        dlDocument.setIsLeafNode(this.isLeafNode);
+        dlDocument.setName(this.name);
+        dlDocument.setShareType(this.shareType);
+        dlDocument.setIsShared(this.isShared);
+        dlDocument.setSubject(this.subject);
+        dlDocument.setContent(this.content);
+        dlDocument.setCurrentVersion(this.currentVersion);
+        dlDocument.setExtension(this.extension);
+        dlDocument.setLocation(this.location);
+        dlDocument.setMimeType(this.mimeType);
+        dlDocument.setSize(this.size);
+        dlDocument.setTitle(this.title);
+        dlDocument.setCreatedOn(AppUtility.isEmpty(this.createdOn) ? ZonedDateTime.now() : this.createdOn);
+        dlDocument.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
+        dlDocument.setCreatedBy(this.getCreatedBy());
+        dlDocument.setUpdatedBy(this.getUpdatedBy());
+        return dlDocument;
+    }
+
+    @Override
+    public void convertToDTO(DLDocument entity, boolean partialFill) {
+        this.id = entity.getId();
+        this.parentId = entity.getParentId();
+        this.isFolder = entity.getIsFolder();
+        this.isArchived = entity.getIsArchived();
+        this.archivedOn = entity.getArchivedOn();
+        this.description = entity.getDescription();
+        this.isFavourite = entity.getIsFavourite();
+        this.guId = entity.getGuId();
+        this.version = entity.getVersion();
+        this.versionGUId = entity.getVersionGUId();
+        this.isLeafNode = entity.getIsLeafNode();
+        this.name = entity.getName();
+        this.shareType = entity.getShareType();
+        this.isShared = entity.getIsShared();
+        this.subject = entity.getSubject();
+        this.content = entity.getContent();
+        this.currentVersion = entity.getCurrentVersion();
+        this.extension = entity.getExtension();
+        this.location = entity.getLocation();
+        this.mimeType = entity.getMimeType();
+        this.size = entity.getSize();
+        this.title = entity.getTitle();
+        this.updatedOn = entity.getUpdatedOn();
+        this.createdOn = entity.getCreatedOn();
+        this.updatedBy = entity.getUpdatedBy();
+        this.createdBy = entity.getCreatedBy();
+    }
+
+    @Override
+    public DLDocumentDTO convertToNewDTO(DLDocument entity, boolean partialFill) {
+        DLDocumentDTO dlDocumentDTO = new DLDocumentDTO();
+        dlDocumentDTO.convertToDTO(entity, partialFill);
+        return dlDocumentDTO;
+    }
+
+}
