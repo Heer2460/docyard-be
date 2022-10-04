@@ -8,10 +8,7 @@
 /dms-saas/tenantService/target/
 /dms-saas/userService/target/
 */target
-<<<<<<< HEAD
 
-=======
->>>>>>> b9a2a44bddf52cf4c24e3e99152e07f7bbed4a0f
 ### STS ###
 .apt_generated
 .classpath
