@@ -3,10 +3,10 @@
 /workspace.xml
 *.iml
 /.idea/
-/dms-saas/dmsGatway/target/
-/dms-saas/dmsRegistry/target/
-/dms-saas/tenantService/target/
-/dms-saas/userService/target/
+/authentication-service/target
+/gateway-service/target
+/registry-service/target
+/um-service/target
 */target
 
 ### STS ###
