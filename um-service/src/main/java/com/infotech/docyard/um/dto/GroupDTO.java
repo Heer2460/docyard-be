@@ -1,6 +1,5 @@
 package com.infotech.docyard.um.dto;
 
-import com.infotech.docyard.dl.entity.*;
 import com.infotech.docyard.um.dl.entity.Group;
 import com.infotech.docyard.um.dl.entity.GroupRole;
 import com.infotech.docyard.um.dl.entity.Role;

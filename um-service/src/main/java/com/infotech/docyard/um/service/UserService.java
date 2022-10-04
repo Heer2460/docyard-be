@@ -3,7 +3,6 @@ package com.infotech.docyard.um.service;
 import com.infotech.docyard.um.dl.entity.EmailInstance;
 import com.infotech.docyard.um.dl.entity.ForgotPasswordLink;
 import com.infotech.docyard.um.dl.entity.User;
-import com.infotech.docyard.dl.repository.*;
 import com.infotech.docyard.um.dl.repository.*;
 import com.infotech.docyard.um.dto.ChangePasswordDTO;
 import com.infotech.docyard.um.dto.ResetPasswordDTO;
@@ -349,7 +348,7 @@ public class UserService {
             userDTO = new UserDTO();
             userDTO.convertToDTO(user, false);
 
-            if(user.getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND) || user.getGroup().getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND)){
+            if (user.getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND) || user.getGroup().getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND)) {
                 throw new DataValidationException("User is suspended please contact administration. ");
             }
         } else {
