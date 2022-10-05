@@ -38,7 +38,21 @@ public class DLDocumentAPI {
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return ResponseUtility.buildResponseList(documents);
+        return ResponseUtility.buildResponseList(documents, new DLDocumentDTO());
+    }
+
+    @RequestMapping(value = "/recent/owner/{ownerId}", method = RequestMethod.GET)
+    public CustomResponse getAllRecentDLDocumentByOwnerId(HttpServletRequest request,
+                                                          @PathVariable(value = "ownerId") Long ownerId) throws CustomException {
+        log.info("getAllRecentDLDocumentByOwnerId API initiated...");
+
+        List<DLDocumentDTO> documentDTOList = null;
+        try {
+            documentDTOList = documentService.getAllRecentDLDocumentByOwnerId(ownerId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.buildResponseList(documentDTOList);
     }
 
     @RequestMapping(value = "/upload", method = RequestMethod.POST)

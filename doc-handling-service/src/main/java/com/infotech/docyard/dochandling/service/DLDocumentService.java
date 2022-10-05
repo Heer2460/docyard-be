@@ -8,11 +8,13 @@ import com.infotech.docyard.dochandling.dl.repository.DLDocumentRepository;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentVersionRepository;
 import com.infotech.docyard.dochandling.dto.DLDocumentDTO;
 import com.infotech.docyard.dochandling.dto.UploadDocumentDTO;
+import com.infotech.docyard.dochandling.dto.UserDTO;
 import com.infotech.docyard.dochandling.enums.DLActivityTypeEnum;
 import com.infotech.docyard.dochandling.enums.FileTypeEnum;
 import com.infotech.docyard.dochandling.enums.FileViewerEnum;
 import com.infotech.docyard.dochandling.util.AppConstants;
 import com.infotech.docyard.dochandling.util.AppUtility;
+import com.infotech.docyard.dochandling.util.CustomResponse;
 import com.infotech.docyard.dochandling.util.DocumentUtil;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
@@ -21,14 +23,13 @@ import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Log4j2
@@ -42,6 +43,8 @@ public class DLDocumentService {
     private FTPService ftpService;
     @Autowired
     private DLDocumentActivityRepository dlDocumentActivityRepository;
+    @Autowired
+    private RestTemplate restTemplate;
 
     public List<DLDocument> getDocumentsByFolderIdAndArchive(Long folderId, Boolean archived) {
         log.info("DLDocumentService - getDocumentsByFolderIdAndArchive method called...");
@@ -51,6 +54,27 @@ public class DLDocumentService {
         }
         return dlDocumentRepository.findByParentIdAndArchivedOrderByUpdatedOnAsc(folderId, archived);
 
+    }
+
+    public List<DLDocumentDTO> getAllRecentDLDocumentByOwnerId(Long ownerId) {
+        log.info("DLDocumentService - getAllRecentDLDocumentByOwnerId method called...");
+
+        List<DLDocumentDTO> documentDTOList = new ArrayList<>();
+        ZonedDateTime fromDate = ZonedDateTime.now().minusDays(7), toDate = ZonedDateTime.now();
+        List<DLDocument> recentDocs = dlDocumentRepository.findTop8ByCreatedByAndArchivedFalseAndFolderFalseAndCreatedOnBetweenOrderByUpdatedOnAsc(ownerId, fromDate, toDate);
+        for (DLDocument doc : recentDocs) {
+            DLDocumentDTO dto = new DLDocumentDTO();
+            dto.convertToDTO(doc, false);
+
+            Object response = restTemplate.getForObject("http://um-service/um/user/" + ownerId, Object.class);
+            if (!AppUtility.isEmpty(response)) {
+                HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+                dto.setCreatedByName((String) map.get("name"));
+                dto.setUpdatedByName((String) map.get("name"));
+            }
+            documentDTOList.add(dto);
+        }
+        return documentDTOList;
     }
 
     @Transactional(rollbackFor = {Throwable.class})
