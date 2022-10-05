@@ -124,7 +124,7 @@ public class DocumentUtil {
         final String PATH_SEPARATOR = buildPathSeparator(customPathSeparator);
         DLDocument folder = selectedFolderNode;
         if (isRootFolder(folder)) {
-            selectedFolderPath = new StringBuilder("");
+            selectedFolderPath = new StringBuilder("Root");
             return new StringBuffer(selectedFolderPath);
         }
 
@@ -148,6 +148,9 @@ public class DocumentUtil {
     }
 
     private static boolean isRootFolder(DLDocument dlDocument) {
-        return dlDocument != null && dlDocument.getFolder() && dlDocument.getParentId() == null;
+        if(AppUtility.isEmpty(dlDocument)){
+            return true;
+        }
+        return false;
     }
 }

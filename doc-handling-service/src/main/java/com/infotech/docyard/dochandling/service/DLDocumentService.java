@@ -9,7 +9,9 @@ import com.infotech.docyard.dochandling.dl.repository.DLDocumentVersionRepositor
 import com.infotech.docyard.dochandling.dto.UploadDocumentDTO;
 import com.infotech.docyard.dochandling.enums.DLActivityTypeEnum;
 import com.infotech.docyard.dochandling.enums.FileTypeEnum;
+import com.infotech.docyard.dochandling.enums.FileViewerEnum;
 import com.infotech.docyard.dochandling.util.AppConstants;
+import com.infotech.docyard.dochandling.util.AppUtility;
 import com.infotech.docyard.dochandling.util.DocumentUtil;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
@@ -17,12 +19,14 @@ import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -34,10 +38,21 @@ public class DLDocumentService {
     @Autowired
     private DLDocumentVersionRepository dlDocumentVersionRepository;
     @Autowired
-    private SFTPService sftpService;
+    private FTPService ftpService;
     @Autowired
     private DLDocumentActivityRepository dlDocumentActivityRepository;
 
+    public List<DLDocument> getDocumentsByFolderIdAndArchive(Long folderId, Boolean archived) {
+        log.info("DLDocumentService - getDocumentsByFolderIdAndArchive method called...");
+
+        if (AppUtility.isEmpty(folderId)) {
+            return dlDocumentRepository.findByParentIdIsNullAndArchivedOrderByUpdatedOnAsc(archived);
+        }
+        return dlDocumentRepository.findByParentIdAndArchivedOrderByUpdatedOnAsc(folderId, archived);
+
+    }
+
+    @Transactional(rollbackFor = {Throwable.class})
     public DLDocument uploadDocuments(UploadDocumentDTO uploadDocumentDTO, MultipartFile[] files) throws Exception {
         log.info("DLDocumentService - uploadDocuments method called...");
 
@@ -60,9 +75,9 @@ public class DLDocumentService {
                 getContentFromFile(dlDoc, f);
 
                 // UPLOADING ON SFTP
-                log.info("DLDocumentService - Uploaded on SFTP started....");
-                boolean isDocUploaded = sftpService.uploadFile(docLocation, dlDoc.getVersionGUId(), file.getInputStream());
-                log.info("DLDocumentService - Uploaded on SFTP ended with success: " + isDocUploaded);
+                log.info("DLDocumentService - Uploaded on FTP started....");
+                boolean isDocUploaded = ftpService.uploadFile(docLocation, dlDoc.getVersionGUId(), file.getInputStream());
+                log.info("DLDocumentService - Uploaded on FTP ended with success: " + isDocUploaded);
 
                 if (isDocUploaded) {
                     dlDoc = dlDocumentRepository.save(dlDoc);
@@ -91,7 +106,8 @@ public class DLDocumentService {
         return dv;
     }
 
-    private DLDocument buildDocument(MultipartFile file, UploadDocumentDTO request, boolean isDocUpload) {
+    @Transactional(rollbackFor = {Throwable.class})
+    protected DLDocument buildDocument(MultipartFile file, UploadDocumentDTO request, boolean isDocUpload) {
         DLDocument doc = new DLDocument();
 
         try {
@@ -107,12 +123,14 @@ public class DLDocumentService {
             doc.setMimeType(DocumentUtil.getMimeType(extension));
             doc.setSize(DocumentUtil.getFileSize(file.getSize()));
             doc.setSizeBytes(file.getSize());
+            doc.setCreatedBy(request.getCreatedBy());
             doc.setUpdatedBy(request.getCreatedBy());
             doc.setCreatedOn(ZonedDateTime.now());
             doc.setUpdatedOn(ZonedDateTime.now());
             if (request.getFolderId() != 0) {
                 doc.setParentId(request.getFolderId());
             }
+            doc.setFolder(false);
             doc = dlDocumentRepository.save(doc);
             doc.setArchived(false);
             DLDocument folder = dlDocumentRepository.findByIdAndArchivedFalseAndFolderTrue(request.getFolderId());
@@ -173,9 +191,7 @@ public class DLDocumentService {
             documentVersion.setGuId(documentVersion.getGuId() + "."
                     + doc.getExtension());
 
-            switch (FileTypeEnum.getByExtensionForcefully(doc.getExtension()).getSupportedViewer()) {
-                case IMAGE_VIEWER:
-                    //doc.setThumbnailSupported(true);
+            if (FileTypeEnum.getByExtensionForcefully(doc.getExtension()).getSupportedViewer() == FileViewerEnum.IMAGE_VIEWER) {//doc.setThumbnailSupported(true);
             }
         } catch (Exception ex) {
             ex.printStackTrace();

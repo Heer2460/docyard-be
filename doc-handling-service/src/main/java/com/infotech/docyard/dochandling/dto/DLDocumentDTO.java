@@ -51,7 +51,6 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         dlDocument.setArchivedOn(this.archivedOn);
         dlDocument.setDescription(this.description);
         dlDocument.setFavourite(this.isFavourite);
-        dlDocument.setGuId(this.guId);
         dlDocument.setVersion(this.version);
         dlDocument.setVersionGUId(this.versionGUId);
         dlDocument.setLeafNode(this.isLeafNode);
@@ -82,7 +81,6 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         this.archivedOn = entity.getArchivedOn();
         this.description = entity.getDescription();
         this.isFavourite = entity.getFavourite();
-        this.guId = entity.getGuId();
         this.version = entity.getVersion();
         this.versionGUId = entity.getVersionGUId();
         this.isLeafNode = entity.getLeafNode();

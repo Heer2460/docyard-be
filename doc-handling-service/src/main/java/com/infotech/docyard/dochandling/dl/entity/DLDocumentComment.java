@@ -10,7 +10,7 @@ import java.io.Serializable;
 
 @Data
 @Entity
-@Table(name = "DL_DOCUMENTS_COMMENTS")
+@Table(name = "DL_DOCUMENT_COMMENTS")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @EqualsAndHashCode(callSuper = false)
 public class DLDocumentComment extends BaseEntity implements Serializable {

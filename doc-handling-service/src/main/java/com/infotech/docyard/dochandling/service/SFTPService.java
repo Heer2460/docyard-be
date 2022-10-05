@@ -2,21 +2,23 @@ package com.infotech.docyard.dochandling.service;
 
 import com.infotech.docyard.dochandling.config.SFTPProperties;
 import com.jcraft.jsch.*;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.Arrays;
 
 @Service
+@Log4j2
 public class SFTPService {
 
     private static final String SESSION_CONFIG_STRICT_HOST_KEY_CHECKING = "StrictHostKeyChecking";
-    private final Logger logger = LogManager.getLogger(SFTPService.class);
 
     @Autowired
     private SFTPProperties config;
@@ -25,19 +27,19 @@ public class SFTPService {
         ChannelSftp sftp = this.createSftp();
         try {
             sftp.cd(config.getRoot());
-            logger.info("Change path to {}", config.getRoot());
+            log.info("Change path to {}", config.getRoot());
 
             int index = targetPath.lastIndexOf("/");
             String fileDir = targetPath.substring(0, index);
             boolean dirs = this.createDirs(fileDir, sftp);
             if (!dirs) {
-                logger.error("Remote path error. path:{}", targetPath);
+                log.error("Remote path error. path:{}", targetPath);
                 throw new Exception("Upload File failure");
             }
             sftp.put(inputStream, fileName);
             return true;
         } catch (Exception e) {
-            logger.error("Upload file failure. TargetPath: {}", targetPath, e);
+            log.error("Upload file failure. TargetPath: {}", targetPath, e);
             throw new Exception("Upload File failure");
         } finally {
             this.disconnect(sftp);
@@ -49,16 +51,16 @@ public class SFTPService {
         OutputStream outputStream = null;
         try {
             sftp.cd(config.getRoot());
-            logger.info("Change path to {}", config.getRoot());
+            log.info("Change path to {}", config.getRoot());
 
             File file = new File(targetPath.substring(targetPath.lastIndexOf("/") + 1));
 
             outputStream = Files.newOutputStream(file.toPath());
             sftp.get(targetPath, outputStream);
-            logger.info("Download file success. TargetPath: {}", targetPath);
+            log.info("Download file success. TargetPath: {}", targetPath);
             return file;
         } catch (Exception e) {
-            logger.error("Download file failure. TargetPath: {}", targetPath, e);
+            log.error("Download file failure. TargetPath: {}", targetPath, e);
             throw new Exception("Download File failure");
         } finally {
             if (outputStream != null) {
@@ -73,16 +75,16 @@ public class SFTPService {
         OutputStream outputStream = null;
         try {
             sftp.cd(config.getRoot());
-            logger.info("Change path to {}", config.getRoot());
+            log.info("Change path to {}", config.getRoot());
 
             File file = new File(targetPath.substring(targetPath.lastIndexOf("/") + 1));
 
             outputStream = Files.newOutputStream(file.toPath());
             sftp.get(targetPath, outputStream);
-            logger.info("Download file success. TargetPath: {}", targetPath);
+            log.info("Download file success. TargetPath: {}", targetPath);
             return new FileInputStream(file);
         } catch (Exception e) {
-            logger.error("Download file failure. TargetPath: {}", targetPath, e);
+            log.error("Download file failure. TargetPath: {}", targetPath, e);
             throw new Exception("Download File failure");
         } finally {
             if (outputStream != null) {
@@ -100,7 +102,7 @@ public class SFTPService {
             sftp.rm(targetPath);
             return true;
         } catch (Exception e) {
-            logger.error("Delete file failure. TargetPath: {}", targetPath, e);
+            log.error("Delete file failure. TargetPath: {}", targetPath, e);
             throw new Exception("Delete File failure");
         } finally {
             this.disconnect(sftp);
@@ -109,19 +111,19 @@ public class SFTPService {
 
     private ChannelSftp createSftp() throws Exception {
         JSch jsch = new JSch();
-        logger.info("Try to connect sftp[" + config.getUsername() + "@" + config.getHost() + "], " +
+        log.info("Try to connect sftp[" + config.getUsername() + "@" + config.getHost() + "], " +
                 "use password[" + config.getPassword() + "]");
 
         Session session = createSession(jsch, config.getHost(), config.getUsername(), config.getPort());
         session.setPassword(config.getPassword());
         session.connect(config.getSessionConnectTimeout());
 
-        logger.info("Session connected to {}.", config.getHost());
+        log.info("Session connected to {}.", config.getHost());
 
         Channel channel = session.openChannel(config.getProtocol());
         channel.connect(config.getChannelConnectedTimeout());
 
-        logger.info("Channel created to {}.", config.getHost());
+        log.info("Channel created to {}.", config.getHost());
 
         return (ChannelSftp) channel;
     }
@@ -136,16 +138,16 @@ public class SFTPService {
                 jsch.addIdentity(config.getPrivateKey());
             }
         }
-        logger.info("Try to connect sftp[" + config.getUsername() + "@" + config.getHost() + "], use private key[" + config.getPrivateKey()
+        log.info("Try to connect sftp[" + config.getUsername() + "@" + config.getHost() + "], use private key[" + config.getPrivateKey()
                 + "] with passphrase[" + config.getPassphrase() + "]");
 
         Session session = createSession(jsch, config.getHost(), config.getUsername(), config.getPort());
         session.connect(config.getSessionConnectTimeout());
-        logger.info("Session connected to " + config.getHost() + ".");
+        log.info("Session connected to " + config.getHost() + ".");
 
         Channel channel = session.openChannel(config.getProtocol());
         channel.connect(config.getChannelConnectedTimeout());
-        logger.info("Channel created to " + config.getHost() + ".");
+        log.info("Channel created to " + config.getHost() + ".");
         return (ChannelSftp) channel;
     }
 
@@ -159,20 +161,20 @@ public class SFTPService {
             for (String dir : dirs) {
                 try {
                     sftp.cd(dir);
-                    logger.info("Change directory {}", dir);
+                    log.info("Change directory {}", dir);
                 } catch (Exception e) {
                     try {
                         sftp.mkdir(dir);
-                        logger.info("Create directory {}", dir);
+                        log.info("Create directory {}", dir);
                     } catch (SftpException e1) {
-                        logger.error("Create directory failure, directory:{}", dir, e1);
+                        log.error("Create directory failure, directory:{}", dir, e1);
                         e1.printStackTrace();
                     }
                     try {
                         sftp.cd(dir);
-                        logger.info("Change directory {}", dir);
+                        log.info("Change directory {}", dir);
                     } catch (SftpException e1) {
-                        logger.error("Change directory failure, directory:{}", dir, e1);
+                        log.error("Change directory failure, directory:{}", dir, e1);
                         e1.printStackTrace();
                     }
                 }
@@ -205,7 +207,7 @@ public class SFTPService {
                 if (sftp.isConnected()) {
                     sftp.disconnect();
                 } else if (sftp.isClosed()) {
-                    logger.info("sftp is closed already");
+                    log.info("sftp is closed already");
                 }
                 if (null != sftp.getSession()) {
                     sftp.getSession().disconnect();
