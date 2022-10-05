@@ -4,6 +4,9 @@ public class AppConstants {
 
     public static final String DL_PATH_SEPARATOR = "/";
     public static final double FIRST_VERSION = 1.0;
+    public static final String PATH_TO_ICON = "./assets/images/svg/icons/";
+    public static final String ICON_EXTENSION = ".svg";
+
 
     public static class MimeType {
         public static final String MIME_PPT = "application/vnd.ms-powerpoint";
@@ -27,19 +30,18 @@ public class AppConstants {
         public static final String MIME_RAR = "application/x-rar-compressed";
         public static final String MIME_ZIP = "application/zip";
         public static final String MIME_7ZIP = "application/x-7z-compressed";
+        public static final String MIME_PSD = "application/photoshop";
+        public static final String MIME_SVG = "image/svg+xml";
     }
 
     public static class FileType {
         public static final String EXT_PPT = "ppt";
         public static final String EXT_PPTX = "pptx";
-        public static final String EXT_DOC = "doc";
-        public static final String EXT_DOCX = "docx";
         public static final String EXT_XLS = "xls";
         public static final String EXT_XLSX = "xlsx";
         public static final String EXT_PNG = "png";
         public static final String EXT_GIF = "gif";
         public static final String EXT_JPG = "jpg";
-        public static final String EXT_BMP = "bmp";
         public static final String EXT_JPEG = "jpeg";
         public static final String EXT_FLV = "flv";
         public static final String EXT_TXT = "txt";
@@ -49,8 +51,11 @@ public class AppConstants {
         public static final String EXT_SQL = "sql";
         public static final String EXT_RAR = "rar";
         public static final String EXT_ZIP = "zip";
-        public static final String EXT_7ZIP = "7z";
         public static final String EXT_SVG = "svg";
         public static final String EXT_PSD = "psd";
+        public static final String EXT_7ZIP = "7z";
+        public static final String EXT_BMP = "bmp";
+        public static final String EXT_DOC = "doc";
+        public static final String EXT_DOCX = "docx";
     }
 }

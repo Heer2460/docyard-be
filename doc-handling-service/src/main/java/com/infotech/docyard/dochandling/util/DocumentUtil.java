@@ -45,6 +45,10 @@ public class DocumentUtil {
             return AppConstants.MimeType.MIME_RAR;
         } else if (AppConstants.FileType.EXT_ZIP.equalsIgnoreCase(extension)) {
             return AppConstants.MimeType.MIME_ZIP;
+        } else if (AppConstants.FileType.EXT_PSD.equalsIgnoreCase(extension)) {
+            return AppConstants.MimeType.MIME_PSD;
+        } else if (AppConstants.FileType.EXT_SVG.equalsIgnoreCase(extension)) {
+            return AppConstants.MimeType.MIME_SVG;
         } else if (AppConstants.FileType.EXT_7ZIP.equalsIgnoreCase(extension)) {
             return AppConstants.MimeType.MIME_7ZIP;
         } else {
@@ -152,5 +156,15 @@ public class DocumentUtil {
             return true;
         }
         return false;
+    }
+
+    public static String getIconPath(String extension) {
+        if (AppUtility.isEmpty(extension)) {
+            return null;
+        }
+        String pathToIcon = AppConstants.PATH_TO_ICON;
+        extension = extension.toLowerCase();
+        extension = extension.concat(AppConstants.ICON_EXTENSION);
+        return pathToIcon.concat(extension);
     }
 }

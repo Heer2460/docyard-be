@@ -153,6 +153,7 @@ public class DLDocumentService {
                 doc.setParentId(request.getFolderId());
             }
             doc.setFolder(false);
+            doc.setIcon(DocumentUtil.getIconPath(doc.getExtension()));
             doc = dlDocumentRepository.save(doc);
             doc.setArchived(false);
             DLDocument folder = dlDocumentRepository.findByIdAndArchivedFalseAndFolderTrue(request.getFolderId());

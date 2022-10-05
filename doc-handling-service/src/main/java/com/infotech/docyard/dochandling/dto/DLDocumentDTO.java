@@ -14,6 +14,7 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
 
     private String title;
     private String size;
+    private String icon;
     private String mimeType;
     private String location;
     private String extension;
@@ -65,6 +66,7 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         dlDocument.setMimeType(this.mimeType);
         dlDocument.setSize(this.size);
         dlDocument.setTitle(this.title);
+        dlDocument.setIcon(this.icon);
         dlDocument.setCreatedOn(AppUtility.isEmpty(this.createdOn) ? ZonedDateTime.now() : this.createdOn);
         dlDocument.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
         dlDocument.setCreatedBy(this.getCreatedBy());
@@ -95,6 +97,7 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         this.mimeType = entity.getMimeType();
         this.size = entity.getSize();
         this.title = entity.getTitle();
+        this.icon = entity.getIcon();
         this.updatedOn = entity.getUpdatedOn();
         this.createdOn = entity.getCreatedOn();
         this.updatedBy = entity.getUpdatedBy();

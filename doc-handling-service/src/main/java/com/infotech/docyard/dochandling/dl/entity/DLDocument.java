@@ -86,6 +86,10 @@ public class DLDocument extends BaseEntity implements Serializable {
     @NotNull
     private String title;
 
+    @Column(name = "ICON")
+    @NotNull
+    private String icon;
+
     @OneToMany(mappedBy = "dlDocument", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DLDocumentComment> documentComments;
 
