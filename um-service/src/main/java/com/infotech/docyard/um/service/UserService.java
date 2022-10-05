@@ -2,9 +2,7 @@ package com.infotech.docyard.um.service;
 
 import com.infotech.docyard.um.dl.entity.*;
 import com.infotech.docyard.um.dl.repository.*;
-import com.infotech.docyard.um.dto.ChangePasswordDTO;
-import com.infotech.docyard.um.dto.ResetPasswordDTO;
-import com.infotech.docyard.um.dto.UserDTO;
+import com.infotech.docyard.um.dto.*;
 import com.infotech.docyard.um.enums.EmailStatusEnum;
 import com.infotech.docyard.um.enums.EmailTypeEnum;
 import com.infotech.docyard.um.exceptions.DataValidationException;
@@ -25,10 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.security.Principal;
 import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -374,7 +369,23 @@ public class UserService {
 
             List<Module> moduleList = moduleRepository.findAllById(moduleIds);
 
-            userDTO.setModuleList(moduleList);
+            List<ModuleDTO> moduleDTOList = getMenuList(moduleList);
+
+            for(ModuleDTO moduleDTO:moduleDTOList){
+                for(ModuleDTO children: moduleDTO.getChildren()){
+                    List<ModuleActionDTO> moduleActionDTOList = new ArrayList<>();
+                    for(ModuleAction moduleAction: moduleActionList){
+                        if(moduleAction.getModule().getId().equals(children.getModuleId())){
+                            ModuleActionDTO moduleActionDTO = new ModuleActionDTO();
+                            moduleActionDTO.convertToDTO(moduleAction,true);
+                            moduleActionDTOList.add(moduleActionDTO);
+                        }
+                    }
+                    children.setModuleActionDTOList(moduleActionDTOList);
+                }
+            }
+
+            userDTO.setModuleDTOList(moduleDTOList);
 
             userDTO.setModuleActionList(moduleActionList);
 
@@ -394,6 +405,59 @@ public class UserService {
         //String tokenValue = authHeader.replace("Bearer", "").trim();
         //OAuth2AccessToken accessToken = tokenStore.readAccessToken(tokenValue);
         //tokenStore.removeAccessToken(accessToken);
+    }
+
+    private List<ModuleDTO> getMenuList(List<Module> moduleList) {
+        List<Long> specificModuleIds = new ArrayList<>();
+        Map<Long, ModuleDTO> map = new HashMap<>();
+        for (Module m : moduleList) {
+            if (m.getSlug().equalsIgnoreCase("config")
+                    || m.getSlug().equalsIgnoreCase("report")) {
+                specificModuleIds.add(m.getId());
+            }
+            if (AppUtility.isEmpty(m.getParentId())) {
+                if (!map.containsKey(m.getParentId())) {
+                    map.put(m.getId(), new ModuleDTO().convertToNewDTO(m, false));
+                }
+            } else {
+                ModuleDTO parent = map.get(m.getParentId());
+                if (AppUtility.isEmpty(parent)) {
+                    parent = new ModuleDTO().convertToNewDTO(moduleRepository.findById(m.getParentId()).get(), true);
+                    map.put(m.getParentId(), parent);
+                }
+                if (AppUtility.isEmpty(parent.getChildren())) {
+                    parent.setChildren(new ArrayList<>());
+                }
+                parent.getChildren().add(new ModuleDTO().convertToNewDTO(m, false));
+            }
+        }
+        for (Long moduleId : specificModuleIds) {
+            ModuleDTO refModuleDTO = map.get(moduleId);
+            if (!AppUtility.isEmpty(refModuleDTO)) {
+                refModuleDTO.setChildren(new ArrayList<>());
+                List<Module> refChildModuleList = moduleRepository.findAllByParentId(moduleId);
+                for (Module m : refChildModuleList) {
+                    ModuleDTO firstParent = new ModuleDTO().convertToNewDTO(m, false);
+                    refModuleDTO.getChildren().add(firstParent);
+                    List<Module> refChildModList = moduleRepository.findAllByParentId(m.getId());
+                    for (Module mod : refChildModList) {
+                        ModuleDTO child = new ModuleDTO();
+                        child.convertToDTO(mod, false);
+                        if (AppUtility.isEmpty(child.getChildren())) {
+                            child.setChildren(new ArrayList<>());
+                        }
+                        child.getChildren().add(new ModuleDTO().convertToNewDTO(mod, false));
+                        if (AppUtility.isEmpty(firstParent.getChildren())) {
+                            firstParent.setChildren(new ArrayList<>());
+                        }
+                        firstParent.getChildren().add(child);
+                    }
+                }
+            }
+            List<ModuleDTO> sortedList = refModuleDTO.getChildren().stream().sorted(Comparator.comparing(ModuleDTO::getSeq)).collect(Collectors.toList());
+            refModuleDTO.setChildren(sortedList);
+        }
+        return new ArrayList<>(map.values());
     }
 
 }

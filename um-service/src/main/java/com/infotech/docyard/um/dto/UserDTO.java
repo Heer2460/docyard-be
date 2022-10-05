@@ -41,7 +41,7 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
     private Boolean passwordExpired;
     private String passwordResetToken;
     private List<ModuleAction> moduleActionList;
-    private List<Module> moduleList;
+    private List<ModuleDTO> moduleDTOList;
 
 
     public UserDTO() {
