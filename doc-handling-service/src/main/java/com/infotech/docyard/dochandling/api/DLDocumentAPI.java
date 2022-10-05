@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.QueryParam;
 import java.util.List;
 
 @RestController
@@ -33,13 +32,14 @@ public class DLDocumentAPI {
                                                               @RequestParam(value = "archived") Boolean archived) throws CustomException {
         log.info("getAllDLDocumentsByFolderAndArchive API initiated...");
 
-        List<DLDocument> documents = null;
+        List<DLDocumentDTO> documentDTOList = null;
         try {
-            documents = documentService.getDocumentsByFolderIdAndArchive(folderId, archived);
+            documentDTOList = documentService.getDocumentsByFolderIdAndArchive(folderId, archived);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return ResponseUtility.buildResponseList(documents, new DLDocumentDTO());
+        return ResponseUtility
+                .buildResponseList(documentDTOList);
     }
 
     @RequestMapping(value = "/recent/owner/{ownerId}", method = RequestMethod.GET)
@@ -76,9 +76,9 @@ public class DLDocumentAPI {
     }
 
     @RequestMapping(value = "/{dlDocumentId}/", method = RequestMethod.PUT)
-    public CustomResponse updateFavorite (HttpServletRequest request,
-                                          @PathVariable(value = "dlDocumentId") Long dlDocumentId,
-                                          @RequestParam(name = "favourite") Boolean favourite)
+    public CustomResponse updateFavorite(HttpServletRequest request,
+                                         @PathVariable(value = "dlDocumentId") Long dlDocumentId,
+                                         @RequestParam(name = "favourite") Boolean favourite)
             throws CustomException, DataValidationException, NoDataFoundException {
         log.info("updateFavorite API initiated...");
 
