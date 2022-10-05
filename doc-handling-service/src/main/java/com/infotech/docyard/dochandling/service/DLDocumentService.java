@@ -27,6 +27,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileInputStream;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.*;
 
 @Service
@@ -288,6 +292,7 @@ public class DLDocumentService {
         DLDocument folder = new DLDocument();
         folder.setName(folderRequestDTO.getName().trim());
         folder.setTitle(folderRequestDTO.getName().trim());
+        folder.setFolder(true);
         folder.setArchived(false);
         folder.setArchivedOn(null);
         folder.setParentId(folderRequestDTO.getParentId());
@@ -296,6 +301,28 @@ public class DLDocumentService {
         folder.setCreatedOn(ZonedDateTime.now());
         folder = dlDocumentRepository.save(folder);
 
+        DLDocumentActivity activity = new DLDocumentActivity(folder.getCreatedBy(), DLActivityTypeEnum.CREATED.getValue(),
+                folder.getId(), folder.getId());
+        activity.setCreatedOn(ZonedDateTime.now());
+        dlDocumentActivityRepository.save(activity);
+
         return folder;
+    }
+
+    public DLDocument archiveDlDocument(Long dlDocumentId, Boolean archive) {
+        log.info("archiveDlDocument method called..");
+
+        Optional<DLDocument> Opdoc = dlDocumentRepository.findById(dlDocumentId);
+        DLDocument doc = null;
+        if (!AppUtility.isEmpty(dlDocumentId)) {
+            doc = Opdoc.get();
+            doc.setArchived(archive);
+            dlDocumentRepository.save(doc);
+        }
+        DLDocumentActivity activity = new DLDocumentActivity(doc.getCreatedBy(), DLActivityTypeEnum.ARCHIVED.getValue(),
+                doc.getId(), doc.getId());
+        activity.setCreatedOn(ZonedDateTime.now());
+        dlDocumentActivityRepository.save(activity);
+        return doc;
     }
 }

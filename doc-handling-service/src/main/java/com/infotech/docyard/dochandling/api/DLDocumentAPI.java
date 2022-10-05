@@ -90,4 +90,23 @@ public class DLDocumentAPI {
         }
         return ResponseUtility.buildResponseObject(dlDocument, new DLDocumentDTO(), true);
     }
+
+    @RequestMapping(value = "/archive/{dlDocumentId}", method = RequestMethod.PUT)
+    public CustomResponse archiveDlDocument(HttpServletRequest request,
+                                            @PathVariable(value = "dlDocumentId") Long dlDocumentId,
+                                            @RequestParam(value = "archive") Boolean archive)
+            throws DataValidationException, NoDataFoundException, CustomException {
+        log.info("archiveDlDocument API initiated...");
+
+        DLDocument dlDocument = null;
+        if (AppUtility.isEmpty(dlDocumentId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
+        }
+        try {
+            dlDocument = documentService.archiveDlDocument(dlDocumentId, archive);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.successResponseForPut(dlDocument, "Document Archived");
+    }
 }
