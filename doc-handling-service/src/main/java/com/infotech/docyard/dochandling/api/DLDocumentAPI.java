@@ -28,7 +28,7 @@ public class DLDocumentAPI {
     @Autowired
     private DLDocumentService documentService;
 
-    @RequestMapping(value = "/", method = RequestMethod.POST)
+    @RequestMapping(value = "/upload", method = RequestMethod.POST)
     public CustomResponse uploadDocuments(HttpServletRequest request,
                                           @RequestPart("reqObj") UploadDocumentDTO uploadDocumentDTO,
                                           @RequestPart(name = "doc") MultipartFile[] files)

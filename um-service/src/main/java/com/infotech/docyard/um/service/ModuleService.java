@@ -31,7 +31,7 @@ public class ModuleService {
         List<Long> specificModuleIds = new ArrayList<>();
         Map<Long, ModuleDTO> map = new HashMap<>();
         for (Module m : moduleList) {
-            if (m.getSlug().equalsIgnoreCase("com.infotech.dms.gateway.config")
+            if (m.getSlug().equalsIgnoreCase("com.infotech.docyard.gateway.config")
                     || m.getSlug().equalsIgnoreCase("report")) {
                 specificModuleIds.add(m.getId());
             }

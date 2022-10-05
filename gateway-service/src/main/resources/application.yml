@@ -2,7 +2,7 @@ server:
   port: 8080
 spring:
   application:
-    name: GATEWAY
+    name: gateway-service
   main:
     web-application-type: reactive
   cloud:
@@ -14,8 +14,8 @@ spring:
             allowedHeaders: "*"
             allowedMethods: "*"
       routes:
-        - id: UM-SERVICE
-          uri: lb://UM-SERVICE
+        - id: um-service
+          uri: lb://um-service
           predicates:
             - Path=/um/**
           filters:
@@ -24,6 +24,10 @@ spring:
           uri: lb://authentication-service
           predicates:
             - Path=/oauth/**
+        - id: doc-handling-service
+          uri: lb://doc-handling-service
+          predicates:
+            - Path=/dl/**
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
     discovery:
