@@ -47,4 +47,21 @@ public class DLDocumentAPI {
         return ResponseUtility.buildResponseObject(dlDocument, new DLDocumentDTO(), true);
     }
 
+    @RequestMapping(value = "/folder", method = RequestMethod.POST)
+    public CustomResponse createFolder(HttpServletRequest request,
+                                       @RequestPart("reqObj") DLDocumentDTO folderRequestDTO,
+                                       @RequestPart("parentFolderId") Long parentFolderId)
+            throws CustomException, DataValidationException, NoDataFoundException {
+        log.info("createFolder API initiated...");
+        if (AppUtility.isEmpty(parentFolderId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
+        DLDocument dlDocument = null;
+        try {
+            dlDocument = documentService.createFolder(folderRequestDTO, parentFolderId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.buildResponseObject(dlDocument, new DLDocumentDTO(), true);
+    }
 }
