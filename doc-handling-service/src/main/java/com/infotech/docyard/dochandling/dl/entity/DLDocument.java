@@ -38,10 +38,6 @@ public class DLDocument extends BaseEntity implements Serializable {
     @Column(name = "IS_FAVOURITE", columnDefinition = "boolean default false")
     private Boolean favourite;
 
-    @Column(name = "GUID")
-    @NotNull
-    private String guId;
-
     @Column(name = "VERSION")
     private Double version;
 

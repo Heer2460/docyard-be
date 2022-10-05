@@ -11,7 +11,7 @@ import java.io.Serializable;
 
 @Data
 @Entity
-@Table(name = "DL_DOCUMENTS_VERSIONS")
+@Table(name = "DL_DOCUMENT_VERSIONS")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @EqualsAndHashCode(callSuper = false)
 public class DLDocumentVersion extends BaseEntity implements Serializable {
