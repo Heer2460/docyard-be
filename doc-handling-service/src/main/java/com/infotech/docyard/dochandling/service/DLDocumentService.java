@@ -44,14 +44,29 @@ public class DLDocumentService {
     @Autowired
     private RestTemplate restTemplate;
 
-    public List<DLDocument> getDocumentsByFolderIdAndArchive(Long folderId, Boolean archived) {
+    public List<DLDocumentDTO> getDocumentsByFolderIdAndArchive(Long folderId, Boolean archived) {
         log.info("DLDocumentService - getDocumentsByFolderIdAndArchive method called...");
 
+        List<DLDocumentDTO> documentDTOList = new ArrayList<>();
+        List<DLDocument> dlDocumentList = new ArrayList<>();
         if (AppUtility.isEmpty(folderId)) {
-            return dlDocumentRepository.findByParentIdIsNullAndArchivedOrderByUpdatedOnAsc(archived);
+            dlDocumentList = dlDocumentRepository.findByParentIdIsNullAndArchivedOrderByUpdatedOnAsc(archived);
+        } else {
+            dlDocumentList = dlDocumentRepository.findByParentIdAndArchivedOrderByUpdatedOnAsc(folderId, archived);
         }
-        return dlDocumentRepository.findByParentIdAndArchivedOrderByUpdatedOnAsc(folderId, archived);
+        for (DLDocument dlDoc : dlDocumentList) {
+            DLDocumentDTO dto = new DLDocumentDTO();
+            dto.convertToDTO(dlDoc, false);
 
+            Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDoc.getCreatedBy(), Object.class);
+            if (!AppUtility.isEmpty(response)) {
+                HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+                dto.setCreatedByName((String) map.get("name"));
+                dto.setUpdatedByName((String) map.get("name"));
+            }
+            documentDTOList.add(dto);
+        }
+        return documentDTOList;
     }
 
     @Transactional(rollbackFor = {Throwable.class})
