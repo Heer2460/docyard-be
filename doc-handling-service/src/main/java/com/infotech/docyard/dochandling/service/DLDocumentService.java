@@ -8,13 +8,11 @@ import com.infotech.docyard.dochandling.dl.repository.DLDocumentRepository;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentVersionRepository;
 import com.infotech.docyard.dochandling.dto.DLDocumentDTO;
 import com.infotech.docyard.dochandling.dto.UploadDocumentDTO;
-import com.infotech.docyard.dochandling.dto.UserDTO;
 import com.infotech.docyard.dochandling.enums.DLActivityTypeEnum;
 import com.infotech.docyard.dochandling.enums.FileTypeEnum;
 import com.infotech.docyard.dochandling.enums.FileViewerEnum;
 import com.infotech.docyard.dochandling.util.AppConstants;
 import com.infotech.docyard.dochandling.util.AppUtility;
-import com.infotech.docyard.dochandling.util.CustomResponse;
 import com.infotech.docyard.dochandling.util.DocumentUtil;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
@@ -54,6 +52,24 @@ public class DLDocumentService {
         }
         return dlDocumentRepository.findByParentIdAndArchivedOrderByUpdatedOnAsc(folderId, archived);
 
+    }
+
+    @Transactional(rollbackFor = {Throwable.class})
+    public DLDocument updateFavourite(Long dlDocumentId, Boolean favourite) {
+        log.info("DLDocumentService - updateFavourite method called...");
+
+        Optional<DLDocument> optionalDLDocument = dlDocumentRepository.findById(dlDocumentId);
+        DLDocument dlDocument = null;
+        if (!AppUtility.isEmpty(optionalDLDocument)) {
+            dlDocument = optionalDLDocument.get();
+            dlDocument.setFavourite(favourite);
+        }
+        dlDocument = dlDocumentRepository.save(dlDocument);
+        DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.UPLOADED.getValue(),
+                dlDocument.getId(), dlDocument.getId());
+        activity.setCreatedOn(ZonedDateTime.now());
+        dlDocumentActivityRepository.save(activity);
+        return dlDocument;
     }
 
     public List<DLDocumentDTO> getAllRecentDLDocumentByOwnerId(Long ownerId) {
@@ -115,6 +131,7 @@ public class DLDocumentService {
         }
         return dlDoc;
     }
+
 
     public DLDocumentVersion createNewDocumentVersion(DLDocument document, Long userId) {
         log.info("DLDocumentService - createNewDocumentVersion method called...");

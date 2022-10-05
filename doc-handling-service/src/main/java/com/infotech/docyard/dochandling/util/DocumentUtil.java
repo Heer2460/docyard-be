@@ -45,6 +45,10 @@ public class DocumentUtil {
             return AppConstants.MimeType.MIME_RAR;
         } else if (AppConstants.FileType.EXT_ZIP.equalsIgnoreCase(extension)) {
             return AppConstants.MimeType.MIME_ZIP;
+        } else if (AppConstants.FileType.EXT_PSD.equalsIgnoreCase(extension)) {
+            return AppConstants.MimeType.MIME_PSD;
+        } else if (AppConstants.FileType.EXT_SVG.equalsIgnoreCase(extension)) {
+            return AppConstants.MimeType.MIME_SVG;
         } else if (AppConstants.FileType.EXT_7ZIP.equalsIgnoreCase(extension)) {
             return AppConstants.MimeType.MIME_7ZIP;
         } else {
