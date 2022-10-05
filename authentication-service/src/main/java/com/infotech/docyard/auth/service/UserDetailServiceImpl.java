@@ -18,8 +18,6 @@ import org.springframework.stereotype.Service;
 @Service("userDetailsService")
 public class UserDetailServiceImpl implements UserDetailsService {
 
-//    @Autowired
-//    private RestTemplate restTemplate;
     @Autowired
     private UserRepository userRepository;
 
@@ -49,10 +47,6 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-//        User  user =
-//                restTemplate.getForObject("http://UM-SERVICE/user/username/" + username
-//                        ,User.class);
-
         User user = userRepository.findByUsername(username);
         if (!AppUtility.isEmpty(user)) {
             return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(),

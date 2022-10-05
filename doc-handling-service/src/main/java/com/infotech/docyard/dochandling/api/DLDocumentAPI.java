@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.QueryParam;
 import java.util.List;
 
 @RestController
@@ -38,7 +39,21 @@ public class DLDocumentAPI {
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return ResponseUtility.buildResponseList(documents);
+        return ResponseUtility.buildResponseList(documents, new DLDocumentDTO());
+    }
+
+    @RequestMapping(value = "/recent/owner/{ownerId}", method = RequestMethod.GET)
+    public CustomResponse getAllRecentDLDocumentByOwnerId(HttpServletRequest request,
+                                                          @PathVariable(value = "ownerId") Long ownerId) throws CustomException {
+        log.info("getAllRecentDLDocumentByOwnerId API initiated...");
+
+        List<DLDocumentDTO> documentDTOList = null;
+        try {
+            documentDTOList = documentService.getAllRecentDLDocumentByOwnerId(ownerId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.buildResponseList(documentDTOList);
     }
 
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
@@ -60,15 +75,16 @@ public class DLDocumentAPI {
         return ResponseUtility.buildResponseObject(dlDocument, new DLDocumentDTO(), true);
     }
 
-    @RequestMapping(value = "/folder", method = RequestMethod.POST)
-    public CustomResponse createFolder(HttpServletRequest request,
-                                       @RequestBody DLDocumentDTO folderRequestDTO)
+    @RequestMapping(value = "/{dlDocumentId}/", method = RequestMethod.PUT)
+    public CustomResponse updateFavorite (HttpServletRequest request,
+                                          @PathVariable(value = "dlDocumentId") Long dlDocumentId,
+                                          @RequestParam(name = "favourite") Boolean favourite)
             throws CustomException, DataValidationException, NoDataFoundException {
-        log.info("createFolder API initiated...");
+        log.info("updateFavorite API initiated...");
 
         DLDocument dlDocument = null;
         try {
-            dlDocument = documentService.createFolder(folderRequestDTO);
+            dlDocument = documentService.updateFavourite(dlDocumentId, favourite);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
