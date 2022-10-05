@@ -10,7 +10,7 @@ import java.io.Serializable;
 
 @Data
 @Entity
-@Table(name = "DL_DOCUMENTS_ACTIVITIES")
+@Table(name = "DL_DOCUMENT_ACTIVITIES")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @EqualsAndHashCode(callSuper = false)
 public class DLDocumentActivity extends BaseEntity implements Serializable {
