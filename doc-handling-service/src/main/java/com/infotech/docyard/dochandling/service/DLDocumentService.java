@@ -10,6 +10,7 @@ import com.infotech.docyard.dochandling.dto.UploadDocumentDTO;
 import com.infotech.docyard.dochandling.enums.DLActivityTypeEnum;
 import com.infotech.docyard.dochandling.enums.FileTypeEnum;
 import com.infotech.docyard.dochandling.enums.FileViewerEnum;
+import com.infotech.docyard.dochandling.exceptions.DataValidationException;
 import com.infotech.docyard.dochandling.util.AppConstants;
 import com.infotech.docyard.dochandling.util.AppUtility;
 import com.infotech.docyard.dochandling.util.DocumentUtil;
@@ -27,6 +28,7 @@ import java.io.FileInputStream;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -42,7 +44,7 @@ public class DLDocumentService {
     @Autowired
     private DLDocumentActivityRepository dlDocumentActivityRepository;
 
-    public List<DLDocument> getDocumentsByFolderIdAndArchive(Long folderId, Boolean archived) {
+    public List<DLDocument> getDocumentsByFolderIdAndArchive (Long folderId, Boolean archived) {
         log.info("DLDocumentService - getDocumentsByFolderIdAndArchive method called...");
 
         if (AppUtility.isEmpty(folderId)) {
@@ -50,6 +52,24 @@ public class DLDocumentService {
         }
         return dlDocumentRepository.findByParentIdAndArchivedOrderByUpdatedOnAsc(folderId, archived);
 
+    }
+
+    @Transactional(rollbackFor = {Throwable.class})
+    public DLDocument updateFavourite(Long dlDocumentId, Boolean favourite) {
+        log.info("DLDocumentService - updateFavourite method called...");
+
+        Optional<DLDocument> optionalDLDocument = dlDocumentRepository.findById(dlDocumentId);
+        DLDocument dlDocument = null;
+        if (!AppUtility.isEmpty(optionalDLDocument)) {
+            dlDocument = optionalDLDocument.get();
+            dlDocument.setFavourite(favourite);
+        }
+        dlDocument = dlDocumentRepository.save(dlDocument);
+        DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.UPLOADED.getValue(),
+                dlDocument.getId(), dlDocument.getId());
+        activity.setCreatedOn(ZonedDateTime.now());
+        dlDocumentActivityRepository.save(activity);
+        return dlDocument;
     }
 
     @Transactional(rollbackFor = {Throwable.class})
@@ -90,6 +110,7 @@ public class DLDocumentService {
         }
         return dlDoc;
     }
+
 
     public DLDocumentVersion createNewDocumentVersion(DLDocument document, Long userId) {
         log.info("DLDocumentService - createNewDocumentVersion method called...");
