@@ -157,14 +157,4 @@ public class DocumentUtil {
         }
         return false;
     }
-
-    public static String getIconPath(String extension) {
-        if (AppUtility.isEmpty(extension)) {
-            return null;
-        }
-        String pathToIcon = AppConstants.PATH_TO_ICON;
-        extension = extension.toLowerCase();
-        extension = extension.concat(AppConstants.ICON_EXTENSION);
-        return pathToIcon.concat(extension);
-    }
 }

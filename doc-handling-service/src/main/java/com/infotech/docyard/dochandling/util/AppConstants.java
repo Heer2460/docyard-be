@@ -4,9 +4,6 @@ public class AppConstants {
 
     public static final String DL_PATH_SEPARATOR = "/";
     public static final double FIRST_VERSION = 1.0;
-    public static final String PATH_TO_ICON = "./assets/images/svg/icons/";
-    public static final String ICON_EXTENSION = ".svg";
-
 
     public static class MimeType {
         public static final String MIME_PPT = "application/vnd.ms-powerpoint";
