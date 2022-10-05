@@ -6,6 +6,7 @@ import com.infotech.docyard.dochandling.dl.entity.DLDocumentVersion;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentActivityRepository;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentRepository;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentVersionRepository;
+import com.infotech.docyard.dochandling.dto.DLDocumentDTO;
 import com.infotech.docyard.dochandling.dto.UploadDocumentDTO;
 import com.infotech.docyard.dochandling.enums.DLActivityTypeEnum;
 import com.infotech.docyard.dochandling.enums.FileTypeEnum;
@@ -244,6 +245,22 @@ public class DLDocumentService {
                 Exception e) {
             e.printStackTrace();
         }
+    }
 
+    public DLDocument createFolder(DLDocumentDTO folderRequestDTO) {
+        log.info("DLDocumentService - createFolder method called...");
+
+        DLDocument folder = new DLDocument();
+        folder.setName(folderRequestDTO.getName().trim());
+        folder.setTitle(folderRequestDTO.getName().trim());
+        folder.setArchived(false);
+        folder.setArchivedOn(null);
+        folder.setParentId(folderRequestDTO.getParentId());
+        folder.setLeafNode(false);
+        folder.setCreatedBy(folderRequestDTO.getCreatedBy());
+        folder.setCreatedOn(ZonedDateTime.now());
+        folder = dlDocumentRepository.save(folder);
+
+        return folder;
     }
 }
