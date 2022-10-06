@@ -22,6 +22,7 @@ import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.*;
 
 @Service
 @Log4j2
@@ -44,15 +46,32 @@ public class DLDocumentService {
     private FTPService ftpService;
     @Autowired
     private DLDocumentActivityRepository dlDocumentActivityRepository;
+    @Autowired
+    private RestTemplate restTemplate;
 
-    public List<DLDocument> getDocumentsByFolderIdAndArchive (Long folderId, Boolean archived) {
+    public List<DLDocumentDTO> getDocumentsByFolderIdAndArchive(Long folderId, Boolean archived) {
         log.info("DLDocumentService - getDocumentsByFolderIdAndArchive method called...");
 
+        List<DLDocumentDTO> documentDTOList = new ArrayList<>();
+        List<DLDocument> dlDocumentList = new ArrayList<>();
         if (AppUtility.isEmpty(folderId)) {
-            return dlDocumentRepository.findByParentIdIsNullAndArchivedOrderByUpdatedOnAsc(archived);
+            dlDocumentList = dlDocumentRepository.findByParentIdIsNullAndArchivedOrderByUpdatedOnAsc(archived);
+        } else {
+            dlDocumentList = dlDocumentRepository.findByParentIdAndArchivedOrderByUpdatedOnAsc(folderId, archived);
         }
-        return dlDocumentRepository.findByParentIdAndArchivedOrderByUpdatedOnAsc(folderId, archived);
+        for (DLDocument dlDoc : dlDocumentList) {
+            DLDocumentDTO dto = new DLDocumentDTO();
+            dto.convertToDTO(dlDoc, false);
 
+            Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDoc.getCreatedBy(), Object.class);
+            if (!AppUtility.isEmpty(response)) {
+                HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+                dto.setCreatedByName((String) map.get("name"));
+                dto.setUpdatedByName((String) map.get("name"));
+            }
+            documentDTOList.add(dto);
+        }
+        return documentDTOList;
     }
 
     @Transactional(rollbackFor = {Throwable.class})
@@ -71,6 +90,27 @@ public class DLDocumentService {
         activity.setCreatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
         return dlDocument;
+    }
+
+    public List<DLDocumentDTO> getAllRecentDLDocumentByOwnerId(Long ownerId) {
+        log.info("DLDocumentService - getAllRecentDLDocumentByOwnerId method called...");
+
+        List<DLDocumentDTO> documentDTOList = new ArrayList<>();
+        ZonedDateTime fromDate = ZonedDateTime.now().minusDays(7), toDate = ZonedDateTime.now();
+        List<DLDocument> recentDocs = dlDocumentRepository.findTop8ByCreatedByAndArchivedFalseAndFolderFalseAndCreatedOnBetweenOrderByUpdatedOnAsc(ownerId, fromDate, toDate);
+        for (DLDocument doc : recentDocs) {
+            DLDocumentDTO dto = new DLDocumentDTO();
+            dto.convertToDTO(doc, false);
+
+            Object response = restTemplate.getForObject("http://um-service/um/user/" + ownerId, Object.class);
+            if (!AppUtility.isEmpty(response)) {
+                HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+                dto.setCreatedByName((String) map.get("name"));
+                dto.setUpdatedByName((String) map.get("name"));
+            }
+            documentDTOList.add(dto);
+        }
+        return documentDTOList;
     }
 
     @Transactional(rollbackFor = {Throwable.class})
@@ -253,6 +293,7 @@ public class DLDocumentService {
         DLDocument folder = new DLDocument();
         folder.setName(folderRequestDTO.getName().trim());
         folder.setTitle(folderRequestDTO.getName().trim());
+        folder.setFolder(true);
         folder.setArchived(false);
         folder.setArchivedOn(null);
         folder.setParentId(folderRequestDTO.getParentId());
@@ -261,7 +302,29 @@ public class DLDocumentService {
         folder.setCreatedOn(ZonedDateTime.now());
         folder = dlDocumentRepository.save(folder);
 
+        DLDocumentActivity activity = new DLDocumentActivity(folder.getCreatedBy(), DLActivityTypeEnum.CREATED.getValue(),
+                folder.getId(), folder.getId());
+        activity.setCreatedOn(ZonedDateTime.now());
+        dlDocumentActivityRepository.save(activity);
+
         return folder;
+    }
+
+    public DLDocument archiveDlDocument(Long dlDocumentId, Boolean archive) {
+        log.info("archiveDlDocument method called..");
+
+        Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
+        DLDocument doc = null;
+        if (opDoc.isPresent()) {
+            doc = opDoc.get();
+            doc.setArchived(archive);
+            dlDocumentRepository.save(doc);
+        }
+        DLDocumentActivity activity = new DLDocumentActivity(doc.getCreatedBy(), DLActivityTypeEnum.ARCHIVED.getValue(),
+                doc.getId(), doc.getId());
+        activity.setCreatedOn(ZonedDateTime.now());
+        dlDocumentActivityRepository.save(activity);
+        return doc;
     }
 
     public void deleteDLDocument(Long dlDocumentId) throws Exception {
