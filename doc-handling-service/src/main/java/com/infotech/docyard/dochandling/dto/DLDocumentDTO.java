@@ -25,6 +25,7 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
     private String name;
     private Boolean isLeafNode;
     private String versionGUId;
+    private String guId;
     private Double version;
     private Boolean isFavourite;
     private String description;
@@ -54,6 +55,7 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         dlDocument.setDescription(this.description);
         dlDocument.setFavourite(this.isFavourite);
         dlDocument.setVersion(this.version);
+        dlDocument.setGuId(this.guId);
         dlDocument.setVersionGUId(this.versionGUId);
         dlDocument.setLeafNode(this.isLeafNode);
         dlDocument.setName(this.name);
@@ -84,6 +86,7 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         this.description = entity.getDescription();
         this.isFavourite = entity.getFavourite();
         this.version = entity.getVersion();
+        this.guId = entity.getGuId();
         this.versionGUId = entity.getVersionGUId();
         this.isLeafNode = entity.getLeafNode();
         this.name = entity.getName();

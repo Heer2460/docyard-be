@@ -71,6 +71,7 @@ public class FTPService {
         FTPClient ftpClient = createFtp();
         targetPath = "/" + targetPath;
         try {
+            ftpClient.printWorkingDirectory();
             FTPFile[] subFiles = ftpClient.listFiles();
             FTPFile[] subDirs = ftpClient.listDirectories();
 
