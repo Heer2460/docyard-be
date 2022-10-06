@@ -53,8 +53,8 @@ public class DLDocumentService {
         log.info("DLDocumentService - getDocumentsByFolderIdAndArchive method called...");
 
         List<DLDocumentDTO> documentDTOList = new ArrayList<>();
-        List<DLDocument> dlDocumentList = new ArrayList<>();
-        if (AppUtility.isEmpty(folderId)) {
+        List<DLDocument> dlDocumentList;
+        if (AppUtility.isEmpty(folderId) || folderId == 0L) {
             dlDocumentList = dlDocumentRepository.findByParentIdIsNullAndArchivedOrderByUpdatedOnAsc(archived);
         } else {
             dlDocumentList = dlDocumentRepository.findByParentIdAndArchivedOrderByUpdatedOnAsc(folderId, archived);
@@ -292,7 +292,7 @@ public class DLDocumentService {
 
         DLDocument folder = new DLDocument();
         folder.setName(folderRequestDTO.getName().trim());
-        folder.setTitle(folderRequestDTO.getName().trim());
+        folder.setTitle(folderRequestDTO.getTitle().trim());
         folder.setFolder(true);
         folder.setArchived(false);
         folder.setArchivedOn(null);
@@ -306,7 +306,6 @@ public class DLDocumentService {
                 folder.getId(), folder.getId());
         activity.setCreatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
-
         return folder;
     }
 
