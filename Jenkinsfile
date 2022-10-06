@@ -3,8 +3,8 @@ pipeline {
 
     stages {
         stage('Build') {
-            steps {
-                echo 'Build App'
+            steps { 
+               sh "mvn clean install" 
             }
         }
    stage('Test') {
