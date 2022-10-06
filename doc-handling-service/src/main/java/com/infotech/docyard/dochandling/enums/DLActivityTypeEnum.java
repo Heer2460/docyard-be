@@ -8,7 +8,8 @@ public enum DLActivityTypeEnum {
     FILE_VIEWED("FILE_VIEWED"),
     UPLOADED("UPLOADED"),
     DOWNLOADED("DOWNLOADED"),
-    CREATED("CREATED");
+    CREATED("CREATED"),
+    ARCHIVED("ARCHIVED");
 
     private static HashMap<String, DLActivityTypeEnum> map = new HashMap<>();
 

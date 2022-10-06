@@ -36,13 +36,15 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
     private List<Long> documentActivityIds;
     private List<Long> documentCommentIds;
     private List<Long> documentTagIds;
+    private String createdByName;
+    private String updatedByName;
 
     public DLDocumentDTO() {
 
     }
 
     @Override
-    public DLDocument convertToEntity() throws IOException {
+    public DLDocument convertToEntity() {
         DLDocument dlDocument = new DLDocument();
         dlDocument.setId(this.id);
         dlDocument.setParentId(this.parentId);

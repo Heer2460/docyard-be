@@ -32,13 +32,28 @@ public class DLDocumentAPI {
                                                               @RequestParam(value = "archived") Boolean archived) throws CustomException {
         log.info("getAllDLDocumentsByFolderAndArchive API initiated...");
 
-        List<DLDocument> documents = null;
+        List<DLDocumentDTO> documentDTOList = null;
         try {
-            documents = documentService.getDocumentsByFolderIdAndArchive(folderId, archived);
+            documentDTOList = documentService.getDocumentsByFolderIdAndArchive(folderId, archived);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return ResponseUtility.buildResponseList(documents);
+        return ResponseUtility
+                .buildResponseList(documentDTOList);
+    }
+
+    @RequestMapping(value = "/recent/owner/{ownerId}", method = RequestMethod.GET)
+    public CustomResponse getAllRecentDLDocumentByOwnerId(HttpServletRequest request,
+                                                          @PathVariable(value = "ownerId") Long ownerId) throws CustomException {
+        log.info("getAllRecentDLDocumentByOwnerId API initiated...");
+
+        List<DLDocumentDTO> documentDTOList = null;
+        try {
+            documentDTOList = documentService.getAllRecentDLDocumentByOwnerId(ownerId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.buildResponseList(documentDTOList);
     }
 
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
@@ -60,18 +75,38 @@ public class DLDocumentAPI {
         return ResponseUtility.buildResponseObject(dlDocument, new DLDocumentDTO(), true);
     }
 
-    @RequestMapping(value = "/folder", method = RequestMethod.POST)
-    public CustomResponse createFolder(HttpServletRequest request,
-                                       @RequestBody DLDocumentDTO folderRequestDTO)
+    @RequestMapping(value = "/{dlDocumentId}/", method = RequestMethod.PUT)
+    public CustomResponse updateFavorite(HttpServletRequest request,
+                                         @PathVariable(value = "dlDocumentId") Long dlDocumentId,
+                                         @RequestParam(name = "favourite") Boolean favourite)
             throws CustomException, DataValidationException, NoDataFoundException {
-        log.info("createFolder API initiated...");
+        log.info("updateFavorite API initiated...");
 
         DLDocument dlDocument = null;
         try {
-            dlDocument = documentService.createFolder(folderRequestDTO);
+            dlDocument = documentService.updateFavourite(dlDocumentId, favourite);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
         return ResponseUtility.buildResponseObject(dlDocument, new DLDocumentDTO(), true);
+    }
+
+    @RequestMapping(value = "/archive/{dlDocumentId}", method = RequestMethod.PUT)
+    public CustomResponse archiveDlDocument(HttpServletRequest request,
+                                            @PathVariable(value = "dlDocumentId") Long dlDocumentId,
+                                            @RequestParam(value = "archive") Boolean archive)
+            throws DataValidationException, NoDataFoundException, CustomException {
+        log.info("archiveDlDocument API initiated...");
+
+        DLDocument dlDocument = null;
+        if (AppUtility.isEmpty(dlDocumentId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
+        }
+        try {
+            dlDocument = documentService.archiveDlDocument(dlDocumentId, archive);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.successResponseForPut(dlDocument, "Document Archived");
     }
 }

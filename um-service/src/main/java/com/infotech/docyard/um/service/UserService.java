@@ -1,6 +1,7 @@
 package com.infotech.docyard.um.service;
 
 import com.infotech.docyard.um.dl.entity.*;
+import com.infotech.docyard.um.dl.entity.Module;
 import com.infotech.docyard.um.dl.repository.*;
 import com.infotech.docyard.um.dto.*;
 import com.infotech.docyard.um.enums.EmailStatusEnum;
