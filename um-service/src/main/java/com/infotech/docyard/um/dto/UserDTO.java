@@ -132,6 +132,7 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
         this.createdOn = entity.getCreatedOn();
         this.updatedBy = entity.getUpdatedBy();
         this.createdBy = entity.getCreatedBy();
+        this.password = entity.getPassword();
     }
 
     @Override
