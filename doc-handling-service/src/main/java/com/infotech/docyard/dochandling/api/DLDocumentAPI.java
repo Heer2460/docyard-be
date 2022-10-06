@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.QueryParam;
 import java.util.List;
 
 @RestController
@@ -75,5 +74,19 @@ public class DLDocumentAPI {
             ResponseUtility.exceptionResponse(e);
         }
         return ResponseUtility.buildResponseObject(dlDocument, new DLDocumentDTO(), true);
+    }
+
+    @RequestMapping(value = "/{dlDocumentId}", method = RequestMethod.DELETE)
+    public CustomResponse deleteDocument (HttpServletRequest request,
+                                          @PathVariable(value = "dlDocumentId") Long dlDocumentId)
+            throws CustomException, DataValidationException, NoDataFoundException {
+        log.info("deleteDocument API initiated...");
+
+        try {
+            documentService.deleteDLDocument(dlDocumentId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.deleteSuccessResponse(null, AppUtility.getResourceMessage("document.delete.success"));
     }
 }

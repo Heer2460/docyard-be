@@ -11,10 +11,10 @@ import com.infotech.docyard.dochandling.dto.UploadDocumentDTO;
 import com.infotech.docyard.dochandling.enums.DLActivityTypeEnum;
 import com.infotech.docyard.dochandling.enums.FileTypeEnum;
 import com.infotech.docyard.dochandling.enums.FileViewerEnum;
-import com.infotech.docyard.dochandling.exceptions.DataValidationException;
 import com.infotech.docyard.dochandling.util.AppConstants;
 import com.infotech.docyard.dochandling.util.AppUtility;
 import com.infotech.docyard.dochandling.util.DocumentUtil;
+import com.infotech.docyard.dochandling.util.ResponseUtility;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
@@ -262,5 +262,32 @@ public class DLDocumentService {
         folder = dlDocumentRepository.save(folder);
 
         return folder;
+    }
+
+    public void deleteDLDocument(Long dlDocumentId) throws Exception {
+        log.info("DLDocumentService - deleteDocument method called...");
+
+        DLDocument dlDoc = null;
+        Optional<DLDocument> optionalDLDoc = dlDocumentRepository.findById(dlDocumentId);
+        try {
+            dlDoc = optionalDLDoc.get();
+            String docLocation = dlDoc.getLocation();
+            log.info("DLDocumentService - Deletion on FTP started....");
+            if (!dlDoc.getFolder()) {
+                boolean isDocDeleted = ftpService.deleteFile(docLocation, dlDoc.getVersionGUId());
+                log.info("DLDocumentService - Deletion on FTP ended with success: " + isDocDeleted);
+                if (isDocDeleted) {
+                    dlDocumentRepository.deleteById(dlDocumentId);
+                }
+            } else {
+                boolean isDocDeleted = ftpService.deleteDirectory(docLocation, dlDoc.getVersionGUId());
+                log.info("DLDocumentService - Deletion on FTP ended with success: " + isDocDeleted);
+                if (isDocDeleted) {
+                    dlDocumentRepository.deleteById(dlDocumentId);
+                }
+            }
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
     }
 }
