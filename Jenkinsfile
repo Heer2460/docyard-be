@@ -1,21 +1,23 @@
 pipeline {
     agent any
+    
+    tools {
+        maven 'Maven3'
+    }
 
     stages {
-        stage('Build') {
-            steps { 
-      echo "mvn clean install"
-            }
+        stage('Checkout') {
+            steps{
+         checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/infotechirfannasim/docyard-be.git']]])
         }
-   stage('Test') {
-            steps {
-                echo 'Test APP'
-            }
         }
-   stage('Deploy') {
-            steps {
-                echo 'Deploy APP'
-            }
+          stage('Build') {
+         steps{
+             sh 'mvn clean install -f docyard-be/pom.xml'
+         }
+         
         }
+        
+        
     }
 }
