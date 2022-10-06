@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Build') {
             steps { 
-               echo "mvn clean install" 
+              sh 'mvn clean install -f MyWebApp/pom.xml'
             }
         }
    stage('Test') {

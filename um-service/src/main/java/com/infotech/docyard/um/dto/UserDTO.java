@@ -100,6 +100,7 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
         user.setProfilePhoto(this.profilePhoto);
         user.setStatus(this.status);
         user.setAddress(this.address);
+        user.setPassword(this.password);
         user.setPasswordResetToken(this.passwordResetToken);
         user.setCreatedOn(AppUtility.isEmpty(this.createdOn) ? ZonedDateTime.now() : this.createdOn);
         user.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
