@@ -1,10 +1,10 @@
 package com.infotech.docyard.dochandling.dto;
 
 import com.infotech.docyard.dochandling.dl.entity.DLDocument;
+import com.infotech.docyard.dochandling.dl.entity.DLDocumentComment;
 import com.infotech.docyard.dochandling.util.AppUtility;
 import lombok.Data;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -38,6 +38,7 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
     private List<Long> documentTagIds;
     private String createdByName;
     private String updatedByName;
+    private List<DLDocumentCommentDTO> dlDocumentCommentDTOList;
 
     public DLDocumentDTO() {
 
@@ -101,6 +102,9 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         this.createdOn = entity.getCreatedOn();
         this.updatedBy = entity.getUpdatedBy();
         this.createdBy = entity.getCreatedBy();
+        if(!partialFill){
+            fillDlDocumentComments(entity.getDocumentComments());
+        }
     }
 
     @Override
@@ -108,6 +112,13 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         DLDocumentDTO dlDocumentDTO = new DLDocumentDTO();
         dlDocumentDTO.convertToDTO(entity, partialFill);
         return dlDocumentDTO;
+    }
+
+
+    public void fillDlDocumentComments(List<DLDocumentComment> dlDocumentCommentList) {
+        for (DLDocumentComment cm : dlDocumentCommentList) {
+            this.dlDocumentCommentDTOList.add(new DLDocumentCommentDTO().convertToNewDTO(cm, true));
+        }
     }
 
 }

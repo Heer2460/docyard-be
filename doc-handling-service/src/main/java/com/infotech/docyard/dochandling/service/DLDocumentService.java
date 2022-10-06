@@ -2,8 +2,10 @@ package com.infotech.docyard.dochandling.service;
 
 import com.infotech.docyard.dochandling.dl.entity.DLDocument;
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentActivity;
+import com.infotech.docyard.dochandling.dl.entity.DLDocumentComment;
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentVersion;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentActivityRepository;
+import com.infotech.docyard.dochandling.dl.repository.DLDocumentCommentRepository;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentRepository;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentVersionRepository;
 import com.infotech.docyard.dochandling.dto.DLDocumentDTO;
@@ -27,10 +29,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileInputStream;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.*;
 
 @Service
@@ -324,5 +322,18 @@ public class DLDocumentService {
         activity.setCreatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
         return doc;
+    }
+
+    public DLDocumentDTO getMetaOfDLDocument(Long dlDocumentId) {
+        log.info("getMetaOfDLDocument method called..");
+        Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
+        if (opDoc.isPresent()) {
+            DLDocumentDTO dlDocumentDTO = new DLDocumentDTO();
+            dlDocumentDTO.convertToDTO(opDoc.get(), false);
+
+            return dlDocumentDTO;
+        }
+
+        return new DLDocumentDTO();
     }
 }
