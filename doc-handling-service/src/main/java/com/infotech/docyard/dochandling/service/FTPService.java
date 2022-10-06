@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +40,76 @@ public class FTPService {
         } catch (Exception e) {
             log.error("Upload file failure. TargetPath: {}", targetPath, e);
             throw new Exception("Upload File failure");
+        } finally {
+            this.disconnect(ftpClient);
+        }
+    }
+
+    public boolean deleteFile(String targetPath, String fileName) throws Exception {
+        log.info("FTP deleteFile method called.. " + config.getRoot());
+
+        FTPClient ftpClient = createFtp();
+        try {
+            FTPFile[] ftpFiles = ftpClient.listFiles();
+            boolean exist = ftpClient.deleteFile(fileName);
+            if (!exist) {
+                log.error("Remote path error. path:{}", targetPath);
+                throw new Exception("Delete File failure");
+            }
+            return true;
+        } catch (Exception e) {
+            log.error("Delete file failure. TargetPath: {}", targetPath, e);
+            throw new Exception("Delete File failure");
+        } finally {
+            this.disconnect(ftpClient);
+        }
+    }
+
+    public boolean deleteDirectory(String targetPath, String fileName) throws Exception {
+        log.info("FTP deleteDirectory method called.. " + config.getRoot());
+
+        FTPClient ftpClient = createFtp();
+        try {
+            FTPFile[] subFiles = ftpClient.listFiles(targetPath);
+
+            if (subFiles != null && subFiles.length > 0) {
+                for (FTPFile aFile : subFiles) {
+                    String currentFileName = aFile.getName();
+                    if (currentFileName.equals(".") || currentFileName.equals("..")) {
+                        // skip parent directory and the directory itself
+                        continue;
+                    }
+                    String filePath = targetPath + "/" + currentFileName;
+                    if (aFile.isDirectory()) {
+                        // remove the sub directory
+                        deleteDirectory(filePath, currentFileName);
+                    } else {
+                        // delete the file
+                        boolean deleted = ftpClient.deleteFile(currentFileName);
+                        if (deleted) {
+                            log.info("DELETED the file: " + currentFileName);
+                        } else {
+                            log.info("CANNOT delete the file: " + currentFileName);
+                        }
+                    }
+                }
+                // finally, remove the directory itself
+                boolean removed = ftpClient.removeDirectory(targetPath);
+                if (removed) {
+                    System.out.println("REMOVED the directory: " + targetPath);
+                } else {
+                    System.out.println("CANNOT remove the directory: " + targetPath);
+                }
+            }
+            boolean exist = ftpClient.deleteFile(fileName);
+            if (!exist) {
+                log.error("Remote path error. path:{}", targetPath);
+                throw new Exception("Delete File failure");
+            }
+            return true;
+        } catch (Exception e) {
+            log.error("Delete file failure. TargetPath: {}", targetPath, e);
+            throw new Exception("Delete File failure");
         } finally {
             this.disconnect(ftpClient);
         }

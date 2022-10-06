@@ -75,6 +75,21 @@ public class DLDocumentAPI {
         return ResponseUtility.buildResponseObject(dlDocument, new DLDocumentDTO(), true);
     }
 
+    @RequestMapping(value = "/folder", method = RequestMethod.POST)
+    public CustomResponse createFolder(HttpServletRequest request,
+                                       @RequestBody DLDocumentDTO folderRequestDTO)
+            throws CustomException, DataValidationException, NoDataFoundException {
+        log.info("createFolder API initiated...");
+
+        DLDocument dlDocument = null;
+        try {
+            dlDocument = documentService.createFolder(folderRequestDTO);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.buildResponseObject(dlDocument, new DLDocumentDTO(), true);
+    }
+
     @RequestMapping(value = "/{dlDocumentId}/", method = RequestMethod.PUT)
     public CustomResponse updateFavorite(HttpServletRequest request,
                                          @PathVariable(value = "dlDocumentId") Long dlDocumentId,
@@ -89,6 +104,20 @@ public class DLDocumentAPI {
             ResponseUtility.exceptionResponse(e);
         }
         return ResponseUtility.buildResponseObject(dlDocument, new DLDocumentDTO(), true);
+    }
+
+    @RequestMapping(value = "/{dlDocumentId}", method = RequestMethod.DELETE)
+    public CustomResponse deleteDocument (HttpServletRequest request,
+                                          @PathVariable(value = "dlDocumentId") Long dlDocumentId)
+            throws CustomException, DataValidationException, NoDataFoundException {
+        log.info("deleteDocument API initiated...");
+
+        try {
+            documentService.deleteDLDocument(dlDocumentId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.deleteSuccessResponse(null, AppUtility.getResourceMessage("document.delete.success"));
     }
 
     @RequestMapping(value = "/archive/{dlDocumentId}", method = RequestMethod.PUT)

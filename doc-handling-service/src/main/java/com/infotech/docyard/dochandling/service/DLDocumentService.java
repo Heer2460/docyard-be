@@ -5,7 +5,6 @@ import com.infotech.docyard.dochandling.dl.entity.DLDocumentActivity;
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentComment;
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentVersion;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentActivityRepository;
-import com.infotech.docyard.dochandling.dl.repository.DLDocumentCommentRepository;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentRepository;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentVersionRepository;
 import com.infotech.docyard.dochandling.dto.DLDocumentDTO;
@@ -16,6 +15,7 @@ import com.infotech.docyard.dochandling.enums.FileViewerEnum;
 import com.infotech.docyard.dochandling.util.AppConstants;
 import com.infotech.docyard.dochandling.util.AppUtility;
 import com.infotech.docyard.dochandling.util.DocumentUtil;
+import com.infotech.docyard.dochandling.util.ResponseUtility;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
@@ -297,11 +297,16 @@ public class DLDocumentService {
         folder.setLeafNode(false);
         folder.setCreatedBy(folderRequestDTO.getCreatedBy());
         folder.setCreatedOn(ZonedDateTime.now());
+        folder.setUpdatedBy(folderRequestDTO.getUpdatedBy());
+        folder.setUpdatedOn(ZonedDateTime.now());
         folder = dlDocumentRepository.save(folder);
 
         DLDocumentActivity activity = new DLDocumentActivity(folder.getCreatedBy(), DLActivityTypeEnum.CREATED.getValue(),
                 folder.getId(), folder.getId());
+        activity.setCreatedBy(folderRequestDTO.getCreatedBy());
         activity.setCreatedOn(ZonedDateTime.now());
+        activity.setUpdatedBy(folderRequestDTO.getUpdatedBy());
+        activity.setUpdatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
 
         return folder;
@@ -310,10 +315,10 @@ public class DLDocumentService {
     public DLDocument archiveDlDocument(Long dlDocumentId, Boolean archive) {
         log.info("archiveDlDocument method called..");
 
-        Optional<DLDocument> Opdoc = dlDocumentRepository.findById(dlDocumentId);
+        Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
         DLDocument doc = null;
-        if (!AppUtility.isEmpty(dlDocumentId)) {
-            doc = Opdoc.get();
+        if (opDoc.isPresent()) {
+            doc = opDoc.get();
             doc.setArchived(archive);
             dlDocumentRepository.save(doc);
         }
@@ -322,6 +327,33 @@ public class DLDocumentService {
         activity.setCreatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
         return doc;
+    }
+
+    public void deleteDLDocument(Long dlDocumentId) throws Exception {
+        log.info("DLDocumentService - deleteDocument method called...");
+
+        DLDocument dlDoc = null;
+        Optional<DLDocument> optionalDLDoc = dlDocumentRepository.findById(dlDocumentId);
+        try {
+            dlDoc = optionalDLDoc.get();
+            String docLocation = dlDoc.getLocation();
+            log.info("DLDocumentService - Deletion on FTP started....");
+            if (!dlDoc.getFolder()) {
+                boolean isDocDeleted = ftpService.deleteFile(docLocation, dlDoc.getVersionGUId());
+                log.info("DLDocumentService - Deletion on FTP ended with success: " + isDocDeleted);
+                if (isDocDeleted) {
+                    dlDocumentRepository.deleteById(dlDocumentId);
+                }
+            } else {
+                boolean isDocDeleted = ftpService.deleteDirectory(docLocation, dlDoc.getVersionGUId());
+                log.info("DLDocumentService - Deletion on FTP ended with success: " + isDocDeleted);
+                if (isDocDeleted) {
+                    dlDocumentRepository.deleteById(dlDocumentId);
+                }
+            }
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
     }
 
     public DLDocumentDTO getMetaOfDLDocument(Long dlDocumentId) {
