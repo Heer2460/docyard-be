@@ -312,10 +312,10 @@ public class DLDocumentService {
     public DLDocument archiveDlDocument(Long dlDocumentId, Boolean archive) {
         log.info("archiveDlDocument method called..");
 
-        Optional<DLDocument> Opdoc = dlDocumentRepository.findById(dlDocumentId);
+        Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
         DLDocument doc = null;
-        if (!AppUtility.isEmpty(dlDocumentId)) {
-            doc = Opdoc.get();
+        if (opDoc.isPresent()) {
+            doc = opDoc.get();
             doc.setArchived(archive);
             dlDocumentRepository.save(doc);
         }
