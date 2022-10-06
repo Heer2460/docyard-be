@@ -127,6 +127,8 @@ public class UserService {
             if (!AppUtility.isEmpty(profileImg)) {
                 userDTO.setProfilePhotoReceived(profileImg);
             }
+            userDTO.setPassword(dbUser.get().getPassword());
+
             return userRepository.save(userDTO.convertToEntityForUpdate());
         } else {
             throw new DataValidationException(AppUtility.getResourceMessage("user.can.not.change.username"));
