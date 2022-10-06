@@ -2,6 +2,7 @@ package com.infotech.docyard.dochandling.service;
 
 import com.infotech.docyard.dochandling.dl.entity.DLDocument;
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentActivity;
+import com.infotech.docyard.dochandling.dl.entity.DLDocumentComment;
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentVersion;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentActivityRepository;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentRepository;
@@ -28,10 +29,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileInputStream;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.*;
 
 @Service
@@ -53,8 +50,8 @@ public class DLDocumentService {
         log.info("DLDocumentService - getDocumentsByFolderIdAndArchive method called...");
 
         List<DLDocumentDTO> documentDTOList = new ArrayList<>();
-        List<DLDocument> dlDocumentList = new ArrayList<>();
-        if (AppUtility.isEmpty(folderId)) {
+        List<DLDocument> dlDocumentList;
+        if (AppUtility.isEmpty(folderId) || folderId == 0L) {
             dlDocumentList = dlDocumentRepository.findByParentIdIsNullAndArchivedOrderByUpdatedOnAsc(archived);
         } else {
             dlDocumentList = dlDocumentRepository.findByParentIdAndArchivedOrderByUpdatedOnAsc(folderId, archived);
@@ -262,7 +259,7 @@ public class DLDocumentService {
     }
 
     private StringBuffer getNodePath(DLDocument selectedFolderNode) {
-        return DocumentUtil.getSelectedPath(selectedFolderNode,
+        return getSelectedPath(selectedFolderNode,
                 "0", null);
     }
 
@@ -292,7 +289,7 @@ public class DLDocumentService {
 
         DLDocument folder = new DLDocument();
         folder.setName(folderRequestDTO.getName().trim());
-        folder.setTitle(folderRequestDTO.getName().trim());
+        folder.setTitle(folderRequestDTO.getTitle().trim());
         folder.setFolder(true);
         folder.setArchived(false);
         folder.setArchivedOn(null);
@@ -311,7 +308,6 @@ public class DLDocumentService {
         activity.setUpdatedBy(folderRequestDTO.getUpdatedBy());
         activity.setUpdatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
-
         return folder;
     }
 
@@ -357,5 +353,43 @@ public class DLDocumentService {
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
+    }
+
+    private StringBuffer getSelectedPath(DLDocument selectedFolderNode, String treeSelected, final String customPathSeparator) {
+        StringBuilder selectedFolderPath = new StringBuilder();
+        final String PATH_SEPARATOR = DocumentUtil.buildPathSeparator(customPathSeparator);
+        DLDocument folder = selectedFolderNode;
+        if (DocumentUtil.isRootFolder(folder)) {
+            selectedFolderPath = new StringBuilder("Root");
+            return new StringBuffer(selectedFolderPath);
+        }
+
+        while (!AppUtility.isEmpty(folder)) {
+            if (folder.getId() == null) {
+                selectedFolderPath.insert(0, PATH_SEPARATOR);
+            } else {
+                selectedFolderPath.insert(0, folder.getName() + PATH_SEPARATOR);
+            }
+            folder.setShared(folder.getShared());
+            treeSelected = treeSelected != null ? treeSelected : "0";
+            folder = dlDocumentRepository.findByIdAndArchivedFalseAndFolderTrue(folder.getParentId());
+        }
+        int length = selectedFolderPath.length();
+        selectedFolderPath.setLength(length > 0 ? length - PATH_SEPARATOR.length() : length);
+
+        return new StringBuffer(selectedFolderPath);
+    }
+
+    public DLDocumentDTO getMetaOfDLDocument(Long dlDocumentId) {
+        log.info("getMetaOfDLDocument method called..");
+        Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
+        if (opDoc.isPresent()) {
+            DLDocumentDTO dlDocumentDTO = new DLDocumentDTO();
+            dlDocumentDTO.convertToDTO(opDoc.get(), false);
+
+            return dlDocumentDTO;
+        }
+
+        return new DLDocumentDTO();
     }
 }

@@ -107,10 +107,10 @@ public class DLDocumentAPI {
     }
 
     @RequestMapping(value = "/{dlDocumentId}", method = RequestMethod.DELETE)
-    public CustomResponse deleteDocument (HttpServletRequest request,
+    public CustomResponse deleteDLDocument (HttpServletRequest request,
                                           @PathVariable(value = "dlDocumentId") Long dlDocumentId)
             throws CustomException, DataValidationException, NoDataFoundException {
-        log.info("deleteDocument API initiated...");
+        log.info("deleteDLDocument API initiated...");
 
         try {
             documentService.deleteDLDocument(dlDocumentId);
@@ -137,5 +137,22 @@ public class DLDocumentAPI {
             ResponseUtility.exceptionResponse(e);
         }
         return ResponseUtility.successResponseForPut(dlDocument, "Document Archived");
+    }
+
+    @RequestMapping(value = "/meta/{dlDocumentId}", method = RequestMethod.GET)
+    public CustomResponse getMetaOfDLDocument(HttpServletRequest request,
+                                              @PathVariable(value = "dlDocumentId") Long dlDocumentId) throws CustomException {
+        log.info("getMetaOfFolder API initiated...");
+        DLDocumentDTO dlDocumentDTO = null;
+        if (AppUtility.isEmpty(dlDocumentId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
+        }
+        try {
+            dlDocumentDTO = documentService.getMetaOfDLDocument(dlDocumentId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+
+        return ResponseUtility.successResponseForPut(dlDocumentDTO, "Document Meta");
     }
 }
