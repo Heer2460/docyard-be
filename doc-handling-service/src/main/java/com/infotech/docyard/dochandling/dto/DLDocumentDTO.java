@@ -26,7 +26,6 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
     private Boolean isLeafNode;
     private String versionGUId;
     private Double version;
-    private String guId;
     private Boolean isFavourite;
     private String description;
     private ZonedDateTime archivedOn;
