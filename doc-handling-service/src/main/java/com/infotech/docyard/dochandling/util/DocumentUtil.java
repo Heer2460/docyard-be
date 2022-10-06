@@ -1,6 +1,8 @@
 package com.infotech.docyard.dochandling.util;
 
 import com.infotech.docyard.dochandling.dl.entity.DLDocument;
+import com.infotech.docyard.dochandling.dl.repository.DLDocumentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.StringTokenizer;
 
@@ -123,35 +125,11 @@ public class DocumentUtil {
         return varDivider;
     }
 
-    public static StringBuffer getSelectedPath(DLDocument selectedFolderNode, String treeSelected, final String customPathSeparator) {
-        StringBuilder selectedFolderPath = new StringBuilder();
-        final String PATH_SEPARATOR = buildPathSeparator(customPathSeparator);
-        DLDocument folder = selectedFolderNode;
-        if (isRootFolder(folder)) {
-            selectedFolderPath = new StringBuilder("Root");
-            return new StringBuffer(selectedFolderPath);
-        }
-
-        while (!AppUtility.isEmpty(folder)) {
-            if (folder.getId() == null) {
-                selectedFolderPath.insert(0, PATH_SEPARATOR);
-            } else {
-                selectedFolderPath.insert(0, folder.getName() + PATH_SEPARATOR);
-            }
-            folder.setShared(folder.getShared());
-            treeSelected = treeSelected != null ? treeSelected : "0";
-        }
-        int length = selectedFolderPath.length();
-        selectedFolderPath.setLength(length > 0 ? length - PATH_SEPARATOR.length() : length);
-
-        return new StringBuffer(selectedFolderPath);
-    }
-
-    private static String buildPathSeparator(String customPathSeparator) {
+    public static String buildPathSeparator(String customPathSeparator) {
         return (customPathSeparator != null) ? customPathSeparator : AppConstants.DL_PATH_SEPARATOR;
     }
 
-    private static boolean isRootFolder(DLDocument dlDocument) {
+    public static boolean isRootFolder(DLDocument dlDocument) {
         if(AppUtility.isEmpty(dlDocument)){
             return true;
         }
