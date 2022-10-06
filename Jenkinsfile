@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Build') {
             steps { 
-              echo 'mvn clean install -f docyard-be/pom.xml'
+      'mvn clean install'
             }
         }
    stage('Test') {

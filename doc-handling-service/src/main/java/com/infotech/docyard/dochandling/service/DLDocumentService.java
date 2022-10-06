@@ -300,11 +300,16 @@ public class DLDocumentService {
         folder.setLeafNode(false);
         folder.setCreatedBy(folderRequestDTO.getCreatedBy());
         folder.setCreatedOn(ZonedDateTime.now());
+        folder.setUpdatedBy(folderRequestDTO.getUpdatedBy());
+        folder.setUpdatedOn(ZonedDateTime.now());
         folder = dlDocumentRepository.save(folder);
 
         DLDocumentActivity activity = new DLDocumentActivity(folder.getCreatedBy(), DLActivityTypeEnum.CREATED.getValue(),
                 folder.getId(), folder.getId());
+        activity.setCreatedBy(folderRequestDTO.getCreatedBy());
         activity.setCreatedOn(ZonedDateTime.now());
+        activity.setUpdatedBy(folderRequestDTO.getUpdatedBy());
+        activity.setUpdatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
         return folder;
     }
