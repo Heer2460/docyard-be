@@ -52,8 +52,8 @@ public class RoleService {
         if(AppUtility.isEmpty(role.getRolePermissions())){
             role.setRolePermissions(roleDTO.RolePermission(role));
         }
-        Role roles = roleRepository.save(role);
-        return roles;
+
+        return roleRepository.save(role);
     }
 
     @Transactional
