@@ -14,7 +14,7 @@ pipeline {
              sh 'mvn clean install -f docyard-be/pom.xml'
          }
        }
-     tage('Test') {
+     stage('Test') {
          steps{
              echo 'This is testing phase.'
          }
