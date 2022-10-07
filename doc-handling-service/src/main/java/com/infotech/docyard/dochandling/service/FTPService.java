@@ -69,11 +69,10 @@ public class FTPService {
         log.info("FTP deleteDirectory method called.. " + config.getRoot());
 
         FTPClient ftpClient = createFtp();
-        targetPath = "/" + targetPath;
         try {
             ftpClient.printWorkingDirectory();
-            FTPFile[] subFiles = ftpClient.listFiles();
-            FTPFile[] subDirs = ftpClient.listDirectories();
+            FTPFile[] subFiles = ftpClient.listFiles(targetPath);
+            FTPFile[] subDirs = ftpClient.listDirectories(targetPath);
 
             if (subFiles != null && subFiles.length > 0) {
                 for (FTPFile aFile : subFiles) {
@@ -82,7 +81,7 @@ public class FTPService {
                         // skip parent directory and the directory itself
                         continue;
                     }
-                    String filePath = targetPath + "/" + currentFileName;
+                    String filePath = targetPath + currentFileName;
                     if (aFile.isDirectory()) {
                         // remove the subdirectory
                         deleteDirectory(filePath, currentFileName);

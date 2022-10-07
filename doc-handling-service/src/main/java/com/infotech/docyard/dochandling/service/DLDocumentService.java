@@ -2,7 +2,6 @@ package com.infotech.docyard.dochandling.service;
 
 import com.infotech.docyard.dochandling.dl.entity.DLDocument;
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentActivity;
-import com.infotech.docyard.dochandling.dl.entity.DLDocumentComment;
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentVersion;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentActivityRepository;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentRepository;
@@ -344,6 +343,34 @@ public class DLDocumentService {
                     dlDocumentRepository.deleteById(dlDocumentId);
                 }
             } else {
+                Integer index = 0;
+                HashMap<Long, List<Long>> folderChildren = new HashMap<>();
+                List<Long> childDocIds = new ArrayList<>();
+                Long currentParent = dlDocumentId;
+                List<DLDocument> childDocuments = dlDocumentRepository.findByParentId(currentParent);
+                folderChildren.put(currentParent, null);
+                childDocIds.add(dlDocumentId);
+                if (!AppUtility.isEmpty(childDocuments)) {
+                    while (AppUtility.isEmpty(folderChildren.get(currentParent)) || folderChildren.get(currentParent) == null) {
+                        if(childDocIds.contains(dlDocumentId)) {
+                            childDocIds.remove(dlDocumentId);
+                        }
+                        for (DLDocument childDoc : childDocuments) {
+                            if (dlDocumentId != childDoc.getId()) {
+                                childDocIds.add(childDoc.getId());
+                            }
+                        }
+                        folderChildren.put(currentParent, childDocIds);
+                        childDocIds.clear();
+                    }
+                }
+//                while (folderIter.hasNext() && !AppUtility.isEmpty(dlDocumentRepository.findByParentId(folderIter.next()))){
+//                    for (DLDocument doc : childDocuments) {
+//                        childFileIds.add(doc.getId());
+//                        childDocuments.remove(index);
+//                    }
+//                }
+
                 boolean isDocDeleted = ftpService.deleteDirectory(docLocation, dlDoc.getVersionGUId());
                 log.info("DLDocumentService - Deletion on FTP ended with success: " + isDocDeleted);
                 if (isDocDeleted) {
