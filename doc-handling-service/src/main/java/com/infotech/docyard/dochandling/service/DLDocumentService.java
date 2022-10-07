@@ -91,29 +91,38 @@ public class DLDocumentService {
     public DLDocument renameDLDocument(Long dlDocumentId, String name, Long userId) {
         log.info("DLDocumentService - renameDLDocument method called...");
 
+
         Optional<DLDocument> optionalDLDocument = dlDocumentRepository.findById(dlDocumentId);
         DLDocument dlDocument = null;
         if (!AppUtility.isEmpty(optionalDLDocument)) {
             dlDocument = optionalDLDocument.get();
-//            String title = file.getOriginalFilename().substring(0, file.getOriginalFilename().lastIndexOf('.'));
-            dlDocument.setTitle(name);
-//            String fileName = file.getOriginalFilename().replaceAll(" ", "_");
-            dlDocument.setName(name);
-            dlDocument.setUpdatedBy(userId);
-            dlDocument.setUpdatedOn(ZonedDateTime.now());
-            /*int extDot = file.getOriginalFilename().lastIndexOf('.');
-            String extension = extDot > 0 ? file.getOriginalFilename().substring(extDot + 1) : "";
-            doc.setExtension(extension);
-            doc.setMimeType(DocumentUtil.getMimeType(extension));*/
-            dlDocument.setCurrentVersion(dlDocument.getCurrentVersion() + 1.0);
-            dlDocument.setVersion(dlDocument.getVersion() + 1.0);
-            dlDocument = dlDocumentRepository.save(dlDocument);
-            DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getUpdatedBy(), DLActivityTypeEnum.UPLOADED.getValue(),
-                    dlDocument.getId(), dlDocument.getId());
-            activity.setCreatedOn(ZonedDateTime.now());
-            dlDocumentActivityRepository.save(activity);
-            DLDocumentVersion documentVersion = createNewDocumentVersion(dlDocument, userId);
-            dlDocumentVersionRepository.save(documentVersion);
+            if (AppUtility.isEmpty(dlDocumentRepository.findByName(name))){
+//                    String title = file.getOriginalFilename().substring(0, file.getOriginalFilename().lastIndexOf('.'));
+                    dlDocument.setTitle(name);
+//                    String fileName = file.getOriginalFilename().replaceAll(" ", "_");
+                    dlDocument.setName(name);
+                    dlDocument.setUpdatedBy(userId);
+                    dlDocument.setUpdatedOn(ZonedDateTime.now());
+                    /*int extDot = file.getOriginalFilename().lastIndexOf('.');
+                    String extension = extDot > 0 ? file.getOriginalFilename().substring(extDot + 1) : "";
+                    doc.setExtension(extension);
+                    doc.setMimeType(DocumentUtil.getMimeType(extension));*/
+                    dlDocument.setCurrentVersion(dlDocument.getCurrentVersion() + 1.0);
+                    dlDocument.setVersion(dlDocument.getVersion() + 1.0);
+                    dlDocument = dlDocumentRepository.save(dlDocument);
+                    DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getUpdatedBy(), DLActivityTypeEnum.UPLOADED.getValue(),
+                            dlDocument.getId(), dlDocument.getId());
+                    activity.setCreatedOn(ZonedDateTime.now());
+                    dlDocumentActivityRepository.save(activity);
+                    DLDocumentVersion documentVersion = createNewDocumentVersion(dlDocument, userId);
+                    dlDocumentVersionRepository.save(documentVersion);
+            } else {
+                if (!dlDocument.getFolder()){
+
+                } else {
+
+                }
+            }
         }
         return dlDocument;
     }
