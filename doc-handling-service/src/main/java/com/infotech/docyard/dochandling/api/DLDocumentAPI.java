@@ -74,8 +74,8 @@ public class DLDocumentAPI {
     }
 
     @RequestMapping(value = "/download/{dlDocumentId}", method = RequestMethod.GET)
-    public CustomResponse downloadDLDocumentById (HttpServletRequest request,
-                                            @PathVariable(value = "dlDocumentId") Long dlDocumentId) throws CustomException {
+    public CustomResponse downloadDLDocumentById(HttpServletRequest request,
+                                                 @PathVariable(value = "dlDocumentId") Long dlDocumentId) throws CustomException {
         log.info("downloadDLDocumentById API initiated...");
         DLDocument dlDocument = null;
         if (AppUtility.isEmpty(dlDocumentId)) {
@@ -140,17 +140,15 @@ public class DLDocumentAPI {
         return ResponseUtility.buildResponseObject(dlDocument, new DLDocumentDTO(), true);
     }
 
-    @RequestMapping(value = "/rename/{dlDocumentId}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/rename", method = RequestMethod.PUT)
     public CustomResponse renameDLDocument(HttpServletRequest request,
-                                         @PathVariable(value = "dlDocumentId") Long dlDocumentId,
-                                         @RequestParam(name = "newName") String name,
-                                           @RequestParam(name = "userId") Long userId)
+                                           @RequestBody DLDocumentDTO dlDocumentDTO)
             throws CustomException, DataValidationException, NoDataFoundException {
         log.info("renameDLDocument API initiated...");
 
         DLDocument dlDocument = null;
         try {
-            dlDocument = documentService.renameDLDocument(dlDocumentId, name, userId);
+            dlDocument = documentService.renameDLDocument(dlDocumentDTO);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -158,8 +156,8 @@ public class DLDocumentAPI {
     }
 
     @RequestMapping(value = "/{dlDocumentId}", method = RequestMethod.DELETE)
-    public CustomResponse deleteDLDocument (HttpServletRequest request,
-                                          @PathVariable(value = "dlDocumentId") Long dlDocumentId)
+    public CustomResponse deleteDLDocument(HttpServletRequest request,
+                                           @PathVariable(value = "dlDocumentId") Long dlDocumentId)
             throws CustomException, DataValidationException, NoDataFoundException {
         log.info("deleteDLDocument API initiated...");
 

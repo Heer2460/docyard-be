@@ -25,4 +25,6 @@ public interface DLDocumentRepository extends JpaRepository<DLDocument, Long> {
 
     Boolean existsByNameAndFolderTrue(String name);
 
+    Boolean existsByName(String name);
+
 }
