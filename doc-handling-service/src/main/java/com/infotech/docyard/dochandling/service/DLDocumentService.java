@@ -17,6 +17,9 @@ import com.infotech.docyard.dochandling.util.AppUtility;
 import com.infotech.docyard.dochandling.util.DocumentUtil;
 import com.infotech.docyard.dochandling.util.ResponseUtility;
 import lombok.extern.log4j.Log4j2;
+import net.sourceforge.tess4j.ITesseract;
+import net.sourceforge.tess4j.Tesseract;
+import net.sourceforge.tess4j.TesseractException;
 import org.apache.commons.io.FileUtils;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -26,10 +29,20 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.List;
 
 @Service
 @Log4j2
@@ -138,6 +151,7 @@ public class DLDocumentService {
                 log.info("DLDocumentService - Uploaded on FTP ended with success: " + isDocUploaded);
 
                 if (isDocUploaded) {
+                    dlDoc.setContent(getDocumentContent(file));
                     dlDoc = dlDocumentRepository.save(dlDoc);
                     DLDocumentActivity activity = new DLDocumentActivity(dlDoc.getCreatedBy(), DLActivityTypeEnum.UPLOADED.getValue(),
                             dlDoc.getId(), dlDoc.getId());
@@ -391,5 +405,27 @@ public class DLDocumentService {
         }
 
         return new DLDocumentDTO();
+    }
+
+    public String getDocumentContent(MultipartFile file ){
+        ITesseract instance = new Tesseract();
+        String content = "";
+        try {
+
+            BufferedImage in = ImageIO.read(file.getInputStream());
+            BufferedImage newImage = new BufferedImage(in.getWidth(), in.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = newImage.createGraphics();
+            g.drawImage(in, 0, 0, null);
+            g.dispose();
+            instance.setDatapath("./tessdata");
+            content = instance.doOCR(newImage);
+
+
+
+        } catch (TesseractException | IOException e) {
+            System.err.println(e.getMessage());
+
+        }
+        return content;
     }
 }

@@ -125,8 +125,8 @@ public class DLDocumentAPI {
     }
 
     @RequestMapping(value = "/{dlDocumentId}", method = RequestMethod.DELETE)
-    public CustomResponse deleteDLDocument (HttpServletRequest request,
-                                          @PathVariable(value = "dlDocumentId") Long dlDocumentId)
+    public CustomResponse deleteDLDocument(HttpServletRequest request,
+                                           @PathVariable(value = "dlDocumentId") Long dlDocumentId)
             throws CustomException, DataValidationException, NoDataFoundException {
         log.info("deleteDLDocument API initiated...");
 
