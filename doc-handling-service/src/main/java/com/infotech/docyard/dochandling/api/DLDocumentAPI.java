@@ -42,6 +42,21 @@ public class DLDocumentAPI {
                 .buildResponseList(documentDTOList);
     }
 
+    @RequestMapping(value = "/favourite", method = RequestMethod.GET)
+    public CustomResponse getAllFavouriteDLDocumentsByFolder(HttpServletRequest request,
+                                                             @RequestParam(value = "folderId", required = false) Long folderId) throws CustomException {
+        log.info("getAllFavouriteDLDocumentsByFolderAndArchive API initiated...");
+
+        List<DLDocumentDTO> documentDTOList = null;
+        try {
+            documentDTOList = documentService.getAllFavouriteDLDocumentsByFolder(folderId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility
+                .buildResponseList(documentDTOList);
+    }
+
     @RequestMapping(value = "/recent/owner/{ownerId}", method = RequestMethod.GET)
     public CustomResponse getAllRecentDLDocumentByOwnerId(HttpServletRequest request,
                                                           @PathVariable(value = "ownerId") Long ownerId) throws CustomException {
@@ -74,8 +89,8 @@ public class DLDocumentAPI {
     }
 
     @RequestMapping(value = "/download/{dlDocumentId}", method = RequestMethod.GET)
-    public CustomResponse downloadDLDocumentById (HttpServletRequest request,
-                                            @PathVariable(value = "dlDocumentId") Long dlDocumentId) throws CustomException {
+    public CustomResponse downloadDLDocumentById(HttpServletRequest request,
+                                                 @PathVariable(value = "dlDocumentId") Long dlDocumentId) throws CustomException {
         log.info("downloadDLDocumentById API initiated...");
         DLDocument dlDocument = null;
         if (AppUtility.isEmpty(dlDocumentId)) {
@@ -142,8 +157,8 @@ public class DLDocumentAPI {
 
     @RequestMapping(value = "/rename/{dlDocumentId}", method = RequestMethod.PUT)
     public CustomResponse renameDLDocument(HttpServletRequest request,
-                                         @PathVariable(value = "dlDocumentId") Long dlDocumentId,
-                                         @RequestParam(name = "newName") String name,
+                                           @PathVariable(value = "dlDocumentId") Long dlDocumentId,
+                                           @RequestParam(name = "newName") String name,
                                            @RequestParam(name = "userId") Long userId)
             throws CustomException, DataValidationException, NoDataFoundException {
         log.info("renameDLDocument API initiated...");
@@ -158,8 +173,8 @@ public class DLDocumentAPI {
     }
 
     @RequestMapping(value = "/{dlDocumentId}", method = RequestMethod.DELETE)
-    public CustomResponse deleteDLDocument (HttpServletRequest request,
-                                          @PathVariable(value = "dlDocumentId") Long dlDocumentId)
+    public CustomResponse deleteDLDocument(HttpServletRequest request,
+                                           @PathVariable(value = "dlDocumentId") Long dlDocumentId)
             throws CustomException, DataValidationException, NoDataFoundException {
         log.info("deleteDLDocument API initiated...");
 

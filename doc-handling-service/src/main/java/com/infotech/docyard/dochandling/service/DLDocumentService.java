@@ -71,6 +71,31 @@ public class DLDocumentService {
         return documentDTOList;
     }
 
+    public List<DLDocumentDTO> getAllFavouriteDLDocumentsByFolder(Long folderId) {
+        log.info("DLDocumentService - getAllFavouriteDLDocumentsByFolder method called...");
+
+        List<DLDocumentDTO> documentDTOList = new ArrayList<>();
+        List<DLDocument> dlDocumentList;
+        if (AppUtility.isEmpty(folderId) || folderId == 0L) {
+            dlDocumentList = dlDocumentRepository.findByParentIdIsNullAndFavouriteOrderByUpdatedOnAsc(true);
+        } else {
+            dlDocumentList = dlDocumentRepository.findByParentIdAndFavouriteOrderByUpdatedOnAsc(folderId, true);
+        }
+        for (DLDocument dlDoc : dlDocumentList) {
+            DLDocumentDTO dto = new DLDocumentDTO();
+            dto.convertToDTO(dlDoc, false);
+
+            Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDoc.getCreatedBy(), Object.class);
+            if (!AppUtility.isEmpty(response)) {
+                HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+                dto.setCreatedByName((String) map.get("name"));
+                dto.setUpdatedByName((String) map.get("name"));
+            }
+            documentDTOList.add(dto);
+        }
+        return documentDTOList;
+    }
+
     @Transactional(rollbackFor = {Throwable.class})
     public DLDocument updateFavourite(Long dlDocumentId, Boolean favourite) {
         log.info("DLDocumentService - updateFavourite method called...");
@@ -140,7 +165,7 @@ public class DLDocumentService {
         return documentDTOList;
     }
 
-    public DLDocument downloadDLDocumentById (Long dlDocumentId) {
+    public DLDocument downloadDLDocumentById(Long dlDocumentId) {
         log.info("DLDocumentService - downloadDLDocumentById method called...");
 
         DLDocument dlDocument = null;
@@ -394,7 +419,7 @@ public class DLDocumentService {
                 List<Long> childFolderIds = new ArrayList<>();
                 List<DLDocument> childDocs;
                 Long currParent = dlDocumentId;
-                if (checkIsParent(currParent)){
+                if (checkIsParent(currParent)) {
                     childDocs = getChildren(currParent);
                     for (DLDocument doc : childDocs) {
                         if (!doc.getFolder()) {
@@ -503,14 +528,14 @@ public class DLDocumentService {
         return new DLDocumentDTO();
     }
 
-    public Boolean checkIsParent (Long dlDocumentId) {
-        if (!AppUtility.isEmpty(dlDocumentRepository.findByParentId(dlDocumentId))){
+    public Boolean checkIsParent(Long dlDocumentId) {
+        if (!AppUtility.isEmpty(dlDocumentRepository.findByParentId(dlDocumentId))) {
             return true;
         }
         return false;
     }
 
-    public List<DLDocument> getChildren (Long dlDocumentId) {
+    public List<DLDocument> getChildren(Long dlDocumentId) {
         List<DLDocument> children = new ArrayList<>();
         children = dlDocumentRepository.findByParentId(dlDocumentId);
         return children;
