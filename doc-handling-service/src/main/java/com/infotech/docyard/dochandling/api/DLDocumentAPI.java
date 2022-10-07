@@ -73,6 +73,22 @@ public class DLDocumentAPI {
         return ResponseUtility.successResponseForPut(dlDocumentDTO, "Document Meta");
     }
 
+    @RequestMapping(value = "/download/{dlDocumentId}", method = RequestMethod.GET)
+    public CustomResponse downloadDLDocumentById (HttpServletRequest request,
+                                            @PathVariable(value = "dlDocumentId") Long dlDocumentId) throws CustomException {
+        log.info("downloadDLDocumentById API initiated...");
+        DLDocument dlDocument = null;
+        if (AppUtility.isEmpty(dlDocumentId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
+        }
+        try {
+            dlDocument = documentService.downloadDLDocumentById(dlDocumentId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+
+        return ResponseUtility.buildResponseObject(dlDocument, new DLDocumentDTO(), true);
+    }
 
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     public CustomResponse uploadDocuments(HttpServletRequest request,
@@ -118,6 +134,23 @@ public class DLDocumentAPI {
         DLDocument dlDocument = null;
         try {
             dlDocument = documentService.updateFavourite(dlDocumentId, favourite);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.buildResponseObject(dlDocument, new DLDocumentDTO(), true);
+    }
+
+    @RequestMapping(value = "/rename/{dlDocumentId}", method = RequestMethod.PUT)
+    public CustomResponse renameDLDocument(HttpServletRequest request,
+                                         @PathVariable(value = "dlDocumentId") Long dlDocumentId,
+                                         @RequestParam(name = "newName") String name,
+                                           @RequestParam(name = "userId") Long userId)
+            throws CustomException, DataValidationException, NoDataFoundException {
+        log.info("renameDLDocument API initiated...");
+
+        DLDocument dlDocument = null;
+        try {
+            dlDocument = documentService.renameDLDocument(dlDocumentId, name, userId);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
