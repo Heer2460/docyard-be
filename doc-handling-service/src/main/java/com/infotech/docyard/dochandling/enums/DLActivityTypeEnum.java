@@ -9,9 +9,10 @@ public enum DLActivityTypeEnum {
     UPLOADED("UPLOADED"),
     DOWNLOADED("DOWNLOADED"),
     CREATED("CREATED"),
+    RENAMED("RENAMED"),
     ARCHIVED("ARCHIVED");
 
-    private static HashMap<String, DLActivityTypeEnum> map = new HashMap<>();
+    private static final HashMap<String, DLActivityTypeEnum> map = new HashMap<>();
 
     static {
         for (DLActivityTypeEnum e : values()) {
@@ -19,18 +20,18 @@ public enum DLActivityTypeEnum {
         }
     }
 
-    private String value;
+    private final String value;
 
-    private DLActivityTypeEnum(String value) {
+    DLActivityTypeEnum(String value) {
         this.value = value;
-    }
-
-    public final String getValue() {
-        return value;
     }
 
     public static final DLActivityTypeEnum getByValue(String value) {
         return map.get(value);
+    }
+
+    public final String getValue() {
+        return value;
     }
 
     public final boolean hasEqualValue(String value) {
@@ -38,7 +39,7 @@ public enum DLActivityTypeEnum {
     }
 
     public final boolean equals(DLActivityTypeEnum e) {
-        return e == null ? false : (getValue() == e.getValue());
+        return e != null && (getValue() == e.getValue());
     }
 
 }

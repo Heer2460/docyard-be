@@ -3,6 +3,7 @@ package com.infotech.docyard.dochandling.dl.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -14,7 +15,7 @@ import java.util.List;
 @Entity
 @Table(name = "DL_DOCUMENTS")
 @JsonIgnoreProperties(ignoreUnknown = true)
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class DLDocument extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -43,6 +44,9 @@ public class DLDocument extends BaseEntity implements Serializable {
 
     @Column(name = "VERSION_GUID")
     private String versionGUId;
+
+    @Column(name = "GUID")
+    private String guId;
 
     @Column(name = "IS_LEAF_NODE")
     @NotNull
@@ -98,5 +102,16 @@ public class DLDocument extends BaseEntity implements Serializable {
 
     public DLDocument(Long id) {
         this.setId(id);
+    }
+
+    @Override
+    public String toString() {
+
+        return "DLDocument[id=" + this.getId() + ", title=" + title + ", sizeBytes=" + sizeBytes + ", size=" + size +
+                ", mimeType=" + mimeType + ", location=" + location + ", extension=" + extension + ", currentVersion=" +
+                currentVersion + ", content=" + content + ", subject=" + subject + ", shared=" + shared + ", shareType=" +
+                shareType + ", name=" + name + ", leafNode=" + leafNode + ", guId=" + guId + ", versionGUId=" + versionGUId +
+                ", version=" + version + ", favourite=" + favourite + ", description=" + description + ", archivedOn=" +
+                archivedOn + ", archived=" + archived + ", folder=" + folder + ", parentId=" + parentId + "]";
     }
 }

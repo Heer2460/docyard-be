@@ -21,5 +21,4 @@ public class DocHandlingServicesApplication {
     public RestTemplate restTemplate(){
         return new RestTemplate();
     }
-
 }

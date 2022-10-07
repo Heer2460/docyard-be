@@ -21,17 +21,18 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
     private Double currentVersion;
     private String content;
     private String subject;
-    private Boolean isShared;
+    private Boolean shared;
     private String shareType;
     private String name;
     private Boolean isLeafNode;
     private String versionGUId;
+    private String guId;
     private Double version;
-    private Boolean isFavourite;
+    private Boolean favourite;
     private String description;
     private ZonedDateTime archivedOn;
-    private Boolean isArchived;
-    private Boolean isFolder;
+    private Boolean archived;
+    private Boolean folder;
     private Long parentId;
     private List<Long> documentActivityIds;
     private List<Long> documentCommentIds;
@@ -49,17 +50,18 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         DLDocument dlDocument = new DLDocument();
         dlDocument.setId(this.id);
         dlDocument.setParentId(this.parentId);
-        dlDocument.setFolder(this.isFolder);
-        dlDocument.setArchived(this.isArchived);
+        dlDocument.setFolder(this.folder);
+        dlDocument.setArchived(this.archived);
         dlDocument.setArchivedOn(this.archivedOn);
         dlDocument.setDescription(this.description);
-        dlDocument.setFavourite(this.isFavourite);
+        dlDocument.setFavourite(this.favourite);
         dlDocument.setVersion(this.version);
+        dlDocument.setGuId(this.guId);
         dlDocument.setVersionGUId(this.versionGUId);
         dlDocument.setLeafNode(this.isLeafNode);
         dlDocument.setName(this.name);
         dlDocument.setShareType(this.shareType);
-        dlDocument.setShared(this.isShared);
+        dlDocument.setShared(this.shared);
         dlDocument.setSubject(this.subject);
         dlDocument.setContent(this.content);
         dlDocument.setCurrentVersion(this.currentVersion);
@@ -79,17 +81,18 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
     public void convertToDTO(DLDocument entity, boolean partialFill) {
         this.id = entity.getId();
         this.parentId = entity.getParentId();
-        this.isFolder = entity.getFolder();
-        this.isArchived = entity.getArchived();
+        this.folder = entity.getFolder();
+        this.archived = entity.getArchived();
         this.archivedOn = entity.getArchivedOn();
         this.description = entity.getDescription();
-        this.isFavourite = entity.getFavourite();
+        this.favourite = entity.getFavourite();
         this.version = entity.getVersion();
+        this.guId = entity.getGuId();
         this.versionGUId = entity.getVersionGUId();
         this.isLeafNode = entity.getLeafNode();
         this.name = entity.getName();
         this.shareType = entity.getShareType();
-        this.isShared = entity.getShared();
+        this.shared = entity.getShared();
         this.subject = entity.getSubject();
         this.content = entity.getContent();
         this.currentVersion = entity.getCurrentVersion();
@@ -102,7 +105,7 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         this.createdOn = entity.getCreatedOn();
         this.updatedBy = entity.getUpdatedBy();
         this.createdBy = entity.getCreatedBy();
-        if(!partialFill){
+        if (!partialFill) {
             fillDlDocumentComments(entity.getDocumentComments());
         }
     }
@@ -116,8 +119,10 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
 
 
     public void fillDlDocumentComments(List<DLDocumentComment> dlDocumentCommentList) {
-        if(AppUtility.isEmpty(this.dlDocumentCommentDTOList)){
+        if (AppUtility.isEmpty(this.dlDocumentCommentDTOList)) {
             this.dlDocumentCommentDTOList = new ArrayList<>();
+        } else {
+            this.dlDocumentCommentDTOList.clear();
         }
         for (DLDocumentComment cm : dlDocumentCommentList) {
             this.dlDocumentCommentDTOList.add(new DLDocumentCommentDTO().convertToNewDTO(cm, true));

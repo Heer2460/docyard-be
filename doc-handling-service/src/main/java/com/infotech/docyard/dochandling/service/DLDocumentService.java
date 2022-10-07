@@ -2,7 +2,6 @@ package com.infotech.docyard.dochandling.service;
 
 import com.infotech.docyard.dochandling.dl.entity.DLDocument;
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentActivity;
-import com.infotech.docyard.dochandling.dl.entity.DLDocumentComment;
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentVersion;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentActivityRepository;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentRepository;
@@ -12,6 +11,7 @@ import com.infotech.docyard.dochandling.dto.UploadDocumentDTO;
 import com.infotech.docyard.dochandling.enums.DLActivityTypeEnum;
 import com.infotech.docyard.dochandling.enums.FileTypeEnum;
 import com.infotech.docyard.dochandling.enums.FileViewerEnum;
+import com.infotech.docyard.dochandling.exceptions.DataValidationException;
 import com.infotech.docyard.dochandling.util.AppConstants;
 import com.infotech.docyard.dochandling.util.AppUtility;
 import com.infotech.docyard.dochandling.util.DocumentUtil;
@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.io.*;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.List;
@@ -84,6 +85,31 @@ public class DLDocumentService {
         return documentDTOList;
     }
 
+    public List<DLDocumentDTO> getAllFavouriteDLDocumentsByFolder(Long folderId) {
+        log.info("DLDocumentService - getAllFavouriteDLDocumentsByFolder method called...");
+
+        List<DLDocumentDTO> documentDTOList = new ArrayList<>();
+        List<DLDocument> dlDocumentList;
+        if (AppUtility.isEmpty(folderId) || folderId == 0L) {
+            dlDocumentList = dlDocumentRepository.findByParentIdIsNullAndFavouriteOrderByUpdatedOnAsc(true);
+        } else {
+            dlDocumentList = dlDocumentRepository.findByParentIdAndFavouriteOrderByUpdatedOnAsc(folderId, true);
+        }
+        for (DLDocument dlDoc : dlDocumentList) {
+            DLDocumentDTO dto = new DLDocumentDTO();
+            dto.convertToDTO(dlDoc, false);
+
+            Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDoc.getCreatedBy(), Object.class);
+            if (!AppUtility.isEmpty(response)) {
+                HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+                dto.setCreatedByName((String) map.get("name"));
+                dto.setUpdatedByName((String) map.get("name"));
+            }
+            documentDTOList.add(dto);
+        }
+        return documentDTOList;
+    }
+
     @Transactional(rollbackFor = {Throwable.class})
     public DLDocument updateFavourite(Long dlDocumentId, Boolean favourite) {
         log.info("DLDocumentService - updateFavourite method called...");
@@ -99,6 +125,35 @@ public class DLDocumentService {
                 dlDocument.getId(), dlDocument.getId());
         activity.setCreatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
+        return dlDocument;
+    }
+
+    public DLDocument renameDLDocument(DLDocumentDTO dlDocumentDTO) {
+        log.info("DLDocumentService - renameDLDocument method called...");
+
+        Boolean alreadyExist = dlDocumentRepository.existsByName(dlDocumentDTO.getName());
+        if (alreadyExist) {
+            throw new DataValidationException(AppUtility.getResourceMessage("name.already.exist"));
+        }
+        Optional<DLDocument> optionalDLDocument = dlDocumentRepository.findById(dlDocumentDTO.getId());
+        DLDocument dlDocument = null;
+        if (optionalDLDocument.isPresent()) {
+            dlDocument = optionalDLDocument.get();
+            if (dlDocument.getFolder()) {
+                dlDocument.setName(dlDocumentDTO.getName());
+                dlDocument.setTitle(dlDocumentDTO.getName());
+            } else {
+                dlDocument.setTitle(dlDocumentDTO.getName());
+                dlDocument.setName(dlDocumentDTO.getName().substring(0, dlDocument.getName().lastIndexOf('.')) + "." + dlDocument.getExtension());
+            }
+            dlDocument.setUpdatedBy(dlDocumentDTO.getUpdatedBy());
+            dlDocument.setUpdatedOn(ZonedDateTime.now());
+            dlDocument = dlDocumentRepository.save(dlDocument);
+            DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getUpdatedBy(), DLActivityTypeEnum.RENAMED.getValue(),
+                    dlDocument.getId(), dlDocument.getId());
+            activity.setCreatedOn(ZonedDateTime.now());
+            dlDocumentActivityRepository.save(activity);
+        }
         return dlDocument;
     }
 
@@ -121,6 +176,24 @@ public class DLDocumentService {
             documentDTOList.add(dto);
         }
         return documentDTOList;
+    }
+
+    public DLDocument downloadDLDocumentById(Long dlDocumentId) throws Exception {
+        log.info("DLDocumentService - downloadDLDocumentById method called...");
+
+        DLDocument dlDocument = null;
+        Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
+        if (!opDoc.isPresent()) {
+            throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+        }
+        /*InputStream inputStream =
+        boolean success = ftpClient.retrieveFile(remoteFile1, outputStream1);
+        outputStream1.close();
+        if (success) {
+            System.out.println("File #1 has been downloaded successfully.");
+        }*/
+        ftpService.downloadFile(dlDocument.getVersionGUId());
+        return dlDocument;
     }
 
     @Transactional(rollbackFor = {Throwable.class})
@@ -301,6 +374,10 @@ public class DLDocumentService {
     public DLDocument createFolder(DLDocumentDTO folderRequestDTO) {
         log.info("DLDocumentService - createFolder method called...");
 
+        Boolean folderAlreadyExist = dlDocumentRepository.existsByNameAndFolderTrue(folderRequestDTO.getName());
+        if (folderAlreadyExist) {
+            throw new DataValidationException(AppUtility.getResourceMessage("folder.name.already.exist"));
+        }
         DLDocument folder = new DLDocument();
         folder.setName(folderRequestDTO.getName().trim());
         folder.setTitle(folderRequestDTO.getTitle().trim());
@@ -322,6 +399,7 @@ public class DLDocumentService {
         activity.setUpdatedBy(folderRequestDTO.getUpdatedBy());
         activity.setUpdatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
+
         return folder;
     }
 
@@ -358,10 +436,34 @@ public class DLDocumentService {
                     dlDocumentRepository.deleteById(dlDocumentId);
                 }
             } else {
-                boolean isDocDeleted = ftpService.deleteDirectory(docLocation, dlDoc.getVersionGUId());
-                log.info("DLDocumentService - Deletion on FTP ended with success: " + isDocDeleted);
-                if (isDocDeleted) {
-                    dlDocumentRepository.deleteById(dlDocumentId);
+                List<Long> childFolderIds = new ArrayList<>();
+                List<DLDocument> childDocs;
+                Long currParent = dlDocumentId;
+                if (checkIsParent(currParent)) {
+                    childDocs = getChildren(currParent);
+                    for (DLDocument doc : childDocs) {
+                        if (!doc.getFolder()) {
+                            deleteDLDocument(doc.getId());
+                            childDocs.remove(doc);
+                        } else {
+                            childFolderIds.add(doc.getId());
+                            childDocs.remove(doc);
+                            for (Long folId : childFolderIds) {
+                                if (checkIsParent(folId)) {
+                                    currParent = folId;
+                                    deleteDLDocument(folId);
+                                    dlDocumentRepository.deleteById(folId);
+                                    childFolderIds.remove(folId);
+                                    break;
+                                } else {
+                                    dlDocumentRepository.deleteById(folId);
+                                    childFolderIds.remove(folId);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    dlDocumentRepository.deleteById(currParent);
                 }
             }
         } catch (Exception e) {
@@ -369,7 +471,8 @@ public class DLDocumentService {
         }
     }
 
-    private StringBuffer getSelectedPath(DLDocument selectedFolderNode, String treeSelected, final String customPathSeparator) {
+    private StringBuffer getSelectedPath(DLDocument selectedFolderNode, String treeSelected,
+                                         final String customPathSeparator) {
         StringBuilder selectedFolderPath = new StringBuilder();
         final String PATH_SEPARATOR = DocumentUtil.buildPathSeparator(customPathSeparator);
         DLDocument folder = selectedFolderNode;
@@ -403,9 +506,19 @@ public class DLDocumentService {
 
             return dlDocumentDTO;
         }
-
         return new DLDocumentDTO();
     }
+
+    public Boolean checkIsParent(Long dlDocumentId) {
+        return !AppUtility.isEmpty(dlDocumentRepository.findByParentIdAndArchivedFalse(dlDocumentId));
+    }
+
+    public List<DLDocument> getChildren(Long dlDocumentId) {
+        List<DLDocument> children = null;
+        children = dlDocumentRepository.findByParentIdAndArchivedFalse(dlDocumentId);
+        return children;
+    }
+
 
     public String getDocumentContent(MultipartFile file ){
         ITesseract instance = new Tesseract();

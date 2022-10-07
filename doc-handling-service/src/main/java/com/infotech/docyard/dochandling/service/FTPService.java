@@ -1,6 +1,7 @@
 package com.infotech.docyard.dochandling.service;
 
 import com.infotech.docyard.dochandling.config.SFTPProperties;
+import com.jcraft.jsch.ChannelSftp;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTP;
@@ -9,8 +10,8 @@ import org.apache.commons.net.ftp.FTPFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.file.Files;
 import java.util.Arrays;
 
 @Service
@@ -19,6 +20,30 @@ public class FTPService {
 
     @Autowired
     private SFTPProperties config;
+
+    public byte[] downloadFile(String targetPath) throws Exception {
+        log.info("FTP upload file method called.. " + config.getRoot());
+
+        FTPClient ftpClient = createFtp();
+        InputStream inputStream = ftpClient.retrieveFileStream(targetPath);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "Cp1252"));
+        try {
+            byte[] buffer = new byte[1000000000];
+            while(reader.ready()) {
+                if ((inputStream.read(buffer, 0, buffer.length)) == -1) {
+                    return buffer;
+                }
+                return buffer;
+            }
+            inputStream.close();
+            return buffer;
+        } catch (Exception e) {
+            log.error("Upload file failure. TargetPath: {}", targetPath, e);
+            throw new Exception("Upload File failure");
+        } finally {
+            this.disconnect(ftpClient);
+        }
+    }
 
     public boolean uploadFile(String targetPath, String fileName, InputStream inputStream) throws Exception {
         log.info("FTP upload file method called.. " + config.getRoot());
@@ -70,7 +95,9 @@ public class FTPService {
 
         FTPClient ftpClient = createFtp();
         try {
+            ftpClient.printWorkingDirectory();
             FTPFile[] subFiles = ftpClient.listFiles(targetPath);
+            FTPFile[] subDirs = ftpClient.listDirectories(targetPath);
 
             if (subFiles != null && subFiles.length > 0) {
                 for (FTPFile aFile : subFiles) {
@@ -79,9 +106,9 @@ public class FTPService {
                         // skip parent directory and the directory itself
                         continue;
                     }
-                    String filePath = targetPath + "/" + currentFileName;
+                    String filePath = targetPath + currentFileName;
                     if (aFile.isDirectory()) {
-                        // remove the sub directory
+                        // remove the subdirectory
                         deleteDirectory(filePath, currentFileName);
                     } else {
                         // delete the file
