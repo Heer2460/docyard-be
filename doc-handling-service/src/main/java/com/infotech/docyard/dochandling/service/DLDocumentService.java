@@ -12,6 +12,7 @@ import com.infotech.docyard.dochandling.dto.UploadDocumentDTO;
 import com.infotech.docyard.dochandling.enums.DLActivityTypeEnum;
 import com.infotech.docyard.dochandling.enums.FileTypeEnum;
 import com.infotech.docyard.dochandling.enums.FileViewerEnum;
+import com.infotech.docyard.dochandling.exceptions.DataValidationException;
 import com.infotech.docyard.dochandling.util.AppConstants;
 import com.infotech.docyard.dochandling.util.AppUtility;
 import com.infotech.docyard.dochandling.util.DocumentUtil;
@@ -287,6 +288,10 @@ public class DLDocumentService {
     public DLDocument createFolder(DLDocumentDTO folderRequestDTO) {
         log.info("DLDocumentService - createFolder method called...");
 
+        Boolean folderAlreadyExist = dlDocumentRepository.existsByNameAndFolderTrue(folderRequestDTO.getName());
+        if (folderAlreadyExist) {
+            throw new DataValidationException(AppUtility.getResourceMessage("folder.name.already.exist"));
+        }
         DLDocument folder = new DLDocument();
         folder.setName(folderRequestDTO.getName().trim());
         folder.setTitle(folderRequestDTO.getTitle().trim());
@@ -308,6 +313,7 @@ public class DLDocumentService {
         activity.setUpdatedBy(folderRequestDTO.getUpdatedBy());
         activity.setUpdatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
+
         return folder;
     }
 
