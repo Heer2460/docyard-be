@@ -22,4 +22,7 @@ public interface DLDocumentRepository extends JpaRepository<DLDocument, Long> {
     List<DLDocument> findByParentIdAndArchivedFalse(Long parentId);
 
     DLDocument findByName(String name);
+
+    Boolean existsByNameAndFolderTrue(String name);
+
 }
