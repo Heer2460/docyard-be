@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -118,6 +119,9 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
 
 
     public void fillDlDocumentComments(List<DLDocumentComment> dlDocumentCommentList) {
+        if(AppUtility.isEmpty(this.dlDocumentCommentDTOList)){
+            this.dlDocumentCommentDTOList = new ArrayList<>();
+        }
         for (DLDocumentComment cm : dlDocumentCommentList) {
             this.dlDocumentCommentDTOList.add(new DLDocumentCommentDTO().convertToNewDTO(cm, true));
         }

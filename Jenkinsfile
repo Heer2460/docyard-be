@@ -13,7 +13,16 @@ pipeline {
          steps{
              sh 'mvn clean install -f docyard-be/pom.xml'
          }
-         
-        }
+       }
+     stage('Test') {
+         steps{
+             echo 'This is testing phase.'
+         }
+       }
+      stage('Deploy') {
+         steps{
+             echo 'This is deployment phase.'
+         }
+       }
     }
 }
