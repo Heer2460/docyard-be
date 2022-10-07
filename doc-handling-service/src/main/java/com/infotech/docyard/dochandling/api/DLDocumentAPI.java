@@ -42,6 +42,21 @@ public class DLDocumentAPI {
                 .buildResponseList(documentDTOList);
     }
 
+    @RequestMapping(value = "/favourite", method = RequestMethod.GET)
+    public CustomResponse getAllFavouriteDLDocumentsByFolder(HttpServletRequest request,
+                                                             @RequestParam(value = "folderId", required = false) Long folderId) throws CustomException {
+        log.info("getAllFavouriteDLDocumentsByFolderAndArchive API initiated...");
+
+        List<DLDocumentDTO> documentDTOList = null;
+        try {
+            documentDTOList = documentService.getAllFavouriteDLDocumentsByFolder(folderId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility
+                .buildResponseList(documentDTOList);
+    }
+
     @RequestMapping(value = "/recent/owner/{ownerId}", method = RequestMethod.GET)
     public CustomResponse getAllRecentDLDocumentByOwnerId(HttpServletRequest request,
                                                           @PathVariable(value = "ownerId") Long ownerId) throws CustomException {

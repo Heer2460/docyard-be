@@ -45,30 +45,6 @@ public class FTPService {
         }
     }
 
-    public InputStream downloadInputStream(String targetPath) throws Exception {
-        FTPClient ftpClient = createFtp();
-        OutputStream outputStream = null;
-        try {
-            ftpClient.changeWorkingDirectory(config.getRoot());
-            log.info("Change path to {}", config.getRoot());
-
-            File file = new File(targetPath.substring(targetPath.lastIndexOf("/") + 1));
-
-            outputStream = Files.newOutputStream(file.toPath());
-            ftpClient.get(targetPath, outputStream);
-            log.info("Download file success. TargetPath: {}", targetPath);
-            return new FileInputStream(file);
-        } catch (Exception e) {
-            log.error("Download file failure. TargetPath: {}", targetPath, e);
-            throw new Exception("Download File failure");
-        } finally {
-            if (outputStream != null) {
-                outputStream.close();
-            }
-            this.disconnect(sftp);
-        }
-    }
-
     public boolean uploadFile(String targetPath, String fileName, InputStream inputStream) throws Exception {
         log.info("FTP upload file method called.. " + config.getRoot());
 

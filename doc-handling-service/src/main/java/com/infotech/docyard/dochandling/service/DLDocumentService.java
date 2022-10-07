@@ -70,6 +70,31 @@ public class DLDocumentService {
         return documentDTOList;
     }
 
+    public List<DLDocumentDTO> getAllFavouriteDLDocumentsByFolder(Long folderId) {
+        log.info("DLDocumentService - getAllFavouriteDLDocumentsByFolder method called...");
+
+        List<DLDocumentDTO> documentDTOList = new ArrayList<>();
+        List<DLDocument> dlDocumentList;
+        if (AppUtility.isEmpty(folderId) || folderId == 0L) {
+            dlDocumentList = dlDocumentRepository.findByParentIdIsNullAndFavouriteOrderByUpdatedOnAsc(true);
+        } else {
+            dlDocumentList = dlDocumentRepository.findByParentIdAndFavouriteOrderByUpdatedOnAsc(folderId, true);
+        }
+        for (DLDocument dlDoc : dlDocumentList) {
+            DLDocumentDTO dto = new DLDocumentDTO();
+            dto.convertToDTO(dlDoc, false);
+
+            Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDoc.getCreatedBy(), Object.class);
+            if (!AppUtility.isEmpty(response)) {
+                HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+                dto.setCreatedByName((String) map.get("name"));
+                dto.setUpdatedByName((String) map.get("name"));
+            }
+            documentDTOList.add(dto);
+        }
+        return documentDTOList;
+    }
+
     @Transactional(rollbackFor = {Throwable.class})
     public DLDocument updateFavourite(Long dlDocumentId, Boolean favourite) {
         log.info("DLDocumentService - updateFavourite method called...");
