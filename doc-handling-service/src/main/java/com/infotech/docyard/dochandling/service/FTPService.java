@@ -20,6 +20,31 @@ public class FTPService {
     @Autowired
     private SFTPProperties config;
 
+    public boolean downloadFile(String targetPath, String fileName, InputStream inputStream) throws Exception {
+        log.info("FTP upload file method called.. " + config.getRoot());
+
+        FTPClient ftpClient = createFtp();
+        try {
+            ftpClient.changeWorkingDirectory(config.getRoot());
+            log.info("Change path to " + config.getRoot());
+
+            int index = targetPath.lastIndexOf("/");
+            String fileDir = targetPath.substring(0, index);
+            boolean dirs = this.createDirs(fileDir, ftpClient);
+            if (!dirs) {
+                log.error("Remote path error. path:{}", targetPath);
+                throw new Exception("Upload File failure");
+            }
+            ftpClient.storeFile(fileName, inputStream);
+            return true;
+        } catch (Exception e) {
+            log.error("Upload file failure. TargetPath: {}", targetPath, e);
+            throw new Exception("Upload File failure");
+        } finally {
+            this.disconnect(ftpClient);
+        }
+    }
+
     public boolean uploadFile(String targetPath, String fileName, InputStream inputStream) throws Exception {
         log.info("FTP upload file method called.. " + config.getRoot());
 
@@ -70,7 +95,9 @@ public class FTPService {
 
         FTPClient ftpClient = createFtp();
         try {
+            ftpClient.printWorkingDirectory();
             FTPFile[] subFiles = ftpClient.listFiles(targetPath);
+            FTPFile[] subDirs = ftpClient.listDirectories(targetPath);
 
             if (subFiles != null && subFiles.length > 0) {
                 for (FTPFile aFile : subFiles) {
@@ -79,9 +106,9 @@ public class FTPService {
                         // skip parent directory and the directory itself
                         continue;
                     }
-                    String filePath = targetPath + "/" + currentFileName;
+                    String filePath = targetPath + currentFileName;
                     if (aFile.isDirectory()) {
-                        // remove the sub directory
+                        // remove the subdirectory
                         deleteDirectory(filePath, currentFileName);
                     } else {
                         // delete the file

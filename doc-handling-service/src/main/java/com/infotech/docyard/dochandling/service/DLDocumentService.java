@@ -2,7 +2,6 @@ package com.infotech.docyard.dochandling.service;
 
 import com.infotech.docyard.dochandling.dl.entity.DLDocument;
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentActivity;
-import com.infotech.docyard.dochandling.dl.entity.DLDocumentComment;
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentVersion;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentActivityRepository;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentRepository;
@@ -90,6 +89,36 @@ public class DLDocumentService {
         return dlDocument;
     }
 
+    public DLDocument renameDLDocument(Long dlDocumentId, String name, Long userId) {
+        log.info("DLDocumentService - renameDLDocument method called...");
+
+        Optional<DLDocument> optionalDLDocument = dlDocumentRepository.findById(dlDocumentId);
+        DLDocument dlDocument = null;
+        if (!AppUtility.isEmpty(optionalDLDocument)) {
+            dlDocument = optionalDLDocument.get();
+//            String title = file.getOriginalFilename().substring(0, file.getOriginalFilename().lastIndexOf('.'));
+            dlDocument.setTitle(name);
+//            String fileName = file.getOriginalFilename().replaceAll(" ", "_");
+            dlDocument.setName(name);
+            dlDocument.setUpdatedBy(userId);
+            dlDocument.setUpdatedOn(ZonedDateTime.now());
+            /*int extDot = file.getOriginalFilename().lastIndexOf('.');
+            String extension = extDot > 0 ? file.getOriginalFilename().substring(extDot + 1) : "";
+            doc.setExtension(extension);
+            doc.setMimeType(DocumentUtil.getMimeType(extension));*/
+            dlDocument.setCurrentVersion(dlDocument.getCurrentVersion() + 1.0);
+            dlDocument.setVersion(dlDocument.getVersion() + 1.0);
+            dlDocument = dlDocumentRepository.save(dlDocument);
+            DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getUpdatedBy(), DLActivityTypeEnum.UPLOADED.getValue(),
+                    dlDocument.getId(), dlDocument.getId());
+            activity.setCreatedOn(ZonedDateTime.now());
+            dlDocumentActivityRepository.save(activity);
+            DLDocumentVersion documentVersion = createNewDocumentVersion(dlDocument, userId);
+            dlDocumentVersionRepository.save(documentVersion);
+        }
+        return dlDocument;
+    }
+
     public List<DLDocumentDTO> getAllRecentDLDocumentByOwnerId(Long ownerId) {
         log.info("DLDocumentService - getAllRecentDLDocumentByOwnerId method called...");
 
@@ -109,6 +138,18 @@ public class DLDocumentService {
             documentDTOList.add(dto);
         }
         return documentDTOList;
+    }
+
+    public DLDocument downloadDLDocumentById (Long dlDocumentId) {
+        log.info("DLDocumentService - downloadDLDocumentById method called...");
+
+        DLDocument dlDocument = null;
+        Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
+        if (!AppUtility.isEmpty(opDoc)) {
+            dlDocument = opDoc.get();
+        }
+        DLDocumentDTO dlDocumentDTO = new DLDocumentDTO();
+        return dlDocument;
     }
 
     @Transactional(rollbackFor = {Throwable.class})
@@ -350,11 +391,75 @@ public class DLDocumentService {
                     dlDocumentRepository.deleteById(dlDocumentId);
                 }
             } else {
+                List<Long> childFolderIds = new ArrayList<>();
+                List<DLDocument> childDocs;
+                Long currParent = dlDocumentId;
+                if (checkIsParent(currParent)){
+                    childDocs = getChildren(currParent);
+                    for (DLDocument doc : childDocs) {
+                        if (!doc.getFolder()) {
+                            deleteDLDocument(doc.getId());
+                            childDocs.remove(doc);
+                        } else {
+                            childFolderIds.add(doc.getId());
+                            childDocs.remove(doc);
+                            for (Long folId : childFolderIds) {
+                                if (checkIsParent(folId)) {
+                                    currParent = folId;
+                                    deleteDLDocument(folId);
+                                    dlDocumentRepository.deleteById(folId);
+                                    childFolderIds.remove(folId);
+                                    break;
+                                } else {
+                                    dlDocumentRepository.deleteById(folId);
+                                    childFolderIds.remove(folId);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    dlDocumentRepository.deleteById(currParent);
+                }
+                /*Integer index = 0;
+                HashMap<Long, List<Long>> folderChildren = new HashMap<>();
+                List<Long> childDocIds = new ArrayList<>();
+                Long currentParent = dlDocumentId;
+                List<DLDocument> childDocuments = dlDocumentRepository.findByParentId(currentParent);
+                folderChildren.put(currentParent, null);
+                childDocIds.add(dlDocumentId);
+                while (!AppUtility.isEmpty(childDocIds) &&
+                        (!AppUtility.isEmpty(folderChildren.get(currentParent)) || folderChildren.get(currentParent) != null)) {
+                    childDocIds = folderChildren.get(currentParent);
+                    if(childDocIds.contains(dlDocumentId)) {
+                        childDocIds.remove(dlDocumentId);
+                    }
+                    for (;index < childDocIds.size(); index++) {
+                        currentParent = childDocIds.get(index);
+                        childDocuments = dlDocumentRepository.findByParentId(currentParent);
+                        if (!AppUtility.isEmpty(childDocuments)) {
+
+                        }
+                    }
+
+                    for (DLDocument childDoc : childDocuments) {
+                        if (dlDocumentId != childDoc.getId()) {
+                            childDocIds.add(childDoc.getId());
+                        }
+                    }
+                    folderChildren.put(currentParent, childDocIds);
+                    childDocIds.clear();
+                }
+//                while (folderIter.hasNext() && !AppUtility.isEmpty(dlDocumentRepository.findByParentId(folderIter.next()))){
+//                    for (DLDocument doc : childDocuments) {
+//                        childFileIds.add(doc.getId());
+//                        childDocuments.remove(index);
+//                    }
+//                }
                 boolean isDocDeleted = ftpService.deleteDirectory(docLocation, dlDoc.getVersionGUId());
                 log.info("DLDocumentService - Deletion on FTP ended with success: " + isDocDeleted);
                 if (isDocDeleted) {
                     dlDocumentRepository.deleteById(dlDocumentId);
-                }
+                }*/
             }
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
@@ -386,8 +491,8 @@ public class DLDocumentService {
         return new StringBuffer(selectedFolderPath);
     }
 
-    public DLDocumentDTO getMetaOfDLDocument(Long dlDocumentId) {
-        log.info("getMetaOfDLDocument method called..");
+    public DLDocumentDTO getDLDocumentById(Long dlDocumentId) {
+        log.info("getDLDocumentById method called..");
         Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
         if (opDoc.isPresent()) {
             DLDocumentDTO dlDocumentDTO = new DLDocumentDTO();
@@ -395,7 +500,20 @@ public class DLDocumentService {
 
             return dlDocumentDTO;
         }
-
         return new DLDocumentDTO();
     }
+
+    public Boolean checkIsParent (Long dlDocumentId) {
+        if (!AppUtility.isEmpty(dlDocumentRepository.findByParentId(dlDocumentId))){
+            return true;
+        }
+        return false;
+    }
+
+    public List<DLDocument> getChildren (Long dlDocumentId) {
+        List<DLDocument> children = new ArrayList<>();
+        children = dlDocumentRepository.findByParentId(dlDocumentId);
+        return children;
+    }
+
 }

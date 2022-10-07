@@ -44,6 +44,9 @@ public class DLDocument extends BaseEntity implements Serializable {
     @Column(name = "VERSION_GUID")
     private String versionGUId;
 
+    @Column(name = "GUID")
+    private String guId;
+
     @Column(name = "IS_LEAF_NODE")
     @NotNull
     private Boolean leafNode;
