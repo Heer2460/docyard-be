@@ -356,8 +356,8 @@ public class DLDocumentService {
         }
     }
 
-    public DLDocumentDTO getMetaOfDLDocument(Long dlDocumentId) {
-        log.info("getMetaOfDLDocument method called..");
+    public DLDocumentDTO getDLDocumentById(Long dlDocumentId) {
+        log.info("getDLDocumentById method called..");
         Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
         if (opDoc.isPresent()) {
             DLDocumentDTO dlDocumentDTO = new DLDocumentDTO();
