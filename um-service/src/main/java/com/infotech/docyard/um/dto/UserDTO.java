@@ -24,8 +24,8 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
     private String username;
     private String email;
     private String name;
-    private Long phoneNumber;
-    private Long mobileNumber;
+    private String phoneNumber;
+    private String mobileNumber;
     private Long groupId;
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     private List<String> departmentIds;
