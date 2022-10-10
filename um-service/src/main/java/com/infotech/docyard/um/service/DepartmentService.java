@@ -4,6 +4,7 @@ import com.infotech.docyard.um.dl.entity.Department;
 import com.infotech.docyard.um.dl.repository.AdvSearchRepository;
 import com.infotech.docyard.um.dl.repository.DepartmentRepository;
 import com.infotech.docyard.um.dto.DepartmentDTO;
+import com.infotech.docyard.um.exceptions.DBConstraintViolationException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,6 +49,9 @@ public class DepartmentService {
     public Department saveAndUpdateDepartment(DepartmentDTO departmentDTO) {
         log.info("saveAndUpdateDepartment method called..");
 
+        if (departmentRepository.existsByCode(departmentDTO.getCode())) {
+            throw new DBConstraintViolationException("Code Already Exists");
+        }
         return departmentRepository.save(departmentDTO.convertToEntity());
     }
 

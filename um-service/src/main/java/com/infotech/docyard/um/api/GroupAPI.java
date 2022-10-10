@@ -3,9 +3,11 @@ package com.infotech.docyard.um.api;
 import com.infotech.docyard.um.dl.entity.Group;
 import com.infotech.docyard.um.dto.GroupDTO;
 import com.infotech.docyard.um.exceptions.CustomException;
+import com.infotech.docyard.um.exceptions.DBConstraintViolationException;
 import com.infotech.docyard.um.exceptions.DataValidationException;
 import com.infotech.docyard.um.exceptions.NoDataFoundException;
 import com.infotech.docyard.um.service.GroupService;
+import com.infotech.docyard.um.util.AppConstants;
 import com.infotech.docyard.um.util.AppUtility;
 import com.infotech.docyard.um.util.CustomResponse;
 import com.infotech.docyard.um.util.ResponseUtility;
@@ -27,17 +29,17 @@ public class GroupAPI {
 
     @RequestMapping(value = "/search", method = RequestMethod.GET)
     public CustomResponse searchGroup(HttpServletRequest request,
-                                      @RequestParam (value = "code",required = false)String code,
-                                      @RequestParam (value = "name",required = false)String name,
-                                      @RequestParam (value = "status",required = false)String status,
-                                      @RequestParam (value = "role",required = false) List<Long> role
-                                      )
+                                      @RequestParam(value = "code", required = false) String code,
+                                      @RequestParam(value = "name", required = false) String name,
+                                      @RequestParam(value = "status", required = false) String status,
+                                      @RequestParam(value = "role", required = false) List<Long> role
+    )
             throws CustomException, NoDataFoundException {
         log.info("searchGroup API initiated...");
 
         List<Group> groupList = null;
         try {
-            groupList = groupService.searchGroup(code, name, status,role);
+            groupList = groupService.searchGroup(code, name, status, role);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -78,13 +80,13 @@ public class GroupAPI {
     @RequestMapping(value = "/", method = RequestMethod.POST)
     public CustomResponse createGroup(HttpServletRequest request,
                                       @RequestBody GroupDTO groupDTO)
-            throws CustomException, NoDataFoundException {
+            throws CustomException, DataValidationException, NoDataFoundException {
         log.info("createGroup API initiated...");
         Group group = null;
         try {
             group = groupService.saveAndUpdateGroup(groupDTO);
         } catch (Exception e) {
-            ResponseUtility.exceptionResponse(e);
+            ResponseUtility.exceptionResponse(e, AppConstants.DBConstraints.UNQ_GROUP_CODE);
         }
         return ResponseUtility.buildResponseObject(group, new GroupDTO(), false);
     }
@@ -99,7 +101,7 @@ public class GroupAPI {
         try {
             group = groupService.saveAndUpdateGroup(groupDTO);
         } catch (Exception e) {
-            ResponseUtility.exceptionResponse(e);
+            ResponseUtility.exceptionResponse(e, AppConstants.DBConstraints.UNQ_GROUP_CODE);
         }
         return ResponseUtility.buildResponseObject(group, new GroupDTO(), false);
     }

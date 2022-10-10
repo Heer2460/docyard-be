@@ -6,6 +6,7 @@ import com.infotech.docyard.um.exceptions.CustomException;
 import com.infotech.docyard.um.exceptions.DataValidationException;
 import com.infotech.docyard.um.exceptions.NoDataFoundException;
 import com.infotech.docyard.um.service.DepartmentService;
+import com.infotech.docyard.um.util.AppConstants;
 import com.infotech.docyard.um.util.AppUtility;
 import com.infotech.docyard.um.util.CustomResponse;
 import com.infotech.docyard.um.util.ResponseUtility;
@@ -83,7 +84,7 @@ public class DepartmentAPI {
         try {
             department = departmentService.saveAndUpdateDepartment(departmentDTO);
         } catch (Exception e) {
-            ResponseUtility.exceptionResponse(e);
+            ResponseUtility.exceptionResponse(e, AppConstants.DBConstraints.UNQ_DEPARTMENT_CODE);
         }
         return ResponseUtility.buildResponseObject(department, new DepartmentDTO(), false);
     }
@@ -98,7 +99,7 @@ public class DepartmentAPI {
         try {
             department = departmentService.saveAndUpdateDepartment(departmentDTO);
         } catch (Exception e) {
-            ResponseUtility.exceptionResponse(e);
+            ResponseUtility.exceptionResponse(e, AppConstants.DBConstraints.UNQ_DEPARTMENT_CODE);
         }
         return ResponseUtility.buildResponseObject(department, new DepartmentDTO(), false);
     }

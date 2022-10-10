@@ -16,7 +16,7 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = false)
 public class Department extends BaseEntity implements Serializable {
 
-    @Column(name = "CODE")
+    @Column(name = "CODE" , unique = true)
     private String code;
 
     @Column(name = "NAME")
