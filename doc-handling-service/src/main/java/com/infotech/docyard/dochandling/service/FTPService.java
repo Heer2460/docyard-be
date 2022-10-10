@@ -29,7 +29,7 @@ public class FTPService {
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "Cp1252"));
         try {
             byte[] buffer = new byte[1000000000];
-            while(reader.ready()) {
+            while (reader.ready()) {
                 if ((inputStream.read(buffer, 0, buffer.length)) == -1) {
                     return buffer;
                 }
@@ -40,6 +40,20 @@ public class FTPService {
         } catch (Exception e) {
             log.error("Upload file failure. TargetPath: {}", targetPath, e);
             throw new Exception("Upload File failure");
+        } finally {
+            this.disconnect(ftpClient);
+        }
+    }
+
+    public InputStream downloadInputStream(String targetPath) throws Exception {
+        FTPClient ftpClient = createFtp();
+        try {
+            ftpClient.changeWorkingDirectory(config.getRoot());
+            log.info("Download file success. TargetPath: {}", targetPath);
+            return ftpClient.retrieveFileStream(targetPath);
+        } catch (Exception e) {
+            log.error("Download file failure. TargetPath: {}", targetPath, e);
+            throw new Exception("Download File failure");
         } finally {
             this.disconnect(ftpClient);
         }

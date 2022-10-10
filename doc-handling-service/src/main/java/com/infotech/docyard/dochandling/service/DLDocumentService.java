@@ -24,6 +24,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -36,6 +37,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.List;
@@ -597,6 +599,29 @@ public class DLDocumentService {
             return dlDocumentDTO;
         }
         return new DLDocumentDTO();
+    }
+
+    public InputStreamResource downloadDLDocument(Long dlDocumentId) throws Exception {
+        log.info("downloadDLDocument method called..");
+
+        Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
+        InputStreamResource inputStreamResource = null;
+
+        if (opDoc.isPresent()) {
+            DLDocument doc = opDoc.get();
+            if (!doc.getFolder()) {
+                InputStream inputStream = ftpService.downloadInputStream(doc.getVersionGUId());
+                inputStreamResource = new InputStreamResource(inputStream);
+
+                DLDocumentActivity activity = new DLDocumentActivity(doc.getCreatedBy(), DLActivityTypeEnum.DOWNLOADED.getValue(),
+                        doc.getId(), doc.getId());
+                activity.setCreatedOn(ZonedDateTime.now());
+                dlDocumentActivityRepository.save(activity);
+            }
+        } else {
+            throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+        }
+        return inputStreamResource;
     }
 
     public Boolean checkIsParent(Long dlDocumentId) {
