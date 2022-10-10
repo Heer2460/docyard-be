@@ -13,6 +13,7 @@ import com.infotech.docyard.dochandling.util.ResponseUtility;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -93,20 +94,23 @@ public class DLDocumentAPI {
 
     @RequestMapping(value = "/download/{dlDocumentId}", method = RequestMethod.POST)
     public ResponseEntity<InputStreamResource> downloadDocument(HttpServletRequest request,
-                                                                @PathVariable(value = "dlDOcumentId") Long dlDocumentId,
-                                                                @RequestBody InputStreamResource downloadRequest) throws CustomException {
+                                                                @PathVariable(value = "dlDocumentId") Long dlDocumentId)
+            throws CustomException {
         log.info("downloadDLDocumentById API initiated...");
+
         DLDocument dlDocument = null;
         if (AppUtility.isEmpty(dlDocumentId)) {
             throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
         }
+        InputStreamResource inputStreamResource = null;
         try {
-            InputStreamResource inputStreamResource = documentService.downloadDLDocumentById(dlDocumentId);
+            inputStreamResource = documentService.downloadDLDocumentById(dlDocumentId);
         } catch (Exception e) {
-            ResponseUtility.exceptionResponse(e);
+            log.error("downloadDocument API failed.", e.fillInStackTrace());
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return new ResponseEntity<>(null, HttpStatus.OK);
+        HttpHeaders headers = new HttpHeaders();
+        return new ResponseEntity<>(inputStreamResource, headers, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/upload", method = RequestMethod.POST)

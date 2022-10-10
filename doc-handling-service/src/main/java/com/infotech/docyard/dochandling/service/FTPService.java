@@ -1,7 +1,6 @@
 package com.infotech.docyard.dochandling.service;
 
 import com.infotech.docyard.dochandling.config.SFTPProperties;
-import com.jcraft.jsch.ChannelSftp;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTP;

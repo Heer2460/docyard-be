@@ -30,20 +30,16 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.io.*;
+import java.io.InputStream;
 import java.time.ZonedDateTime;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 @Service
 @Log4j2
@@ -181,7 +177,6 @@ public class DLDocumentService {
     public InputStreamResource downloadDLDocumentById(Long dlDocumentId) throws Exception {
         log.info("DLDocumentService - downloadDLDocumentById method called...");
 
-
         Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
         if (!opDoc.isPresent()) {
             throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
@@ -191,16 +186,8 @@ public class DLDocumentService {
                 document.getId(), document.getId());
         activity.setCreatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
-        /*InputStream inputStream =
-        boolean success = ftpClient.retrieveFile(remoteFile1, outputStream1);
-        outputStream1.close();
-        if (success) {
-            System.out.println("File #1 has been downloaded successfully.");
-        }*/
-
         String completePath = document.getLocation() + "/" + document.getVersionGUId();
         InputStream inputStream = ftpService.downloadInputStream(completePath);
-
         return new InputStreamResource(inputStream);
     }
 
