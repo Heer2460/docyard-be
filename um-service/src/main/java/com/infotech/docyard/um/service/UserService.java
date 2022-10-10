@@ -1,16 +1,15 @@
 package com.infotech.docyard.um.service;
 
 import com.infotech.docyard.um.dl.entity.*;
-import com.infotech.docyard.um.dl.entity.Module;
 import com.infotech.docyard.um.dl.repository.*;
 import com.infotech.docyard.um.dto.*;
 import com.infotech.docyard.um.enums.EmailStatusEnum;
 import com.infotech.docyard.um.enums.EmailTypeEnum;
 import com.infotech.docyard.um.exceptions.DataValidationException;
 import com.infotech.docyard.um.exceptions.NoDataFoundException;
-import com.infotech.docyard.um.util.NotificationUtility;
 import com.infotech.docyard.um.util.AppConstants;
 import com.infotech.docyard.um.util.AppUtility;
+import com.infotech.docyard.um.util.NotificationUtility;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,10 +33,6 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private DepartmentRepository departmentRepository;
-    @Autowired
-    private GroupRepository groupRepository;
-    @Autowired
     private AdvSearchRepository advSearchRepository;
     @Autowired
     private ForgotPasswordLinkRepository forgotPasswordLinkRepository;
@@ -48,14 +43,22 @@ public class UserService {
     private String baseFELink;
     @Autowired
     private NotificationService notificationService;
+    @Autowired
+    private GroupRoleRepository groupRoleRepository;
+    @Autowired
+    private RolePermissionRepository rolePermissionRepository;
+    @Autowired
+    private ModuleRepository moduleRepository;
+    @Autowired
+    private ModuleActionRepository moduleActionRepository;
 
     @Value("${fe.reset.pass.base.link}")
     private String resetPassBaseFELink;
 
-    public List<User> searchUser(String username, String name, String status) {
+    public List<User> searchUser(String username, String name, Long groupId, Long departmentId, String status) {
         log.info("searchUser method called..");
 
-        return advSearchRepository.searchUser(username, name, status);
+        return advSearchRepository.searchUser(username, name, groupId, departmentId, status);
     }
 
     public List<User> getAllUsers() {
@@ -67,10 +70,7 @@ public class UserService {
         log.info("getUserById method called..");
 
         Optional<User> user = userRepository.findById(id);
-        if (user.isPresent()) {
-            return user.get();
-        }
-        return null;
+        return user.orElse(null);
     }
 
     @Transactional
@@ -91,22 +91,6 @@ public class UserService {
                 userDTO.setProfilePhotoReceived(profileImg);
             }
             userDTO.setPassword(new BCryptPasswordEncoder().encode(userDTO.getPassword()));
-//            SimpleMailMessage msg = new SimpleMailMessage();
-//            msg.setTo(user.getEmail());
-//            msg.setText(
-//                    "Dear " + user.getName()
-//                            + ", thank you for signing up. You have been registered with the following credentials, "
-//                            + user.getEmail()
-//                            + user.getUsername()
-//                            + ", link to the system is as follows: "
-//                            + "link: www.abc.com"
-//            );
-//            try{
-//                this.mailSender.send(msg);
-//            }
-//            catch(MailException e) {
-//                ResponseUtility.exceptionResponse(e);
-//            }
             return userRepository.save(userDTO.convertToEntity());
         }
     }
@@ -115,24 +99,25 @@ public class UserService {
         log.info("updateUser method called..");
 
         Optional<User> dbUser = userRepository.findById(userDTO.getId());
-        if (AppUtility.isEmpty(dbUser)) {
-            throw new DataValidationException(AppUtility.getResourceMessage("user.not.found"));
-        }
-        if (dbUser.get().getUsername().equals(userDTO.getUsername())) {
-            if (!(dbUser.get().getEmail().equals(userDTO.getEmail()))) {
-                Boolean userExistsWithEmail = userRepository.existsByEmail(userDTO.getEmail());
-                if (userExistsWithEmail) {
-                    throw new DataValidationException(AppUtility.getResourceMessage("user.with.same.email"));
+        if (dbUser.isPresent()) {
+            if (dbUser.get().getUsername().equals(userDTO.getUsername())) {
+                if (!(dbUser.get().getEmail().equals(userDTO.getEmail()))) {
+                    Boolean userExistsWithEmail = userRepository.existsByEmail(userDTO.getEmail());
+                    if (userExistsWithEmail) {
+                        throw new DataValidationException(AppUtility.getResourceMessage("user.with.same.email"));
+                    }
                 }
-            }
-            if (!AppUtility.isEmpty(profileImg)) {
-                userDTO.setProfilePhotoReceived(profileImg);
-            }
-            userDTO.setPassword(dbUser.get().getPassword());
+                if (!AppUtility.isEmpty(profileImg)) {
+                    userDTO.setProfilePhotoReceived(profileImg);
+                }
+                userDTO.setPassword(dbUser.get().getPassword());
 
-            return userRepository.save(userDTO.convertToEntityForUpdate());
+                return userRepository.save(userDTO.convertToEntityForUpdate());
+            } else {
+                throw new DataValidationException(AppUtility.getResourceMessage("user.can.not.change.username"));
+            }
         } else {
-            throw new DataValidationException(AppUtility.getResourceMessage("user.can.not.change.username"));
+            throw new DataValidationException(AppUtility.getResourceMessage("user.not.found"));
         }
     }
 
@@ -140,28 +125,30 @@ public class UserService {
         log.info("updateProfilePicture method called..");
 
         Optional<User> dbUser = userRepository.findById(userDTO.getId());
-        userDTO.convertToDTO(dbUser.get(), false);
-        if (AppUtility.isEmpty(dbUser)) {
+        if (dbUser.isPresent()) {
+            userDTO.convertToDTO(dbUser.get(), false);
+            if (!AppUtility.isEmpty(profileImg)) {
+                userDTO.setProfilePhotoReceived(profileImg);
+            }
+            return userRepository.save(userDTO.convertToEntityForUpdate());
+        } else {
             throw new DataValidationException(AppUtility.getResourceMessage("user.not.found"));
         }
-        if (!AppUtility.isEmpty(profileImg)) {
-            userDTO.setProfilePhotoReceived(profileImg);
-        }
-        return userRepository.save(userDTO.convertToEntityForUpdate());
     }
 
-    public User updateUserStatus(UserDTO userDTO) throws Exception {
+    public User updateUserStatus(UserDTO userDTO) throws IOException {
         log.info("updateUserStatus method called..");
 
         Optional<User> dbUser = userRepository.findById(userDTO.getId());
-        if (AppUtility.isEmpty(dbUser)) {
+        if (dbUser.isPresent()) {
+            String status = userDTO.getStatus();
+            userDTO.convertToDTO(dbUser.get(), true);
+            userDTO.setStatus(status);
+            userDTO.setUpdatedOn(ZonedDateTime.now());
+            return userRepository.save(userDTO.convertToEntityForUpdate());
+        } else {
             throw new DataValidationException(AppUtility.getResourceMessage("user.not.found"));
         }
-        String status = userDTO.getStatus();
-        userDTO.convertToDTO(dbUser.get(), true);
-        userDTO.setStatus(status);
-        userDTO.setUpdatedOn(ZonedDateTime.now());
-        return userRepository.save(userDTO.convertToEntityForUpdate());
     }
 
     public void deleteUser(Long id) {
@@ -222,35 +209,6 @@ public class UserService {
         return userRepository.findByUsername(username);
     }
 
-//    public void updateResetPasswordToken(ForgetPasswordDTO forgetPasswordDTO) throws IOException, CustomException {
-//        log.info("updateResetPasswordToken method called..");
-//
-//        Optional<User> dbUser = userRepository.findByEmail(forgetPasswordDTO.getUserDTO().getEmail());
-//        if (AppUtility.isEmpty(dbUser)){
-//            throw new NoDataFoundException(AppUtility.getResourceMessage("user.not.found"));
-//        }
-//        String token = UUID.randomUUID().toString();
-//        forgetPasswordDTO.getUserDTO().convertToDTO(dbUser.get(), true);
-//        forgetPasswordDTO.getUserDTO().setPasswordResetToken(token);
-//        User user = userRepository.save(forgetPasswordDTO.getUserDTO().convertToEntityForUpdate());
-//        SimpleMailMessage msg = new SimpleMailMessage();
-//            msg.setTo(user.getEmail());
-//            msg.setText(
-//                    "Dear " + user.getName()
-//                            + ", Your password reset token is, "
-//                            + forgetPasswordDTO.getUserDTO().getPasswordResetToken()
-//                            + ", link to reset your password is as follows: "
-//                            + forgetPasswordDTO.getPasswordResetLink()
-//                            + "."
-//            );
-//            try{
-//                this.mailSender.send(msg);
-//            }
-//            catch(MailException e) {
-//                ResponseUtility.exceptionResponse(e);
-//            }
-//    }
-
     @Transactional(rollbackFor = {Throwable.class})
     public HttpStatus forgotPassword(String email) {
         log.info("forgotPassword method called..");
@@ -289,7 +247,6 @@ public class UserService {
             }
             userRepository.save(user);
         }
-
         return status;
     }
 
@@ -315,14 +272,12 @@ public class UserService {
         return status;
     }
 
-    public Boolean verifyTokenAndResetPassword(ResetPasswordDTO resetPasswordDTO) throws IOException {
+    public Boolean verifyTokenAndResetPassword(ResetPasswordDTO resetPasswordDTO) {
         log.info("forgetPassword method called..");
 
         User user = null;
         Optional<User> dbUser = userRepository.findById(resetPasswordDTO.getUserId());
-        if (AppUtility.isEmpty(dbUser.get())) {
-            throw new NoDataFoundException(AppUtility.getResourceMessage("user.not.found"));
-        } else {
+        if (dbUser.isPresent()) {
             user = dbUser.get();
             if (user.getPasswordResetToken().equals(resetPasswordDTO.getToken())) {
                 user.setForcePasswordChange(false);
@@ -333,18 +288,11 @@ public class UserService {
                 userRepository.save(user);
                 return true;
             }
+        } else {
+            throw new NoDataFoundException(AppUtility.getResourceMessage("user.not.found"));
         }
         return false;
     }
-
-    @Autowired
-    private GroupRoleRepository groupRoleRepository;
-    @Autowired
-    private RolePermissionRepository rolePermissionRepository;
-    @Autowired
-    private ModuleRepository moduleRepository;
-    @Autowired
-    private ModuleActionRepository moduleActionRepository;
 
     @Transactional(rollbackFor = {Throwable.class})
     public UserDTO userSignIn(String username) {
@@ -354,24 +302,16 @@ public class UserService {
         if (!AppUtility.isEmpty(user)) {
             userDTO = new UserDTO();
             userDTO.convertToDTO(user, false);
-
             if (user.getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND) || user.getGroup().getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND)) {
                 throw new DataValidationException("User is suspended please contact administration. ");
             }
-
             List<GroupRole> groupRoleList = groupRoleRepository.findAllByGroup_id(user.getGroup().getId());
             Set<Long> roleIds = groupRoleList.stream().map(GroupRole::getRole).map(Role::getId).collect(Collectors.toSet());
-
             List<RolePermission> rolePermissionList = rolePermissionRepository.findAllRole_idIn(roleIds);
-
             Set<Long> moduleActionIds = rolePermissionList.stream().map(RolePermission::getModuleAction).map(ModuleAction::getId).collect(Collectors.toSet());
-
             List<ModuleAction> moduleActionList = moduleActionRepository.findAllById(moduleActionIds);
-
             Set<Long> moduleIds = moduleActionList.stream().map(ModuleAction::getModule).map(Module::getId).collect(Collectors.toSet());
-
             List<Module> moduleList = moduleRepository.findAllById(moduleIds);
-
             List<ModuleDTO> moduleDTOList = getMenuList(moduleList);
 
             for (ModuleDTO moduleDTO : moduleDTOList) {
@@ -387,11 +327,8 @@ public class UserService {
                     children.setModuleActionDTOList(moduleActionDTOList);
                 }
             }
-
             userDTO.setModuleDTOList(moduleDTOList);
-
             userDTO.setModuleActionList(moduleActionList);
-
         } else {
             throw new NoDataFoundException("User not found.");
         }

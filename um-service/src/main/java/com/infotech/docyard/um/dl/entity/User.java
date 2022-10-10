@@ -36,13 +36,13 @@ public class User extends BaseEntity implements Serializable {
     @Column(name = "MOBILE_NUMBER")
     private String mobileNumber;
 
-    @Column(name="STATUS")
+    @Column(name = "STATUS")
     private String status;
 
-    @Column(name="ADDRESS")
+    @Column(name = "ADDRESS")
     private String address;
 
-    @Column(name="DEPARTMENT_IDS")
+    @Column(name = "DEPARTMENT_IDS")
     private String departmentIds;
 
     @Column(name = "IS_ONLINE", columnDefinition = "boolean default false")
@@ -68,7 +68,7 @@ public class User extends BaseEntity implements Serializable {
     @Column(name = "PROFILE_PHOTO")
     private byte[] profilePhoto;
 
-    @OneToOne(targetEntity = Group.class )
+    @OneToOne(targetEntity = Group.class)
     @JoinColumn(name = "GROUP_ID")
     private Group group;
 
