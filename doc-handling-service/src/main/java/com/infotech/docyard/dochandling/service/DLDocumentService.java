@@ -24,6 +24,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -41,6 +42,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.*;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.List;
@@ -178,22 +180,30 @@ public class DLDocumentService {
         return documentDTOList;
     }
 
-    public DLDocument downloadDLDocumentById(Long dlDocumentId) throws Exception {
+    public InputStreamResource downloadDLDocumentById(Long dlDocumentId) throws Exception {
         log.info("DLDocumentService - downloadDLDocumentById method called...");
 
-        DLDocument dlDocument = null;
+
         Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
         if (!opDoc.isPresent()) {
             throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
         }
+        DLDocument document = opDoc.get();
+        DLDocumentActivity activity = new DLDocumentActivity(document.getCreatedBy(), DLActivityTypeEnum.DOWNLOADED.getValue(),
+                document.getId(), document.getId());
+        activity.setCreatedOn(ZonedDateTime.now());
+        dlDocumentActivityRepository.save(activity);
         /*InputStream inputStream =
         boolean success = ftpClient.retrieveFile(remoteFile1, outputStream1);
         outputStream1.close();
         if (success) {
             System.out.println("File #1 has been downloaded successfully.");
         }*/
-        ftpService.downloadFile(dlDocument.getVersionGUId());
-        return dlDocument;
+
+        String completePath = document.getLocation() + "/" + document.getVersionGUId();
+        InputStream inputStream = ftpService.downloadInputStream(completePath);
+
+        return new InputStreamResource(inputStream);
     }
 
     @Transactional(rollbackFor = {Throwable.class})

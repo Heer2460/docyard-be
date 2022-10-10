@@ -21,26 +21,50 @@ public class FTPService {
     @Autowired
     private SFTPProperties config;
 
-    public byte[] downloadFile(String targetPath) throws Exception {
-        log.info("FTP upload file method called.. " + config.getRoot());
-
-        FTPClient ftpClient = createFtp();
-        InputStream inputStream = ftpClient.retrieveFileStream(targetPath);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "Cp1252"));
+    public InputStream downloadInputStream(String targetPath) throws Exception {
+        FTPClient ftpClient = this.createFtp();
+        OutputStream outputStream = null;
         try {
-            byte[] buffer = new byte[1000000000];
-            while(reader.ready()) {
-                if ((inputStream.read(buffer, 0, buffer.length)) == -1) {
-                    return buffer;
-                }
-                return buffer;
-            }
-            inputStream.close();
-            return buffer;
+            ftpClient.changeWorkingDirectory(config.getRoot());
+            log.info("Change path to {}", config.getRoot());
+
+            File file = new File(targetPath.substring(targetPath.lastIndexOf("/") + 1));
+
+            outputStream = Files.newOutputStream(file.toPath());
+            ftpClient.retrieveFile(targetPath, outputStream);
+            log.info("Download file success. TargetPath: {}", targetPath);
+            return new FileInputStream(file);
         } catch (Exception e) {
-            log.error("Upload file failure. TargetPath: {}", targetPath, e);
-            throw new Exception("Upload File failure");
+            log.error("Download file failure. TargetPath: {}", targetPath, e);
+            throw new Exception("Download File failure");
         } finally {
+            if (outputStream != null) {
+                outputStream.close();
+            }
+            this.disconnect(ftpClient);
+        }
+    }
+
+    public File downloadFile(String targetPath) throws Exception {
+        FTPClient ftpClient = this.createFtp();
+        OutputStream outputStream = null;
+        try {
+            ftpClient.changeWorkingDirectory(config.getRoot());
+            log.info("Change path to {}", config.getRoot());
+
+            File file = new File(targetPath.substring(targetPath.lastIndexOf("/") + 1));
+
+            outputStream = Files.newOutputStream(file.toPath());
+            ftpClient.retrieveFile(targetPath, outputStream);
+            log.info("Download file success. TargetPath: {}", targetPath);
+            return file;
+        } catch (Exception e) {
+            log.error("Download file failure. TargetPath: {}", targetPath, e);
+            throw new Exception("Download File failure");
+        } finally {
+            if (outputStream != null) {
+                outputStream.close();
+            }
             this.disconnect(ftpClient);
         }
     }
