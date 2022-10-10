@@ -41,9 +41,6 @@ public class User extends BaseEntity implements Serializable {
     @Column(name="ADDRESS")
     private String address;
 
-    @Column(name="DEPARTMENT_ID")
-    private Long departmentId;
-
     @Column(name = "IS_ONLINE", columnDefinition = "boolean default false")
     private Boolean online;
 
