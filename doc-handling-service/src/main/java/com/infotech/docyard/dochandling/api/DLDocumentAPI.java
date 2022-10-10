@@ -92,7 +92,7 @@ public class DLDocumentAPI {
         return ResponseUtility.successResponseForPut(dlDocumentDTO, "Document Meta");
     }
 
-    @RequestMapping(value = "/download/{dlDocumentId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/download/{dlDocumentId}", method = RequestMethod.GET)
     public ResponseEntity<InputStreamResource> downloadDocument(HttpServletRequest request,
                                                                 @PathVariable(value = "dlDocumentId") Long dlDocumentId)
             throws CustomException {

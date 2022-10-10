@@ -24,13 +24,21 @@ public class FTPService {
         FTPClient ftpClient = this.createFtp();
         OutputStream outputStream = null;
         try {
-            ftpClient.changeWorkingDirectory(config.getRoot());
-            log.info("Change path to {}", config.getRoot());
-
+            ftpClient.listFiles();
+            ftpClient.listDirectories();
+            String root = config.getRoot();
+            ftpClient.changeWorkingDirectory(root);
+            log.info("Change path to {}", root);
             File file = new File(targetPath.substring(targetPath.lastIndexOf("/") + 1));
-
             outputStream = Files.newOutputStream(file.toPath());
-            ftpClient.retrieveFile(targetPath, outputStream);
+            ftpClient.listFiles();
+            ftpClient.listDirectories();
+            boolean downloaded = ftpClient.retrieveFile("/", outputStream);
+            downloaded = ftpClient.retrieveFile(root, outputStream);
+            if(!downloaded){
+                log.error("Download file failure. TargetPath: {}", targetPath);
+                throw new Exception("Download File failure");
+            }
             log.info("Download file success. TargetPath: {}", targetPath);
             return new FileInputStream(file);
         } catch (Exception e) {

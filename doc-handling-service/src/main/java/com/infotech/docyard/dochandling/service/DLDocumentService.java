@@ -181,12 +181,15 @@ public class DLDocumentService {
         if (!opDoc.isPresent()) {
             throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
         }
+        if (opDoc.get().getFolder()){
+            throw new DataValidationException(AppUtility.getResourceMessage("folder.not.downloaded"));
+        }
         DLDocument document = opDoc.get();
         DLDocumentActivity activity = new DLDocumentActivity(document.getCreatedBy(), DLActivityTypeEnum.DOWNLOADED.getValue(),
                 document.getId(), document.getId());
         activity.setCreatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
-        String completePath = document.getLocation() + "/" + document.getVersionGUId();
+        String completePath = document.getLocation() + document.getVersionGUId();
         InputStream inputStream = ftpService.downloadInputStream(completePath);
         return new InputStreamResource(inputStream);
     }
