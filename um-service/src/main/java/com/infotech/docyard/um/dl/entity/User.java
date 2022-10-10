@@ -31,10 +31,10 @@ public class User extends BaseEntity implements Serializable {
     private String name;
 
     @Column(name = "PHONE_NUMBER")
-    private Long phoneNumber;
+    private String phoneNumber;
 
     @Column(name = "MOBILE_NUMBER")
-    private Long mobileNumber;
+    private String mobileNumber;
 
     @Column(name = "STATUS")
     private String status;
