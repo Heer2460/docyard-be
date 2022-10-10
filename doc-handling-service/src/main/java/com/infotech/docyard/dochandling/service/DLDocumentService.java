@@ -602,6 +602,29 @@ public class DLDocumentService {
         return new DLDocumentDTO();
     }
 
+    public InputStreamResource downloadDLDocument(Long dlDocumentId) throws Exception {
+        log.info("downloadDLDocument method called..");
+
+        Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
+        InputStreamResource inputStreamResource = null;
+
+        if (opDoc.isPresent()) {
+            DLDocument doc = opDoc.get();
+            if (!doc.getFolder()) {
+                InputStream inputStream = ftpService.downloadInputStream(doc.getVersionGUId());
+                inputStreamResource = new InputStreamResource(inputStream);
+
+                DLDocumentActivity activity = new DLDocumentActivity(doc.getCreatedBy(), DLActivityTypeEnum.DOWNLOADED.getValue(),
+                        doc.getId(), doc.getId());
+                activity.setCreatedOn(ZonedDateTime.now());
+                dlDocumentActivityRepository.save(activity);
+            }
+        } else {
+            throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+        }
+        return inputStreamResource;
+    }
+
     public Boolean checkIsParent(Long dlDocumentId) {
         return !AppUtility.isEmpty(dlDocumentRepository.findByParentIdAndArchivedFalse(dlDocumentId));
     }

@@ -259,4 +259,23 @@ public class DLDocumentAPI {
         return ResponseUtility.buildResponseList(documentDTOList);
     }
 
+    @RequestMapping(value = "/download/{dlDocumentId}", method = RequestMethod.GET)
+    public ResponseEntity<InputStreamResource> downloadDLDocument(HttpServletRequest request,
+                                                                  @PathVariable(value = "dlDocumentId") Long dlDocumentId)
+            throws DataValidationException, NoDataFoundException, CustomException {
+        log.info("downloadDLDocument API initiated...");
+        HttpHeaders headers = new HttpHeaders();
+
+        headers.add("Content-Disposition", "attachment; filename=testfile");
+        InputStreamResource inputStreamResource = null;
+        if (AppUtility.isEmpty(dlDocumentId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
+        }
+        try {
+            inputStreamResource = documentService.downloadDLDocument(dlDocumentId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return new ResponseEntity<>(inputStreamResource, headers, HttpStatus.OK);
+    }
 }
