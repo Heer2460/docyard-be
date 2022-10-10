@@ -374,13 +374,13 @@ public class UserService {
 
             List<ModuleDTO> moduleDTOList = getMenuList(moduleList);
 
-            for(ModuleDTO moduleDTO:moduleDTOList){
-                for(ModuleDTO children: moduleDTO.getChildren()){
+            for (ModuleDTO moduleDTO : moduleDTOList) {
+                for (ModuleDTO children : moduleDTO.getChildren()) {
                     List<ModuleActionDTO> moduleActionDTOList = new ArrayList<>();
-                    for(ModuleAction moduleAction: moduleActionList){
-                        if(moduleAction.getModule().getId().equals(children.getModuleId())){
+                    for (ModuleAction moduleAction : moduleActionList) {
+                        if (moduleAction.getModule().getId().equals(children.getModuleId())) {
                             ModuleActionDTO moduleActionDTO = new ModuleActionDTO();
-                            moduleActionDTO.convertToDTO(moduleAction,true);
+                            moduleActionDTO.convertToDTO(moduleAction, true);
                             moduleActionDTOList.add(moduleActionDTO);
                         }
                     }

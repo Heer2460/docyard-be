@@ -203,4 +203,18 @@ public class DLDocumentAPI {
         return ResponseUtility.successResponseForPut(dlDocument, "Document Archived");
     }
 
+    @RequestMapping(value = "/trash/owner/{ownerId}", method = RequestMethod.GET)
+    public CustomResponse getAllTrashDLDocumentByOwnerId(HttpServletRequest request,
+                                                         @PathVariable(value = "ownerId") Long ownerId) throws CustomException {
+        log.info("getAllTrashDLDocumentByOwnerId API initiated...");
+
+        List<DLDocumentDTO> documentDTOList = null;
+        try {
+            documentDTOList = documentService.getAllTrashDLDocumentByOwnerId(ownerId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.buildResponseList(documentDTOList);
+    }
+
 }
