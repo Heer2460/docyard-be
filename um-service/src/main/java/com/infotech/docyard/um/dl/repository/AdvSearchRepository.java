@@ -43,25 +43,31 @@ public class AdvSearchRepository {
         return em.createQuery(cq).getResultList();
     }
 
-    public List<User> searchUser(String username, String name, String status) {
+    public List<User> searchUser(String username, String name, Long groupId, Long departmentId, String status) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<User> cq = cb.createQuery(User.class);
-
-        Root<User> dptRoot = cq.from(User.class);
+        Root<User> userRoot = cq.from(User.class);
 
         List<Predicate> predicates = new ArrayList<>();
         if (!AppUtility.isEmpty(username)) {
-            predicates.add(cb.like(dptRoot.get("username"), "%" + username + "%"));
+            predicates.add(cb.like(userRoot.get("username"), "%" + username + "%"));
         }
         if (!AppUtility.isEmpty(name)) {
-            predicates.add(cb.like(dptRoot.get("name"), "%" + name + "%"));
+            predicates.add(cb.like(userRoot.get("name"), "%" + name + "%"));
         }
+        if (!AppUtility.isEmpty(groupId)) {
+            predicates.add(cb.equal(userRoot.get("groupId"), groupId));
+        }
+        // need to implement
+        /*if (!AppUtility.isEmpty(departmentId)) {
+            predicates.add(cb.like(dptRoot.get("departmentId"), "%" + name + "%"));
+        }*/
         if (!AppUtility.isEmpty(status)) {
-            predicates.add(cb.like(dptRoot.get("status"), "%" + status + "%"));
+            predicates.add(cb.equal(userRoot.get("status"), status));
         }
         cq.where(predicates.toArray(new Predicate[0]))
                 .distinct(true);
-        cq.orderBy(cb.asc(dptRoot.get("username")));
+        cq.orderBy(cb.desc(userRoot.get("updatedOn")));
 
         return em.createQuery(cq).getResultList();
     }
@@ -89,7 +95,7 @@ public class AdvSearchRepository {
         return em.createQuery(cq).getResultList();
     }
 
-    public List<Group> searchGroup(String code, String name, String status, List<Long>role) {
+    public List<Group> searchGroup(String code, String name, String status, List<Long> role) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Group> cq = cb.createQuery(Group.class);
 

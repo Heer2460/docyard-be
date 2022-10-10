@@ -3,6 +3,7 @@ package com.infotech.docyard.dochandling.dto;
 import com.infotech.docyard.dochandling.dl.entity.DLDocument;
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentComment;
 import com.infotech.docyard.dochandling.util.AppUtility;
+import com.infotech.docyard.dochandling.util.DateTimeUtil;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -39,6 +40,7 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
     private List<Long> documentTagIds;
     private String createdByName;
     private String updatedByName;
+    private String updatedOnDetail;
     private List<DLDocumentCommentDTO> dlDocumentCommentDTOList;
 
     public DLDocumentDTO() {
@@ -105,6 +107,7 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         this.createdOn = entity.getCreatedOn();
         this.updatedBy = entity.getUpdatedBy();
         this.createdBy = entity.getCreatedBy();
+        this.updatedOnDetail = DateTimeUtil.convertDateToUFDateFormat(entity.getUpdatedOn());
         if (!partialFill) {
             fillDlDocumentComments(entity.getDocumentComments());
         }

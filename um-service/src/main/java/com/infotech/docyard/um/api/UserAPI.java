@@ -30,14 +30,16 @@ public class UserAPI {
 
     @RequestMapping(value = "/search", method = RequestMethod.GET)
     public CustomResponse searchUser(HttpServletRequest request,
-                                     @RequestParam String username,
-                                     @RequestParam String name,
-                                     @RequestParam String status) throws CustomException, NoDataFoundException {
-        log.info("getDepartmentByName API initiated...");
+                                     @RequestParam(value = "username", required = false) String username,
+                                     @RequestParam(value = "name", required = false) String name,
+                                     @RequestParam(value = "groupId", required = false) Long groupId,
+                                     @RequestParam(value = "departmentId", required = false) Long departmentId,
+                                     @RequestParam(value = "status", required = false) String status) throws CustomException, NoDataFoundException {
+        log.info("searchUser API initiated...");
 
         List<User> users = null;
         try {
-            users = userService.searchUser(username, name, status);
+            users = userService.searchUser(username, name, groupId, departmentId, status);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
