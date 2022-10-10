@@ -121,7 +121,7 @@ public class DLDocumentService {
         List<DLDocumentDTO> documentDTOList = new ArrayList<>();
         List<DLDocument> dlDocumentList;
         if (AppUtility.isEmpty(folderId) || folderId == 0L) {
-            dlDocumentList = dlDocumentRepository.findByParentIdIsNullAndCreatedByAndArchivedAndFavouriteTrueOrderByUpdatedOnDesc(ownerId, archived);
+            dlDocumentList = dlDocumentRepository.findAllByCreatedByAndArchivedAndFavouriteTrueOrderByUpdatedOnDesc(ownerId, archived);
         } else {
             dlDocumentList = dlDocumentRepository.findByCreatedByAndParentIdAndArchivedAndFavouriteTrueOrderByUpdatedOnDesc(ownerId, folderId, archived);
         }
@@ -150,7 +150,7 @@ public class DLDocumentService {
         List<DLDocumentDTO> documentDTOList = new ArrayList<>();
         List<DLDocument> dlDocumentList;
         if (AppUtility.isEmpty(folderId) || folderId == 0L) {
-            dlDocumentList = dlDocumentRepository.findByParentIdIsNullAndFavouriteOrderByUpdatedOnDesc(true);
+            dlDocumentList = dlDocumentRepository.findAllByParentIdIsNullAndFavouriteOrderByUpdatedOnDesc(true);
         } else {
             dlDocumentList = dlDocumentRepository.findByParentIdAndFavouriteOrderByUpdatedOnDesc(folderId, true);
         }
@@ -210,7 +210,7 @@ public class DLDocumentService {
                 dlDocument.setTitle(dlDocumentDTO.getName());
             } else {
                 dlDocument.setTitle(dlDocumentDTO.getName());
-                dlDocument.setName(dlDocumentDTO.getName().substring(0, dlDocument.getName().lastIndexOf('.')) + "." + dlDocument.getExtension());
+                dlDocument.setName(dlDocumentDTO.getName());
             }
             dlDocument.setUpdatedBy(dlDocumentDTO.getUpdatedBy());
             dlDocument.setUpdatedOn(ZonedDateTime.now());
