@@ -16,7 +16,7 @@ import java.util.List;
 public class Group extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @Column(name = "CODE")
+    @Column(name = "CODE" , unique = true)
     private String code;
 
     @Column(name = "NAME")

@@ -33,7 +33,7 @@ public class UserAPI {
                                      @RequestParam(value = "username") String username,
                                      @RequestParam(value = "name") String name,
                                      @RequestParam(value = "groupId") Long groupId,
-                                     @RequestParam(value = "departmentId") Long departmentId,
+                                     @RequestParam(value = "departmentId",required = false) Long departmentId,
                                      @RequestParam(value = "status") String status) throws CustomException, NoDataFoundException {
         log.info("getDepartmentByName API initiated...");
 

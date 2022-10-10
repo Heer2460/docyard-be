@@ -6,6 +6,7 @@ import com.infotech.docyard.um.exceptions.CustomException;
 import com.infotech.docyard.um.exceptions.DataValidationException;
 import com.infotech.docyard.um.exceptions.NoDataFoundException;
 import com.infotech.docyard.um.service.RoleService;
+import com.infotech.docyard.um.util.AppConstants;
 import com.infotech.docyard.um.util.AppUtility;
 import com.infotech.docyard.um.util.CustomResponse;
 import com.infotech.docyard.um.util.ResponseUtility;
@@ -82,7 +83,7 @@ public class RoleAPI {
         try {
             role = roleService.saveAndUpdateRole(roleDTO);
         } catch (Exception e) {
-            ResponseUtility.exceptionResponse(e);
+            ResponseUtility.exceptionResponse(e, AppConstants.DBConstraints.UNQ_ROLE_CODE);
         }
         return ResponseUtility.buildResponseObject(role, new RoleDTO(), false);
     }
@@ -97,7 +98,7 @@ public class RoleAPI {
         try {
             role = roleService.saveAndUpdateRole(roleDTO);
         } catch (Exception e) {
-            ResponseUtility.exceptionResponse(e);
+            ResponseUtility.exceptionResponse(e, AppConstants.DBConstraints.UNQ_ROLE_CODE);
         }
         return ResponseUtility.buildResponseObject(role, new RoleDTO(), false);
     }

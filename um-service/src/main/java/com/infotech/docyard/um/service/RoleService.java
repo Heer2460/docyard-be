@@ -4,6 +4,7 @@ import com.infotech.docyard.um.dl.entity.Role;
 import com.infotech.docyard.um.dl.repository.AdvSearchRepository;
 import com.infotech.docyard.um.dl.repository.RoleRepository;
 import com.infotech.docyard.um.dto.RoleDTO;
+import com.infotech.docyard.um.exceptions.DBConstraintViolationException;
 import com.infotech.docyard.um.util.AppUtility;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +53,9 @@ public class RoleService {
         if(AppUtility.isEmpty(role.getRolePermissions())){
             role.setRolePermissions(roleDTO.RolePermission(role));
         }
-
+        if(roleRepository.existsByCode(roleDTO.getCode())){
+            throw new DBConstraintViolationException("Code Already Exists");
+        }
         return roleRepository.save(role);
     }
 
