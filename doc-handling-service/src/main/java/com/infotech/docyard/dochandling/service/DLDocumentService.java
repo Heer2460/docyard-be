@@ -36,13 +36,11 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.*;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.List;
@@ -68,9 +66,9 @@ public class DLDocumentService {
         List<DLDocumentDTO> documentDTOList = new ArrayList<>();
         List<DLDocument> dlDocumentList;
         if (AppUtility.isEmpty(folderId) || folderId == 0L) {
-            dlDocumentList = dlDocumentRepository.findByParentIdIsNullAndArchivedOrderByUpdatedOnAsc(archived);
+            dlDocumentList = dlDocumentRepository.findByParentIdIsNullAndArchivedOrderByUpdatedOnDesc(archived);
         } else {
-            dlDocumentList = dlDocumentRepository.findByParentIdAndArchivedOrderByUpdatedOnAsc(folderId, archived);
+            dlDocumentList = dlDocumentRepository.findByParentIdAndArchivedOrderByUpdatedOnDesc(folderId, archived);
         }
         for (DLDocument dlDoc : dlDocumentList) {
             DLDocumentDTO dto = new DLDocumentDTO();
@@ -93,9 +91,9 @@ public class DLDocumentService {
         List<DLDocumentDTO> documentDTOList = new ArrayList<>();
         List<DLDocument> dlDocumentList;
         if (AppUtility.isEmpty(folderId) || folderId == 0L) {
-            dlDocumentList = dlDocumentRepository.findByParentIdIsNullAndFavouriteOrderByUpdatedOnAsc(true);
+            dlDocumentList = dlDocumentRepository.findByParentIdIsNullAndFavouriteOrderByUpdatedOnDesc(true);
         } else {
-            dlDocumentList = dlDocumentRepository.findByParentIdAndFavouriteOrderByUpdatedOnAsc(folderId, true);
+            dlDocumentList = dlDocumentRepository.findByParentIdAndFavouriteOrderByUpdatedOnDesc(folderId, true);
         }
         for (DLDocument dlDoc : dlDocumentList) {
             DLDocumentDTO dto = new DLDocumentDTO();
@@ -164,7 +162,7 @@ public class DLDocumentService {
 
         List<DLDocumentDTO> documentDTOList = new ArrayList<>();
         ZonedDateTime fromDate = ZonedDateTime.now().minusDays(7), toDate = ZonedDateTime.now();
-        List<DLDocument> recentDocs = dlDocumentRepository.findTop8ByCreatedByAndArchivedFalseAndFolderFalseAndCreatedOnBetweenOrderByUpdatedOnAsc(ownerId, fromDate, toDate);
+        List<DLDocument> recentDocs = dlDocumentRepository.findTop8ByCreatedByAndArchivedFalseAndFolderFalseAndCreatedOnBetweenOrderByUpdatedOnDesc(ownerId, fromDate, toDate);
         for (DLDocument doc : recentDocs) {
             DLDocumentDTO dto = new DLDocumentDTO();
             dto.convertToDTO(doc, false);
@@ -481,6 +479,26 @@ public class DLDocumentService {
         }
     }
 
+    public List<DLDocumentDTO> getAllTrashDLDocumentByOwnerId(Long ownerId) {
+        log.info("DLDocumentService - getAllTrashDLDocumentByOwnerId method called...");
+
+        List<DLDocumentDTO> documentDTOList = new ArrayList<>();
+        List<DLDocument> trashDlDocuments = dlDocumentRepository.findAllByArchivedTrueAndCreatedByOrderByUpdatedOnDesc(ownerId);
+        for (DLDocument doc : trashDlDocuments) {
+            DLDocumentDTO dto = new DLDocumentDTO();
+            dto.convertToDTO(doc, false);
+
+            Object response = restTemplate.getForObject("http://um-service/um/user/" + ownerId, Object.class);
+            if (!AppUtility.isEmpty(response)) {
+                HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+                dto.setCreatedByName((String) map.get("name"));
+                dto.setUpdatedByName((String) map.get("name"));
+            }
+            documentDTOList.add(dto);
+        }
+        return documentDTOList;
+    }
+
     private StringBuffer getSelectedPath(DLDocument selectedFolderNode, String treeSelected,
                                          final String customPathSeparator) {
         StringBuilder selectedFolderPath = new StringBuilder();
@@ -530,7 +548,7 @@ public class DLDocumentService {
     }
 
 
-    public String getDocumentContent(MultipartFile file ){
+    public String getDocumentContent(MultipartFile file) {
         ITesseract instance = new Tesseract();
         String content = "";
         try {
@@ -542,7 +560,6 @@ public class DLDocumentService {
             g.dispose();
             instance.setDatapath("./tessdata");
             content = instance.doOCR(newImage);
-
 
 
         } catch (TesseractException | IOException e) {

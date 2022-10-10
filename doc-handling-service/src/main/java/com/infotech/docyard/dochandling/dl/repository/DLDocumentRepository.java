@@ -13,17 +13,17 @@ public interface DLDocumentRepository extends JpaRepository<DLDocument, Long> {
 
     DLDocument findByIdAndArchivedFalseAndFolderTrue(Long folderId);
 
-    List<DLDocument> findByParentIdAndArchivedOrderByUpdatedOnAsc(Long folderId, Boolean archived);
+    List<DLDocument> findByParentIdAndArchivedOrderByUpdatedOnDesc(Long folderId, Boolean archived);
 
-    List<DLDocument> findByParentIdAndFavouriteOrderByUpdatedOnAsc(Long folderId, Boolean favourite);
-
-
-    List<DLDocument> findByParentIdIsNullAndArchivedOrderByUpdatedOnAsc(Boolean archived);
-
-    List<DLDocument> findByParentIdIsNullAndFavouriteOrderByUpdatedOnAsc(Boolean favourite);
+    List<DLDocument> findByParentIdAndFavouriteOrderByUpdatedOnDesc(Long folderId, Boolean favourite);
 
 
-    List<DLDocument> findTop8ByCreatedByAndArchivedFalseAndFolderFalseAndCreatedOnBetweenOrderByUpdatedOnAsc(long creatorId, ZonedDateTime fromDate, ZonedDateTime toDate);
+    List<DLDocument> findByParentIdIsNullAndArchivedOrderByUpdatedOnDesc(Boolean archived);
+
+    List<DLDocument> findByParentIdIsNullAndFavouriteOrderByUpdatedOnDesc(Boolean favourite);
+
+
+    List<DLDocument> findTop8ByCreatedByAndArchivedFalseAndFolderFalseAndCreatedOnBetweenOrderByUpdatedOnDesc(long creatorId, ZonedDateTime fromDate, ZonedDateTime toDate);
 
     List<DLDocument> findByParentIdAndArchivedFalse(Long parentId);
 
@@ -32,5 +32,7 @@ public interface DLDocumentRepository extends JpaRepository<DLDocument, Long> {
     Boolean existsByNameAndFolderTrue(String name);
 
     Boolean existsByName(String name);
+
+    List<DLDocument> findAllByArchivedTrueAndCreatedByOrderByUpdatedOnDesc(Long ownerId);
 
 }
