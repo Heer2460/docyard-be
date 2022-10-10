@@ -16,7 +16,7 @@ import java.time.ZonedDateTime;
 @EqualsAndHashCode(callSuper = false)
 public class User extends BaseEntity implements Serializable {
 
-    private static final long serialVersionUID = 7657451394244852266L;
+    private static final long serialVersionUID = 1L;
 
     @Column(name = "USERNAME")
     private String username;
