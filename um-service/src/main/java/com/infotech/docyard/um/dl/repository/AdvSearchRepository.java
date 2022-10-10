@@ -63,11 +63,11 @@ public class AdvSearchRepository {
             predicates.add(cb.like(dptRoot.get("departmentId"), "%" + name + "%"));
         }*/
         if (!AppUtility.isEmpty(status)) {
-            predicates.add(cb.like(userRoot.get("status"), "%" + status + "%"));
+            predicates.add(cb.equal(userRoot.get("status"), status));
         }
         cq.where(predicates.toArray(new Predicate[0]))
                 .distinct(true);
-        cq.orderBy(cb.asc(userRoot.get("username")));
+        cq.orderBy(cb.desc(userRoot.get("updatedOn")));
 
         return em.createQuery(cq).getResultList();
     }

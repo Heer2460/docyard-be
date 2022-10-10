@@ -26,7 +26,7 @@ public enum DLActivityTypeEnum {
         this.value = value;
     }
 
-    public static final DLActivityTypeEnum getByValue(String value) {
+    public static DLActivityTypeEnum getByValue(String value) {
         return map.get(value);
     }
 

@@ -24,11 +24,11 @@ import org.apache.commons.io.FileUtils;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -36,9 +36,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.ZonedDateTime;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 @Service
 @Log4j2
@@ -69,6 +70,68 @@ public class DLDocumentService {
             DLDocumentDTO dto = new DLDocumentDTO();
             dto.convertToDTO(dlDoc, false);
 
+            if (dlDoc.getFolder()) {
+                int fileCount = dlDocumentRepository.countAllByArchivedFalseAndFolderFalseAndParentId(dlDoc.getId());
+                dto.setSize(fileCount + " Files");
+            }
+            Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDoc.getCreatedBy(), Object.class);
+            if (!AppUtility.isEmpty(response)) {
+                HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+                dto.setCreatedByName((String) map.get("name"));
+                dto.setUpdatedByName((String) map.get("name"));
+            }
+            documentDTOList.add(dto);
+        }
+        return documentDTOList;
+    }
+
+    public List<DLDocumentDTO> getDocumentsByOwnerIdFolderIdAndArchive(Long ownerId, Long folderId, Boolean archived) {
+        log.info("DLDocumentService - getDocumentsByOwnerIdFolderIdAndArchive method called...");
+
+        List<DLDocumentDTO> documentDTOList = new ArrayList<>();
+        List<DLDocument> dlDocumentList;
+        if (AppUtility.isEmpty(folderId) || folderId == 0L) {
+            dlDocumentList = dlDocumentRepository.findByParentIdIsNullAndCreatedByAndArchivedOrderByUpdatedOnDesc(ownerId, archived);
+        } else {
+            dlDocumentList = dlDocumentRepository.findByCreatedByAndParentIdAndArchivedOrderByUpdatedOnDesc(ownerId, folderId, archived);
+        }
+        for (DLDocument dlDoc : dlDocumentList) {
+            DLDocumentDTO dto = new DLDocumentDTO();
+            dto.convertToDTO(dlDoc, false);
+
+            if (dlDoc.getFolder()) {
+                int fileCount = dlDocumentRepository.countAllByArchivedFalseAndFolderFalseAndParentId(dlDoc.getId());
+                dto.setSize(fileCount + " Files");
+            }
+            Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDoc.getCreatedBy(), Object.class);
+            if (!AppUtility.isEmpty(response)) {
+                HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+                dto.setCreatedByName((String) map.get("name"));
+                dto.setUpdatedByName((String) map.get("name"));
+            }
+            documentDTOList.add(dto);
+        }
+        return documentDTOList;
+    }
+
+    public List<DLDocumentDTO> getAllFavouriteDLDocumentsByOwnerIdFolderAndArchive(Long ownerId, Long folderId, Boolean archived) {
+        log.info("DLDocumentService - getAllFavouriteDLDocumentsByOwnerIdFolderAndArchive method called...");
+
+        List<DLDocumentDTO> documentDTOList = new ArrayList<>();
+        List<DLDocument> dlDocumentList;
+        if (AppUtility.isEmpty(folderId) || folderId == 0L) {
+            dlDocumentList = dlDocumentRepository.findByParentIdIsNullAndCreatedByAndArchivedAndFavouriteTrueOrderByUpdatedOnDesc(ownerId, archived);
+        } else {
+            dlDocumentList = dlDocumentRepository.findByCreatedByAndParentIdAndArchivedAndFavouriteTrueOrderByUpdatedOnDesc(ownerId, folderId, archived);
+        }
+        for (DLDocument dlDoc : dlDocumentList) {
+            DLDocumentDTO dto = new DLDocumentDTO();
+            dto.convertToDTO(dlDoc, false);
+
+            if (dlDoc.getFolder()) {
+                int fileCount = dlDocumentRepository.countAllByArchivedFalseAndFolderFalseAndParentId(dlDoc.getId());
+                dto.setSize(fileCount + " Files");
+            }
             Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDoc.getCreatedBy(), Object.class);
             if (!AppUtility.isEmpty(response)) {
                 HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
@@ -94,6 +157,10 @@ public class DLDocumentService {
             DLDocumentDTO dto = new DLDocumentDTO();
             dto.convertToDTO(dlDoc, false);
 
+            if (dlDoc.getFolder()) {
+                int fileCount = dlDocumentRepository.countAllByArchivedFalseAndFolderFalseAndParentId(dlDoc.getId());
+                dto.setSize(fileCount + " Files");
+            }
             Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDoc.getCreatedBy(), Object.class);
             if (!AppUtility.isEmpty(response)) {
                 HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
@@ -110,16 +177,19 @@ public class DLDocumentService {
         log.info("DLDocumentService - updateFavourite method called...");
 
         Optional<DLDocument> optionalDLDocument = dlDocumentRepository.findById(dlDocumentId);
-        DLDocument dlDocument = null;
-        if (!AppUtility.isEmpty(optionalDLDocument)) {
+        DLDocument dlDocument;
+        if (optionalDLDocument.isPresent()) {
             dlDocument = optionalDLDocument.get();
             dlDocument.setFavourite(favourite);
+
+            dlDocument = dlDocumentRepository.save(dlDocument);
+            DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.UPLOADED.getValue(),
+                    dlDocument.getId(), dlDocument.getId());
+            activity.setCreatedOn(ZonedDateTime.now());
+            dlDocumentActivityRepository.save(activity);
+        } else {
+            throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
         }
-        dlDocument = dlDocumentRepository.save(dlDocument);
-        DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.UPLOADED.getValue(),
-                dlDocument.getId(), dlDocument.getId());
-        activity.setCreatedOn(ZonedDateTime.now());
-        dlDocumentActivityRepository.save(activity);
         return dlDocument;
     }
 
@@ -162,6 +232,10 @@ public class DLDocumentService {
             DLDocumentDTO dto = new DLDocumentDTO();
             dto.convertToDTO(doc, false);
 
+            if (doc.getFolder()) {
+                int fileCount = dlDocumentRepository.countAllByArchivedFalseAndFolderFalseAndParentId(doc.getId());
+                dto.setSize(fileCount + " Files");
+            }
             Object response = restTemplate.getForObject("http://um-service/um/user/" + ownerId, Object.class);
             if (!AppUtility.isEmpty(response)) {
                 HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
@@ -173,22 +247,24 @@ public class DLDocumentService {
         return documentDTOList;
     }
 
-    public DLDocument downloadDLDocumentById(Long dlDocumentId) throws Exception {
+    public InputStreamResource downloadDLDocumentById(Long dlDocumentId) throws Exception {
         log.info("DLDocumentService - downloadDLDocumentById method called...");
 
-        DLDocument dlDocument = null;
         Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
         if (!opDoc.isPresent()) {
             throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
         }
-        /*InputStream inputStream =
-        boolean success = ftpClient.retrieveFile(remoteFile1, outputStream1);
-        outputStream1.close();
-        if (success) {
-            System.out.println("File #1 has been downloaded successfully.");
-        }*/
-        ftpService.downloadFile(dlDocument.getVersionGUId());
-        return dlDocument;
+        if (opDoc.get().getFolder()){
+            throw new DataValidationException(AppUtility.getResourceMessage("folder.not.downloaded"));
+        }
+        DLDocument document = opDoc.get();
+        DLDocumentActivity activity = new DLDocumentActivity(document.getCreatedBy(), DLActivityTypeEnum.DOWNLOADED.getValue(),
+                document.getId(), document.getId());
+        activity.setCreatedOn(ZonedDateTime.now());
+        dlDocumentActivityRepository.save(activity);
+        String completePath = document.getLocation() + document.getVersionGUId();
+        InputStream inputStream = ftpService.downloadInputStream(completePath);
+        return new InputStreamResource(inputStream);
     }
 
     @Transactional(rollbackFor = {Throwable.class})
@@ -219,7 +295,7 @@ public class DLDocumentService {
                 log.info("DLDocumentService - Uploaded on FTP ended with success: " + isDocUploaded);
 
                 if (isDocUploaded) {
-                    dlDoc.setContent(getDocumentContent(file));
+                    //dlDoc.setContent(getDocumentContent(file));
                     dlDoc = dlDocumentRepository.save(dlDoc);
                     DLDocumentActivity activity = new DLDocumentActivity(dlDoc.getCreatedBy(), DLActivityTypeEnum.UPLOADED.getValue(),
                             dlDoc.getId(), dlDoc.getId());
@@ -346,7 +422,6 @@ public class DLDocumentService {
     }
 
     private void getContentFromFile(DLDocument doc, File f) {
-
         FileInputStream fileInputStream = null;
         try {
             if (doc.getExtension().equalsIgnoreCase(AppConstants.FileType.EXT_DOCX)) {
@@ -360,8 +435,7 @@ public class DLDocumentService {
             } else if (doc.getExtension().equalsIgnoreCase(AppConstants.FileType.EXT_DOC)) {
                 // it needs to implement
             }
-        } catch (
-                Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -475,6 +549,10 @@ public class DLDocumentService {
             DLDocumentDTO dto = new DLDocumentDTO();
             dto.convertToDTO(doc, false);
 
+            if (doc.getFolder()) {
+                int fileCount = dlDocumentRepository.countAllByArchivedFalseAndFolderFalseAndParentId(doc.getId());
+                dto.setSize(fileCount + " Files");
+            }
             Object response = restTemplate.getForObject("http://um-service/um/user/" + ownerId, Object.class);
             if (!AppUtility.isEmpty(response)) {
                 HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
@@ -524,6 +602,29 @@ public class DLDocumentService {
         return new DLDocumentDTO();
     }
 
+    public InputStreamResource downloadDLDocument(Long dlDocumentId) throws Exception {
+        log.info("downloadDLDocument method called..");
+
+        Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
+        InputStreamResource inputStreamResource = null;
+
+        if (opDoc.isPresent()) {
+            DLDocument doc = opDoc.get();
+            if (!doc.getFolder()) {
+                InputStream inputStream = ftpService.downloadInputStream(doc.getVersionGUId());
+                inputStreamResource = new InputStreamResource(inputStream);
+
+                DLDocumentActivity activity = new DLDocumentActivity(doc.getCreatedBy(), DLActivityTypeEnum.DOWNLOADED.getValue(),
+                        doc.getId(), doc.getId());
+                activity.setCreatedOn(ZonedDateTime.now());
+                dlDocumentActivityRepository.save(activity);
+            }
+        } else {
+            throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+        }
+        return inputStreamResource;
+    }
+
     public Boolean checkIsParent(Long dlDocumentId) {
         return !AppUtility.isEmpty(dlDocumentRepository.findByParentIdAndArchivedFalse(dlDocumentId));
     }
@@ -539,7 +640,6 @@ public class DLDocumentService {
         ITesseract instance = new Tesseract();
         String content = "";
         try {
-
             BufferedImage in = ImageIO.read(file.getInputStream());
             BufferedImage newImage = new BufferedImage(in.getWidth(), in.getHeight(), BufferedImage.TYPE_INT_ARGB);
             Graphics2D g = newImage.createGraphics();
@@ -547,8 +647,6 @@ public class DLDocumentService {
             g.dispose();
             instance.setDatapath("./tessdata");
             content = instance.doOCR(newImage);
-
-
         } catch (TesseractException | IOException e) {
             System.err.println(e.getMessage());
 

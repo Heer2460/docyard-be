@@ -12,6 +12,10 @@ import com.infotech.docyard.dochandling.util.CustomResponse;
 import com.infotech.docyard.dochandling.util.ResponseUtility;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,6 +39,40 @@ public class DLDocumentAPI {
         List<DLDocumentDTO> documentDTOList = null;
         try {
             documentDTOList = documentService.getDocumentsByFolderIdAndArchive(folderId, archived);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility
+                .buildResponseList(documentDTOList);
+    }
+
+    @RequestMapping(value = "/owner/{ownerId}", method = RequestMethod.GET)
+    public CustomResponse getAllDLDocumentsByOwnerIdFolderAndArchive(HttpServletRequest request,
+                                                                     @PathVariable("ownerId") Long ownerId,
+                                                                     @RequestParam(value = "folderId", required = false) Long folderId,
+                                                                     @RequestParam(value = "archived") Boolean archived) throws CustomException {
+        log.info("getAllDLDocumentsByOwnerIdFolderAndArchive API initiated...");
+
+        List<DLDocumentDTO> documentDTOList = null;
+        try {
+            documentDTOList = documentService.getDocumentsByOwnerIdFolderIdAndArchive(ownerId, folderId, archived);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility
+                .buildResponseList(documentDTOList);
+    }
+
+    @RequestMapping(value = "/favourite/owner/{ownerId}", method = RequestMethod.GET)
+    public CustomResponse getAllFavouriteDLDocumentsByOwnerIdFolderAndArchive(HttpServletRequest request,
+                                                                              @PathVariable("ownerId") Long ownerId,
+                                                                              @RequestParam(value = "folderId", required = false) Long folderId,
+                                                                              @RequestParam(value = "archived") Boolean archived) throws CustomException {
+        log.info("getAllFavouriteDLDocumentsByOwnerIdFolderAndArchive API initiated...");
+
+        List<DLDocumentDTO> documentDTOList = null;
+        try {
+            documentDTOList = documentService.getAllFavouriteDLDocumentsByOwnerIdFolderAndArchive(ownerId, folderId, archived);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -86,23 +124,6 @@ public class DLDocumentAPI {
         }
 
         return ResponseUtility.successResponseForPut(dlDocumentDTO, "Document Meta");
-    }
-
-    @RequestMapping(value = "/download/{dlDocumentId}", method = RequestMethod.GET)
-    public CustomResponse downloadDLDocumentById(HttpServletRequest request,
-                                                 @PathVariable(value = "dlDocumentId") Long dlDocumentId) throws CustomException {
-        log.info("downloadDLDocumentById API initiated...");
-        DLDocument dlDocument = null;
-        if (AppUtility.isEmpty(dlDocumentId)) {
-            throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
-        }
-        try {
-            dlDocument = documentService.downloadDLDocumentById(dlDocumentId);
-        } catch (Exception e) {
-            ResponseUtility.exceptionResponse(e);
-        }
-
-        return ResponseUtility.buildResponseObject(dlDocument, new DLDocumentDTO(), true);
     }
 
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
@@ -217,4 +238,23 @@ public class DLDocumentAPI {
         return ResponseUtility.buildResponseList(documentDTOList);
     }
 
+    @RequestMapping(value = "/download/{dlDocumentId}", method = RequestMethod.GET)
+    public ResponseEntity<InputStreamResource> downloadDLDocument(HttpServletRequest request,
+                                                                  @PathVariable(value = "dlDocumentId") Long dlDocumentId)
+            throws DataValidationException, NoDataFoundException, CustomException {
+        log.info("downloadDLDocument API initiated...");
+        HttpHeaders headers = new HttpHeaders();
+
+        headers.add("Content-Disposition", "attachment; filename=testfile");
+        InputStreamResource inputStreamResource = null;
+        if (AppUtility.isEmpty(dlDocumentId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
+        }
+        try {
+            inputStreamResource = documentService.downloadDLDocument(dlDocumentId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return new ResponseEntity<>(inputStreamResource, headers, HttpStatus.OK);
+    }
 }

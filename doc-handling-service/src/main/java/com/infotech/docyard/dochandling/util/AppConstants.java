@@ -5,6 +5,15 @@ public class AppConstants {
     public static final String DL_PATH_SEPARATOR = "/";
     public static final double FIRST_VERSION = 1.0;
 
+    public static class DateTimeFormat {
+        static final String DATE_PATTERN_SAME_YEAR = "MMM d";
+        public static final String DATE_PATTERN_PREVIOUS_YEAR = "MMM d,yyyy";
+        public static final String TIME_PATTERN = "h:mm a";
+        public static final String DATE_FORMAT_ONE = "d-M-yyyy";
+        public static final String DATE_FORMAT_TWO = "d-MMM-yyyy";
+        public static final String DATE_FORMAT_THREE = "MMM-yyyy";
+    }
+
     public static class MimeType {
         public static final String MIME_PPT = "application/vnd.ms-powerpoint";
         public static final String MIME_PPTX = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
