@@ -126,27 +126,6 @@ public class DLDocumentAPI {
         return ResponseUtility.successResponseForPut(dlDocumentDTO, "Document Meta");
     }
 
-    @RequestMapping(value = "/download/{dlDocumentId}", method = RequestMethod.GET)
-    public ResponseEntity<InputStreamResource> downloadDocument(HttpServletRequest request,
-                                                                @PathVariable(value = "dlDocumentId") Long dlDocumentId)
-            throws CustomException {
-        log.info("downloadDLDocumentById API initiated...");
-
-        DLDocument dlDocument = null;
-        if (AppUtility.isEmpty(dlDocumentId)) {
-            throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
-        }
-        InputStreamResource inputStreamResource = null;
-        try {
-            inputStreamResource = documentService.downloadDLDocumentById(dlDocumentId);
-        } catch (Exception e) {
-            log.error("downloadDocument API failed.", e.fillInStackTrace());
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        HttpHeaders headers = new HttpHeaders();
-        return new ResponseEntity<>(inputStreamResource, headers, HttpStatus.OK);
-    }
-
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     public CustomResponse uploadDocuments(HttpServletRequest request,
                                           @RequestPart("reqObj") UploadDocumentDTO uploadDocumentDTO,
