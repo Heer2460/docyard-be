@@ -11,18 +11,19 @@ pipeline {
         }
           stage('Build') {
          steps{
-             sh 'mvn clean install -f docyard-be/pom.xml'
-         }
+            sh "mvn clean install"
+        }
+     
        }
-     stage('Test') {
-         steps{
-             echo 'This is testing phase.'
-         }
-       }
-      stage('Deploy') {
-         steps{
-             echo 'This is deployment phase.'
-         }
-       }
+//      stage('Test') {
+//          steps{
+//              echo 'This is testing phase.'
+//          }
+//        }
+//       stage('Deploy') {
+//          steps{
+//              echo 'This is deployment phase.'
+//          }
+//        }
     }
 }
