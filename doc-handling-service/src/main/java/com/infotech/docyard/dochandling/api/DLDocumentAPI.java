@@ -263,7 +263,7 @@ public class DLDocumentAPI {
             throw new DataValidationException(AppUtility.getResourceMessage("ids.not.found"));
         }
         try {
-            documentService.restoreArchivedDlDocument(dlDocumentIds);
+            dlDocumentService.restoreArchivedDlDocument(dlDocumentIds);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
