@@ -13,9 +13,12 @@ public interface DLDocumentRepository extends JpaRepository<DLDocument, Long> {
 
     DLDocument findByIdAndArchivedFalseAndFolderTrue(Long folderId);
 
+    DLDocument findByIdAndArchivedFalseAndFolderFalse(Long documentId);
+
     List<DLDocument> findByParentIdAndArchivedOrderByUpdatedOnDesc(Long folderId, Boolean archived);
 
     List<DLDocument> findByCreatedByAndParentIdAndArchivedOrderByUpdatedOnDesc(Long ownerId, Long folderId, Boolean archived);
+
     List<DLDocument> findByCreatedByAndParentIdAndArchivedAndFavouriteTrueOrderByUpdatedOnDesc(Long ownerId, Long folderId, Boolean archived);
 
     List<DLDocument> findByParentIdAndFavouriteOrderByUpdatedOnDesc(Long folderId, Boolean favourite);
