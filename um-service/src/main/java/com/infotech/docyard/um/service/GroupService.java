@@ -3,8 +3,10 @@ package com.infotech.docyard.um.service;
 import com.infotech.docyard.um.dl.entity.Group;
 import com.infotech.docyard.um.dl.repository.AdvSearchRepository;
 import com.infotech.docyard.um.dl.repository.GroupRepository;
+import com.infotech.docyard.um.dl.repository.UserRepository;
 import com.infotech.docyard.um.dto.GroupDTO;
 import com.infotech.docyard.um.exceptions.DBConstraintViolationException;
+import com.infotech.docyard.um.exceptions.DataValidationException;
 import com.infotech.docyard.um.util.AppUtility;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,9 +64,16 @@ public class GroupService {
         return groups;
     }
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Transactional
     public void deleteGroup(Long id) {
         log.info("deleteGroup method called..");
+
+        if(userRepository.existsByGroup_Id(id)){
+            throw new DataValidationException(AppUtility.getResourceMessage("record.cannot.be.deleted.dependency"));
+        }
 
         groupRepository.deleteById(id);
     }

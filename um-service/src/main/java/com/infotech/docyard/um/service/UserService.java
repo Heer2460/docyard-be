@@ -154,7 +154,15 @@ public class UserService {
     public void deleteUser(Long id) {
         log.info("deleteUser method called..");
 
-        userRepository.deleteById(id);
+        Optional<User> user = userRepository.findById(id);
+
+        if(user.isPresent()){
+            if(user.get().getStatus().equalsIgnoreCase(AppConstants.Status.ACTIVE)){
+                throw new DataValidationException(AppUtility.getResourceMessage("record.cannot.be.deleted.dependency"));
+            }else{
+                userRepository.deleteById(id);
+            }
+        }
     }
 
     @Transactional(rollbackFor = {Throwable.class})
