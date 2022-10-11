@@ -2,6 +2,7 @@ package com.infotech.docyard.dochandling.dto;
 
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentComment;
 import com.infotech.docyard.dochandling.util.AppUtility;
+import com.infotech.docyard.dochandling.util.DateTimeUtil;
 import lombok.Data;
 
 import java.io.IOException;
@@ -12,13 +13,15 @@ import java.time.ZonedDateTime;
 public class DLDocumentCommentDTO extends BaseDTO<DLDocumentCommentDTO, DLDocumentComment> implements Serializable {
     private String message;
     private Long userId;
+    private String nameOfUser;
+    private String postedOn;
     private Long docId;
 
     public DLDocumentCommentDTO() {
     }
 
     @Override
-    public DLDocumentComment convertToEntity() throws IOException {
+    public DLDocumentComment convertToEntity() {
         DLDocumentComment dlDocumentComment = new DLDocumentComment();
         dlDocumentComment.setId(this.id);
         dlDocumentComment.setMessage(this.message);
@@ -35,6 +38,7 @@ public class DLDocumentCommentDTO extends BaseDTO<DLDocumentCommentDTO, DLDocume
         this.id = entity.getId();
         this.message = entity.getMessage();
         this.userId = entity.getUserId();
+        this.postedOn = DateTimeUtil.convertDateToUFDateFormat(entity.getUpdatedOn());
         this.updatedOn = entity.getUpdatedOn();
         this.createdOn = entity.getCreatedOn();
         this.updatedBy = entity.getUpdatedBy();

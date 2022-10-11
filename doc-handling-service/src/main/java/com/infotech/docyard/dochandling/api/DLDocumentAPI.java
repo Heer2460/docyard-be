@@ -53,6 +53,9 @@ public class DLDocumentAPI {
                                                                      @RequestParam(value = "archived") Boolean archived) throws CustomException {
         log.info("getAllDLDocumentsByOwnerIdFolderAndArchive API initiated...");
 
+        if (AppUtility.isEmpty(ownerId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
         List<DLDocumentDTO> documentDTOList = null;
         try {
             documentDTOList = documentService.getDocumentsByOwnerIdFolderIdAndArchive(ownerId, folderId, archived);
@@ -70,6 +73,9 @@ public class DLDocumentAPI {
                                                                               @RequestParam(value = "archived") Boolean archived) throws CustomException {
         log.info("getAllFavouriteDLDocumentsByOwnerIdFolderAndArchive API initiated...");
 
+        if (AppUtility.isEmpty(ownerId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
         List<DLDocumentDTO> documentDTOList = null;
         try {
             documentDTOList = documentService.getAllFavouriteDLDocumentsByOwnerIdFolderAndArchive(ownerId, folderId, archived);
@@ -98,6 +104,9 @@ public class DLDocumentAPI {
                                                           @PathVariable(value = "ownerId") Long ownerId) throws CustomException {
         log.info("getAllRecentDLDocumentByOwnerId API initiated...");
 
+        if (AppUtility.isEmpty(ownerId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
         List<DLDocumentDTO> documentDTOList = null;
         try {
             documentDTOList = documentService.getAllRecentDLDocumentByOwnerId(ownerId);
@@ -111,6 +120,10 @@ public class DLDocumentAPI {
     public CustomResponse getDLDocumentById(HttpServletRequest request,
                                             @PathVariable(value = "dlDocumentId") Long dlDocumentId) throws CustomException {
         log.info("getDLDocumentById API initiated...");
+
+        if (AppUtility.isEmpty(dlDocumentId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
         DLDocumentDTO dlDocumentDTO = null;
         if (AppUtility.isEmpty(dlDocumentId)) {
             throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
@@ -131,6 +144,9 @@ public class DLDocumentAPI {
             throws CustomException, DataValidationException, NoDataFoundException {
         log.info("uploadDocuments API initiated...");
 
+        if (AppUtility.isEmpty(uploadDocumentDTO)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
         if (AppUtility.isEmpty(files)) {
             throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
         }
@@ -149,6 +165,9 @@ public class DLDocumentAPI {
             throws CustomException, DataValidationException, NoDataFoundException {
         log.info("createFolder API initiated...");
 
+        if (AppUtility.isEmpty(folderRequestDTO) || !AppUtility.isEmpty(folderRequestDTO.getId())) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
         DLDocument dlDocument = null;
         try {
             dlDocument = documentService.createFolder(folderRequestDTO);
@@ -165,6 +184,9 @@ public class DLDocumentAPI {
             throws CustomException, DataValidationException, NoDataFoundException {
         log.info("updateFavorite API initiated...");
 
+        if (AppUtility.isEmpty(dlDocumentId) || AppUtility.isEmpty(favourite)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
         DLDocument dlDocument = null;
         try {
             dlDocument = documentService.updateFavourite(dlDocumentId, favourite);
@@ -180,6 +202,9 @@ public class DLDocumentAPI {
             throws CustomException, DataValidationException, NoDataFoundException {
         log.info("renameDLDocument API initiated...");
 
+        if (AppUtility.isEmpty(dlDocumentDTO) || AppUtility.isEmpty(dlDocumentDTO.getId()) || AppUtility.isEmpty(dlDocumentDTO.getTitle())) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
         DLDocument dlDocument = null;
         try {
             dlDocument = documentService.renameDLDocument(dlDocumentDTO);
@@ -195,6 +220,9 @@ public class DLDocumentAPI {
             throws CustomException, DataValidationException, NoDataFoundException {
         log.info("deleteDLDocument API initiated...");
 
+        if (AppUtility.isEmpty(dlDocumentId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
         try {
             documentService.deleteDLDocument(dlDocumentId);
         } catch (Exception e) {
@@ -210,6 +238,9 @@ public class DLDocumentAPI {
             throws DataValidationException, NoDataFoundException, CustomException {
         log.info("archiveDlDocument API initiated...");
 
+        if (AppUtility.isEmpty(dlDocumentId) || AppUtility.isEmpty(archive)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
         DLDocument dlDocument = null;
         if (AppUtility.isEmpty(dlDocumentId)) {
             throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
@@ -227,6 +258,9 @@ public class DLDocumentAPI {
                                                          @PathVariable(value = "ownerId") Long ownerId) throws CustomException {
         log.info("getAllTrashDLDocumentByOwnerId API initiated...");
 
+        if (AppUtility.isEmpty(ownerId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
         List<DLDocumentDTO> documentDTOList = null;
         try {
             documentDTOList = documentService.getAllTrashDLDocumentByOwnerId(ownerId);
@@ -241,8 +275,11 @@ public class DLDocumentAPI {
                                                                   @PathVariable(value = "dlDocumentId") Long dlDocumentId)
             throws DataValidationException, NoDataFoundException, CustomException {
         log.info("downloadDLDocument API initiated...");
-        HttpHeaders headers = new HttpHeaders();
 
+        if (AppUtility.isEmpty(dlDocumentId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
+        HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=testfile");
         InputStreamResource inputStreamResource = null;
         if (AppUtility.isEmpty(dlDocumentId)) {
