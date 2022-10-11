@@ -338,13 +338,9 @@ public class UserService {
             userDTO.setModuleActionList(moduleActionList);
 
             // Calculating space used by user
-            Object response = restTemplate.getForObject("http://doc-handling-service/dl/dl-document/owner/" + userDTO.getId() + "?folderId=0&archived=false", Object.class);
+            Object response = restTemplate.getForObject("http://doc-handling-service/dl/dl-document/used-space/user/" + userDTO.getId(), Object.class);
             if (!AppUtility.isEmpty(response)) {
-                ObjectMapper objectMapper = new ObjectMapper();
-                String respData = objectMapper.writeValueAsString(response);
-                CustomResponseDTO respMap = objectMapper.readValue(respData, CustomResponseDTO.class);
-
-                userDTO.setSpaceUsed("");
+                userDTO.setSpaceUsed(((LinkedHashMap<?, ?>) response).get("data").toString());
             }
         } else {
             throw new NoDataFoundException("User not found.");

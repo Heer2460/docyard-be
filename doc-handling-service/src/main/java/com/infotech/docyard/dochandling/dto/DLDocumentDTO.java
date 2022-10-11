@@ -16,6 +16,7 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
 
     private String title;
     private String size;
+    private Long sizeBytes;
     private String mimeType;
     private String location;
     private String extension;
@@ -76,6 +77,7 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         dlDocument.setLocation(this.location);
         dlDocument.setMimeType(this.mimeType);
         dlDocument.setSize(this.size);
+        dlDocument.setSizeBytes(this.sizeBytes);
         dlDocument.setTitle(this.title);
         dlDocument.setCreatedOn(AppUtility.isEmpty(this.createdOn) ? ZonedDateTime.now() : this.createdOn);
         dlDocument.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
@@ -109,6 +111,7 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         this.location = entity.getLocation();
         this.mimeType = entity.getMimeType();
         this.size = entity.getSize();
+        this.sizeBytes = entity.getSizeBytes();
         this.title = entity.getTitle();
         this.updatedOn = entity.getUpdatedOn();
         this.createdOn = entity.getCreatedOn();
@@ -126,7 +129,6 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         dlDocumentDTO.convertToDTO(entity, partialFill);
         return dlDocumentDTO;
     }
-
 
     public void fillDlDocumentComments(List<DLDocumentComment> dlDocumentCommentList) {
         if (AppUtility.isEmpty(this.dlDocumentCommentDTOList)) {
