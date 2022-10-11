@@ -15,15 +15,15 @@ pipeline {
         }
      
        }
-     stage('Test') {
-         steps{
-             echo 'This is testing phase.'
-         }
-       }
-      stage('Deploy') {
-         steps{
-             echo 'This is deployment phase.'
-         }
-       }
+//      stage('Test') {
+//          steps{
+//              echo 'This is testing phase.'
+//          }
+//        }
+//       stage('Deploy') {
+//          steps{
+//              echo 'This is deployment phase.'
+//          }
+//        }
     }
 }
