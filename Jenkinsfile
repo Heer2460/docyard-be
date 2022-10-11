@@ -11,13 +11,10 @@ pipeline {
         }
           stage('Build') {
          steps{
-             sh 'mvn clean install -f docyard-be/pom.xml'
-        }
-         stage('skip') {
-         steps{
              mvn install -DskipTests=false
         }
-         }
+     
+       }
      stage('Test') {
          steps{
              echo 'This is testing phase.'
