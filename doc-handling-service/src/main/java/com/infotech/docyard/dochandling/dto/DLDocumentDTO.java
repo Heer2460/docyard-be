@@ -21,6 +21,9 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
     private String extension;
     private Double currentVersion;
     private String content;
+    private boolean ocrDone;
+    private boolean ocrSupported;
+
     private String subject;
     private Boolean shared;
     private String shareType;
@@ -66,6 +69,8 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         dlDocument.setShared(this.shared);
         dlDocument.setSubject(this.subject);
         dlDocument.setContent(this.content);
+        dlDocument.setOcrDone(this.ocrDone);
+        dlDocument.setOcrSupported(this.ocrSupported);
         dlDocument.setCurrentVersion(this.currentVersion);
         dlDocument.setExtension(this.extension);
         dlDocument.setLocation(this.location);
@@ -97,6 +102,8 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         this.shared = entity.getShared();
         this.subject = entity.getSubject();
         this.content = entity.getContent();
+        this.ocrDone = entity.getOcrDone();
+        this.ocrSupported = entity.getOcrSupported();
         this.currentVersion = entity.getCurrentVersion();
         this.extension = entity.getExtension();
         this.location = entity.getLocation();

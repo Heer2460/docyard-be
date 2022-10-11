@@ -41,6 +41,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.*;
@@ -254,26 +257,6 @@ public class DLDocumentService {
         return documentDTOList;
     }
 
-    public InputStreamResource downloadDLDocumentById(Long dlDocumentId) throws Exception {
-        log.info("DLDocumentService - downloadDLDocumentById method called...");
-
-        Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
-        if (!opDoc.isPresent()) {
-            throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
-        }
-        if (opDoc.get().getFolder()){
-            throw new DataValidationException(AppUtility.getResourceMessage("folder.not.downloaded"));
-        }
-        DLDocument document = opDoc.get();
-        DLDocumentActivity activity = new DLDocumentActivity(document.getCreatedBy(), DLActivityTypeEnum.DOWNLOADED.getValue(),
-                document.getId(), document.getId());
-        activity.setCreatedOn(ZonedDateTime.now());
-        dlDocumentActivityRepository.save(activity);
-        String completePath = document.getLocation() + document.getVersionGUId();
-        InputStream inputStream = ftpService.downloadInputStream(completePath);
-        return new InputStreamResource(inputStream);
-    }
-
     @Transactional(rollbackFor = {Throwable.class})
     public DLDocument uploadDocuments(UploadDocumentDTO uploadDocumentDTO, MultipartFile[] files) throws Exception {
         log.info("DLDocumentService - uploadDocuments method called...");
@@ -293,16 +276,12 @@ public class DLDocumentService {
                 f.deleteOnExit();
                 FileUtils.writeByteArrayToFile(f, file.getBytes());
 
-                // Getting content from file
-                getContentFromFile(dlDoc, f);
-
                 // UPLOADING ON SFTP
                 log.info("DLDocumentService - Uploaded on FTP started....");
                 boolean isDocUploaded = ftpService.uploadFile(docLocation, dlDoc.getVersionGUId(), file.getInputStream());
                 log.info("DLDocumentService - Uploaded on FTP ended with success: " + isDocUploaded);
 
                 if (isDocUploaded) {
-                    //dlDoc.setContent(getDocumentContent(file));
                     dlDoc = dlDocumentRepository.save(dlDoc);
                     DLDocumentActivity activity = new DLDocumentActivity(dlDoc.getCreatedBy(), DLActivityTypeEnum.UPLOADED.getValue(),
                             dlDoc.getId(), dlDoc.getId());
@@ -426,25 +405,6 @@ public class DLDocumentService {
     private StringBuffer getNodePath(DLDocument selectedFolderNode) {
         return getSelectedPath(selectedFolderNode,
                 "0", null);
-    }
-
-    private void getContentFromFile(DLDocument doc, File f) {
-        FileInputStream fileInputStream = null;
-        try {
-            if (doc.getExtension().equalsIgnoreCase(AppConstants.FileType.EXT_DOCX)) {
-                XWPFDocument document = null;
-
-                fileInputStream = new FileInputStream(f);
-                document = new XWPFDocument(fileInputStream);
-                XWPFWordExtractor extractor = new XWPFWordExtractor(document);
-
-                doc.setContent(extractor.getText());
-            } else if (doc.getExtension().equalsIgnoreCase(AppConstants.FileType.EXT_DOC)) {
-                // it needs to implement
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     public DLDocument createFolder(DLDocumentDTO folderRequestDTO) {
@@ -680,6 +640,8 @@ public class DLDocumentService {
 
     private StringBuffer getSelectedPath(DLDocument selectedFolderNode, String treeSelected,
                                          final String customPathSeparator) {
+        log.info("DLDocumentService - getSelectedPath method called...");
+
         StringBuilder selectedFolderPath = new StringBuilder();
         final String PATH_SEPARATOR = DocumentUtil.buildPathSeparator(customPathSeparator);
         DLDocument folder = selectedFolderNode;
@@ -705,7 +667,8 @@ public class DLDocumentService {
     }
 
     public DLDocumentDTO getDLDocumentById(Long dlDocumentId) {
-        log.info("getDLDocumentById method called..");
+        log.info("DLDocumentService - getDLDocumentById method called...");
+
         Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
         if (opDoc.isPresent()) {
             DLDocumentDTO dlDocumentDTO = new DLDocumentDTO();
@@ -717,7 +680,7 @@ public class DLDocumentService {
     }
 
     public InputStreamResource downloadDLDocument(Long dlDocumentId) throws Exception {
-        log.info("downloadDLDocument method called..");
+        log.info("DLDocumentService - downloadDLDocument method called...");
 
         Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
         InputStreamResource inputStreamResource = null;
@@ -740,17 +703,77 @@ public class DLDocumentService {
     }
 
     public Boolean checkIsParent(Long dlDocumentId) {
+        log.info("DLDocumentService - checkIsParent method called...");
+
         return !AppUtility.isEmpty(dlDocumentRepository.findByParentIdAndArchivedFalse(dlDocumentId));
     }
 
     public List<DLDocument> getChildren(Long dlDocumentId) {
+        log.info("DLDocumentService - getChildren method called...");
+
         List<DLDocument> children = null;
         children = dlDocumentRepository.findByParentIdAndArchivedFalse(dlDocumentId);
         return children;
     }
 
+    public synchronized void getContentFromAllDocuments() {
+        log.info("DLDocumentService - getContentFromAllDocuments method called...");
 
-    public String getDocumentContent(MultipartFile file) {
+        try {
+            List<DLDocument> dlDocumentList = dlDocumentRepository.findAllByFolderFalseAndArchivedFalseAndOcrDoneFalseAndOcrSupportedTrue();
+            for (DLDocument doc : dlDocumentList) {
+                InputStream inputStream = ftpService.downloadInputStream(doc.getVersionGUId());
+                if (!AppUtility.isEmpty(inputStream)) {
+                    ITesseract instance = new Tesseract();
+                    instance.setOcrEngineMode(1);
+                    Path dataDirectory = Paths.get(ClassLoader.getSystemResource("tesseractdata").toURI());
+                    instance.setDatapath(dataDirectory.toString());
+
+                    BufferedImage bufferedImage = ImageIO.read(inputStream);
+                    String result = instance.doOCR(bufferedImage);
+                    doc.setContent(result);
+                    doc.setOcrDone(true);
+                    doc.setOcrSupported(true);
+                    dlDocumentRepository.save(doc);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void getContentFromFile(DLDocument doc, File f) {
+        FileInputStream fileInputStream = null;
+        try {
+            if (doc.getExtension().equalsIgnoreCase(AppConstants.FileType.EXT_DOCX)) {
+                XWPFDocument document = null;
+
+                fileInputStream = new FileInputStream(f);
+                document = new XWPFDocument(fileInputStream);
+                XWPFWordExtractor extractor = new XWPFWordExtractor(document);
+
+                doc.setContent(extractor.getText());
+            } else if (DocumentUtil.isOCRType(doc)) {
+                /*ITesseract instance = new Tesseract();
+                instance.setLanguage("eng");
+                instance.setOcrEngineMode(1);
+                Path dataDirectory = Paths.get(ClassLoader.getSystemResource("tesseractdata").toURI());
+                instance.setDatapath(dataDirectory.toString());
+
+                String result = instance.doOCR(f);
+                doc.setContent(result);*/
+                doc.setOcrDone(false);
+                doc.setOcrSupported(true);
+            } else if (doc.getExtension().equalsIgnoreCase(AppConstants.FileType.EXT_TXT)) {
+                String data = new String(Files.readAllBytes(Paths.get(f.getAbsolutePath())));
+                doc.setContent(data);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String ocrDocument(MultipartFile file) {
         ITesseract instance = new Tesseract();
         String content = "";
         try {
@@ -762,8 +785,7 @@ public class DLDocumentService {
             instance.setDatapath("./testdata");
             content = instance.doOCR(newImage);
         } catch (TesseractException | IOException e) {
-            System.err.println(e.getMessage());
-
+            log.error(e.getMessage());
         }
         return content;
     }

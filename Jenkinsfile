@@ -1,7 +1,7 @@
 pipeline {
     agent any
    tools {
-  maven 'Maven3'
+  maven 'MAVEN_3_8'
   }
  stages {
         stage('Checkout') {
@@ -11,19 +11,19 @@ pipeline {
         }
           stage('Build') {
          steps{
-            sh "mvn clean install"
+            bat "mvn clean install"
         }
      
        }
-//      stage('Test') {
-//          steps{
-//              echo 'This is testing phase.'
-//          }
-//        }
-//       stage('Deploy') {
-//          steps{
-//              echo 'This is deployment phase.'
-//          }
-//        }
+     stage('Test') {
+         steps{
+             echo 'This is testing phase.'
+         }
+       }
+      stage('Deploy') {
+         steps{
+             echo 'This is deployment phase.'
+         }
+       }
     }
 }
