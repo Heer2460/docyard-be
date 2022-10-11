@@ -11,7 +11,7 @@ pipeline {
         }
           stage('Build') {
          steps{
-             sh 'mvn clean install -f docyard-be/pom.xml'
+             bat 'mvn clean install -f docyard-be/pom.xml'
          }
        }
      stage('Test') {
