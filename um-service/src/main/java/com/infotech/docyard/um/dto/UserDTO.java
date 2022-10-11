@@ -2,7 +2,6 @@ package com.infotech.docyard.um.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.infotech.docyard.um.dl.entity.Group;
-import com.infotech.docyard.um.dl.entity.Module;
 import com.infotech.docyard.um.dl.entity.ModuleAction;
 import com.infotech.docyard.um.dl.entity.User;
 import com.infotech.docyard.um.util.AppUtility;
@@ -42,7 +41,7 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
     private String passwordResetToken;
     private List<ModuleAction> moduleActionList;
     private List<ModuleDTO> moduleDTOList;
-
+    private String spaceUsed;
 
     public UserDTO() {
 
@@ -64,10 +63,10 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
         user.setName(this.name);
         user.setPhoneNumber(this.phoneNumber);
         user.setMobileNumber(this.mobileNumber);
-        if(!AppUtility.isEmpty(this.groupId)){
+        if (!AppUtility.isEmpty(this.groupId)) {
             user.setGroup(new Group(this.groupId));
         }
-        if(!AppUtility.isEmpty(this.departmentIds)){
+        if (!AppUtility.isEmpty(this.departmentIds)) {
             user.setDepartmentIds(this.getDepartmentIds().stream().collect(Collectors.joining(",")));
         }
         setProfilePhotoFromDTO(user, this.profilePhotoReceived);
@@ -90,10 +89,10 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
         user.setName(this.name);
         user.setPhoneNumber(this.phoneNumber);
         user.setMobileNumber(this.mobileNumber);
-        if(!AppUtility.isEmpty(this.groupId)){
+        if (!AppUtility.isEmpty(this.groupId)) {
             user.setGroup(new Group(this.groupId));
         }
-        if(!AppUtility.isEmpty(this.departmentIds)){
+        if (!AppUtility.isEmpty(this.departmentIds)) {
             user.setDepartmentIds(this.getDepartmentIds().stream().collect(Collectors.joining(",")));
         }
         setProfilePhotoFromDTO(user, this.profilePhotoReceived);
@@ -118,6 +117,7 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
         this.phoneNumber = entity.getPhoneNumber();
         this.mobileNumber = entity.getMobileNumber();
         this.groupId = AppUtility.isEmpty(entity.getGroup()) ? null : entity.getGroup().getId();
+        this.groupName = AppUtility.isEmpty(entity.getGroup()) ? null : entity.getGroup().getName();
         if (!AppUtility.isEmpty(entity.getDepartmentIds())) {
             this.setDepartmentIds(Arrays.asList(entity.getDepartmentIds().split(",")));
         }
