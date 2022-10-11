@@ -130,9 +130,17 @@ public class DocumentUtil {
     }
 
     public static boolean isRootFolder(DLDocument dlDocument) {
-        if(AppUtility.isEmpty(dlDocument)){
+        if (AppUtility.isEmpty(dlDocument)) {
             return true;
         }
         return false;
+    }
+
+    public static boolean isOCRType(DLDocument doc) {
+        return doc.getExtension().equalsIgnoreCase(AppConstants.FileType.EXT_PNG) ||
+                doc.getExtension().equalsIgnoreCase(AppConstants.FileType.EXT_JPG) ||
+                doc.getExtension().equalsIgnoreCase(AppConstants.FileType.EXT_BMP) ||
+                doc.getExtension().equalsIgnoreCase(AppConstants.FileType.EXT_JPEG) ||
+                doc.getExtension().equalsIgnoreCase(AppConstants.FileType.EXT_PDF);
     }
 }

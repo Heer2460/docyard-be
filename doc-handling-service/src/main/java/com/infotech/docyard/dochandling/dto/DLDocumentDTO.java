@@ -16,11 +16,15 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
 
     private String title;
     private String size;
+    private Long sizeBytes;
     private String mimeType;
     private String location;
     private String extension;
     private Double currentVersion;
     private String content;
+    private boolean ocrDone;
+    private boolean ocrSupported;
+
     private String subject;
     private Boolean shared;
     private String shareType;
@@ -66,11 +70,14 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         dlDocument.setShared(this.shared);
         dlDocument.setSubject(this.subject);
         dlDocument.setContent(this.content);
+        dlDocument.setOcrDone(this.ocrDone);
+        dlDocument.setOcrSupported(this.ocrSupported);
         dlDocument.setCurrentVersion(this.currentVersion);
         dlDocument.setExtension(this.extension);
         dlDocument.setLocation(this.location);
         dlDocument.setMimeType(this.mimeType);
         dlDocument.setSize(this.size);
+        dlDocument.setSizeBytes(this.sizeBytes);
         dlDocument.setTitle(this.title);
         dlDocument.setCreatedOn(AppUtility.isEmpty(this.createdOn) ? ZonedDateTime.now() : this.createdOn);
         dlDocument.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
@@ -97,11 +104,14 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         this.shared = entity.getShared();
         this.subject = entity.getSubject();
         this.content = entity.getContent();
+        this.ocrDone = entity.getOcrDone();
+        this.ocrSupported = entity.getOcrSupported();
         this.currentVersion = entity.getCurrentVersion();
         this.extension = entity.getExtension();
         this.location = entity.getLocation();
         this.mimeType = entity.getMimeType();
         this.size = entity.getSize();
+        this.sizeBytes = entity.getSizeBytes();
         this.title = entity.getTitle();
         this.updatedOn = entity.getUpdatedOn();
         this.createdOn = entity.getCreatedOn();
@@ -119,7 +129,6 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         dlDocumentDTO.convertToDTO(entity, partialFill);
         return dlDocumentDTO;
     }
-
 
     public void fillDlDocumentComments(List<DLDocumentComment> dlDocumentCommentList) {
         if (AppUtility.isEmpty(this.dlDocumentCommentDTOList)) {

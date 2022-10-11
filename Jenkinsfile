@@ -1,7 +1,7 @@
 pipeline {
     agent any
    tools {
-  maven 'Maven3'
+  maven 'MAVEN_3_8'
   }
  stages {
         stage('Checkout') {
@@ -11,8 +11,9 @@ pipeline {
         }
           stage('Build') {
          steps{
-             sh 'mvn clean install -f docyard-be/pom.xml'
-         }
+            bat "mvn clean install"
+        }
+     
        }
      stage('Test') {
          steps{

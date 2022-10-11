@@ -1,6 +1,10 @@
 package com.infotech.docyard.um.service;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.infotech.docyard.um.dl.entity.*;
+import com.infotech.docyard.um.dl.entity.Module;
 import com.infotech.docyard.um.dl.repository.*;
 import com.infotech.docyard.um.dto.*;
 import com.infotech.docyard.um.enums.EmailStatusEnum;
@@ -18,6 +22,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -38,9 +43,6 @@ public class UserService {
     private ForgotPasswordLinkRepository forgotPasswordLinkRepository;
     @Autowired
     private EmailInstanceRepository emailInstanceRepository;
-
-    @Value("${fe.base.link}")
-    private String baseFELink;
     @Autowired
     private NotificationService notificationService;
     @Autowired
@@ -51,9 +53,12 @@ public class UserService {
     private ModuleRepository moduleRepository;
     @Autowired
     private ModuleActionRepository moduleActionRepository;
-
+    @Autowired
+    private RestTemplate restTemplate;
     @Value("${fe.reset.pass.base.link}")
     private String resetPassBaseFELink;
+    @Value("${fe.base.link}")
+    private String baseFELink;
 
     public List<User> searchUser(String username, String name, Long groupId, Long departmentId, String status) {
         log.info("searchUser method called..");
@@ -63,6 +68,7 @@ public class UserService {
 
     public List<User> getAllUsers() {
         log.info("getAllUsers method called..");
+
         return userRepository.findAll();
     }
 
@@ -303,9 +309,10 @@ public class UserService {
     }
 
     @Transactional(rollbackFor = {Throwable.class})
-    public UserDTO userSignIn(String username) {
+    public UserDTO userSignIn(String username) throws JsonProcessingException {
         log.info("userSignIn method called..");
-        UserDTO userDTO = null;
+
+        UserDTO userDTO;
         User user = userRepository.findByUsername(username);
         if (!AppUtility.isEmpty(user)) {
             userDTO = new UserDTO();
@@ -337,6 +344,12 @@ public class UserService {
             }
             userDTO.setModuleDTOList(moduleDTOList);
             userDTO.setModuleActionList(moduleActionList);
+
+            // Calculating space used by user
+            Object response = restTemplate.getForObject("http://doc-handling-service/dl/dl-document/used-space/user/" + userDTO.getId(), Object.class);
+            if (!AppUtility.isEmpty(response)) {
+                userDTO.setSpaceUsed(((LinkedHashMap<?, ?>) response).get("data").toString());
+            }
         } else {
             throw new NoDataFoundException("User not found.");
         }
