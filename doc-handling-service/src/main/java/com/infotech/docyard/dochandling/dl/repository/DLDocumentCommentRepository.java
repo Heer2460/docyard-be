@@ -7,5 +7,9 @@ import java.util.List;
 
 public interface DLDocumentCommentRepository extends JpaRepository<DLDocumentComment, Long> {
 
-    public List<DLDocumentComment> findAllByDlDocument_Id(Long documentId);
+    List<DLDocumentComment> findAllByDlDocument_Id(Long documentId);
+    void deleteAllByDlDocument_Id(Long documentId);
+
+    boolean existsByDlDocument_Id(Long documentId);
+
 }

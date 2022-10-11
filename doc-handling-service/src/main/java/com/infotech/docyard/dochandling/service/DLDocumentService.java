@@ -2,8 +2,10 @@ package com.infotech.docyard.dochandling.service;
 
 import com.infotech.docyard.dochandling.dl.entity.DLDocument;
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentActivity;
+import com.infotech.docyard.dochandling.dl.entity.DLDocumentComment;
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentVersion;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentActivityRepository;
+import com.infotech.docyard.dochandling.dl.repository.DLDocumentCommentRepository;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentRepository;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentVersionRepository;
 import com.infotech.docyard.dochandling.dto.DLDocumentDTO;
@@ -52,6 +54,8 @@ public class DLDocumentService {
     private DLDocumentRepository dlDocumentRepository;
     @Autowired
     private DLDocumentVersionRepository dlDocumentVersionRepository;
+    @Autowired
+    private DLDocumentCommentRepository dlDocumentCommentRepository;
     @Autowired
     private FTPService ftpService;
     @Autowired
@@ -495,6 +499,51 @@ public class DLDocumentService {
     @Transactional(rollbackFor = {Throwable.class})
     public void deleteDLDocument(Long dlDocumentId) throws Exception {
         log.info("DLDocumentService - deleteDocument method called...");
+        if (!AppUtility.isEmpty(dlDocumentId)) {
+            if (dlDocumentRepository.existsById(dlDocumentId)) {
+                Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
+                if (opDoc.isPresent()) {
+                    DLDocument dlDocument = opDoc.get();
+                    Boolean parent = checkIsParent(dlDocumentId);
+                    if (parent) {
+                        List<DLDocument> childDocs = getChildren(dlDocumentId);
+                        if (!(childDocs == null || AppUtility.isEmpty(childDocs))) {
+                            for (DLDocument dldoc : childDocs) {
+                                deleteDLDocument(dldoc.getId());
+                            }
+                        }
+                    }
+                    try {
+                        deleteFileWithDependencies(dlDocument);
+                    } catch (Exception e) {
+                        throw new DataValidationException(AppUtility.getResourceMessage("document.deleted.failure"));
+                    }
+                }
+            }
+        }
+    }
+
+    public void deleteFileWithDependencies(DLDocument dldocument) throws Exception {
+        boolean deleted = false;
+        Long docId = dldocument.getId();
+        if (!dldocument.getFolder()) {
+            deleted = ftpService.deleteFile(dldocument.getLocation(), dldocument.getVersionGUId());
+        }
+        if (deleted || dldocument.getFolder()) {
+            if (dlDocumentVersionRepository.existsByDlDocument_Id(docId)){
+                dlDocumentVersionRepository.deleteAllByDlDocument_Id(docId);
+            }
+            if (dlDocumentActivityRepository.existsByDocId(docId)){
+                dlDocumentActivityRepository.deleteAllByDocId(docId);
+            }
+            if (dlDocumentCommentRepository.existsByDlDocument_Id(docId)){
+                dlDocumentCommentRepository.deleteAllByDlDocument_Id(docId);
+            }
+            dlDocumentRepository.deleteById(docId);
+        }
+    }
+    /*public void deleteDLDocument(Long dlDocumentId) throws Exception {
+        log.info("DLDocumentService - deleteDocument method called...");
 
         DLDocument dlDoc = null;
         Optional<DLDocument> optionalDLDoc = dlDocumentRepository.findById(dlDocumentId);
@@ -507,8 +556,6 @@ public class DLDocumentService {
             String docLocation = dlDoc.getLocation();
             log.info("DLDocumentService - Deletion on FTP started....");
             if (!dlDoc.getFolder()) {
-
-//                String guId = dlDoc.getVersionGUId().substring(dlDoc.getVersionGUId().indexOf('-') + 1);
                 boolean isDocDeleted = ftpService.deleteFile(docLocation, dlDoc.getVersionGUId());
                 log.info("DLDocumentService - Deletion on FTP ended with success: " + isDocDeleted);
                 if (isDocDeleted) {
@@ -535,19 +582,19 @@ public class DLDocumentService {
                             deleteDLDocument(doc.getId());
                             it.remove();
 //                            childDocs.removeIf(document-> Objects.equals(document.getId(), doc.getId()));
-                            /*int removeIndex = IntStream.range(0, childDocs.size())
+                            *//*int removeIndex = IntStream.range(0, childDocs.size())
                                     .filter(i -> Objects.equals(childDocs.get(i).getId(), doc.getId()))
                                     .findFirst().orElse(-1);
-                            childDocs.remove(removeIndex);*/
+                            childDocs.remove(removeIndex);*//*
                         } else {
                             Long childFolderId = doc.getId();
 //                            childFolderIds.add(doc.getId());
                             it.remove();
 //                            childDocs.removeIf(document-> Objects.equals(document.getId(), doc.getId()));
-                            /*int removeIndex = IntStream.range(0, childDocs.size())
+                            *//*int removeIndex = IntStream.range(0, childDocs.size())
                                     .filter(i -> Objects.equals(childDocs.get(i).getId(), doc.getId()))
                                     .findFirst().orElse(-1);
-                            childDocs.remove(removeIndex);*/
+                            childDocs.remove(removeIndex);*//*
 //                            for (Long folId : childFolderIds) {
                                 if (checkIsParent(childFolderId)) {
                                     currParent = childFolderId;
@@ -590,11 +637,22 @@ public class DLDocumentService {
                     }
                 }
             }
+            if (dlDocumentRepository.existsById(dlDocumentId)) {
+                if (!checkIsParent(dlDocumentId)) {
+                    if (dlDocumentActivityRepository.existsByDocId(dlDocumentId)) {
+                        dlDocumentActivityRepository.deleteAllByDocId(dlDocumentId);
+                    }
+                    if (dlDocumentVersionRepository.existsByDlDocument_Id(dlDocumentId)) {
+                        dlDocumentVersionRepository.deleteAllByDlDocument_Id(dlDocumentId);
+                    }
+                    dlDocumentRepository.deleteById(dlDocumentId);
+                }
+            }
         } catch (Exception e) {
             log.error(e.getMessage());
             ResponseUtility.exceptionResponse(e);
         }
-    }
+    }*/
 
     public List<DLDocumentDTO> getAllTrashDLDocumentByOwnerId(Long ownerId) {
         log.info("DLDocumentService - getAllTrashDLDocumentByOwnerId method called...");

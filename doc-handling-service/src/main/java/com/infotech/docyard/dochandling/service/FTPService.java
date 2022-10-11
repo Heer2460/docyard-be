@@ -120,10 +120,11 @@ public class FTPService {
 
         FTPClient ftpClient = createFtp();
         try {
-            ftpClient.changeWorkingDirectory(config.getRoot());
             FTPFile[] ftpFiles = ftpClient.listFiles();
-            boolean exist = ftpClient.deleteFile(fileName);
-            if (!exist) {
+            ftpClient.changeWorkingDirectory(config.getRoot());
+            ftpFiles = ftpClient.listFiles();
+            boolean deleted = ftpClient.deleteFile(fileName);
+            if (!deleted) {
                 log.error("Remote path error. path:{}", targetPath);
                 throw new Exception("Delete File failure");
             }
