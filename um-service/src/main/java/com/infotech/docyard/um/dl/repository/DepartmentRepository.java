@@ -10,4 +10,6 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
     List<Department> searchDepartmentByCode(String code);
 
     List<Department> searchDepartmentByCodeAndName(String code, String name);
+
+    boolean existsByCode(String code);
 }

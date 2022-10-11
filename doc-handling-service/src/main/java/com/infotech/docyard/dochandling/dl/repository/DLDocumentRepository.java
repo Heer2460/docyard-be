@@ -25,9 +25,9 @@ public interface DLDocumentRepository extends JpaRepository<DLDocument, Long> {
 
     List<DLDocument> findByParentIdIsNullAndCreatedByAndArchivedOrderByUpdatedOnDesc(Long ownerId, Boolean archived);
 
-    List<DLDocument> findByParentIdIsNullAndCreatedByAndArchivedAndFavouriteTrueOrderByUpdatedOnDesc(Long ownerId, Boolean archived);
+    List<DLDocument> findAllByCreatedByAndArchivedAndFavouriteTrueOrderByUpdatedOnDesc(Long ownerId, Boolean archived);
 
-    List<DLDocument> findByParentIdIsNullAndFavouriteOrderByUpdatedOnDesc(Boolean favourite);
+    List<DLDocument> findAllByParentIdIsNullAndFavouriteOrderByUpdatedOnDesc(Boolean favourite);
 
 
     List<DLDocument> findTop8ByCreatedByAndArchivedFalseAndFolderFalseAndCreatedOnBetweenOrderByUpdatedOnDesc(long creatorId, ZonedDateTime fromDate, ZonedDateTime toDate);

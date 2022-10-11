@@ -6,10 +6,6 @@ public class AppConstants {
 
     }
 
-    public static class DBConstraints {
-
-    }
-
     public static class Status {
         public final static String ACTIVE = "Active";
         public final static String SUSPEND = "Suspend";
@@ -38,4 +34,11 @@ public class AppConstants {
 
     }
 
+    public static class DBConstraints {
+        public final static String UNQ_CODE = "UNQ_CODE";
+        public final static String UNQ_ROLE_CODE = "UNQ_ROLE_CODE";
+        public final static String UNQ_GROUP_CODE = "UNQ_GROUP_CODE";
+        public final static String UNQ_DEPARTMENT_CODE = "UNQ_DEPARTMENT_CODE";
+
+    }
 }

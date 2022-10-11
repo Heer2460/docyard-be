@@ -76,8 +76,7 @@ public class DLDocumentAPI {
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return ResponseUtility
-                .buildResponseList(documentDTOList);
+        return ResponseUtility.buildResponseList(documentDTOList);
     }
 
     @RequestMapping(value = "/favourite", method = RequestMethod.GET)
@@ -91,8 +90,7 @@ public class DLDocumentAPI {
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return ResponseUtility
-                .buildResponseList(documentDTOList);
+        return ResponseUtility.buildResponseList(documentDTOList);
     }
 
     @RequestMapping(value = "/recent/owner/{ownerId}", method = RequestMethod.GET)
@@ -128,7 +126,7 @@ public class DLDocumentAPI {
 
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     public CustomResponse uploadDocuments(HttpServletRequest request,
-                                          @RequestPart("reqObj") UploadDocumentDTO uploadDocumentDTO,
+                                          @RequestPart(name = "reqObj") UploadDocumentDTO uploadDocumentDTO,
                                           @RequestPart(name = "doc") MultipartFile[] files)
             throws CustomException, DataValidationException, NoDataFoundException {
         log.info("uploadDocuments API initiated...");
