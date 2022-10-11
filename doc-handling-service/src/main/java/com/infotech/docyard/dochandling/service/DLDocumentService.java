@@ -7,10 +7,12 @@ import com.infotech.docyard.dochandling.dl.repository.DLDocumentActivityReposito
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentRepository;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentVersionRepository;
 import com.infotech.docyard.dochandling.dto.DLDocumentDTO;
+import com.infotech.docyard.dochandling.dto.DLDocumentRestoreDTO;
 import com.infotech.docyard.dochandling.dto.UploadDocumentDTO;
 import com.infotech.docyard.dochandling.enums.DLActivityTypeEnum;
 import com.infotech.docyard.dochandling.enums.FileTypeEnum;
 import com.infotech.docyard.dochandling.enums.FileViewerEnum;
+import com.infotech.docyard.dochandling.exceptions.CustomException;
 import com.infotech.docyard.dochandling.exceptions.DataValidationException;
 import com.infotech.docyard.dochandling.util.AppConstants;
 import com.infotech.docyard.dochandling.util.AppUtility;
@@ -496,8 +498,12 @@ public class DLDocumentService {
 
         DLDocument dlDoc = null;
         Optional<DLDocument> optionalDLDoc = dlDocumentRepository.findById(dlDocumentId);
-        try {
+        if (optionalDLDoc.isPresent()) {
             dlDoc = optionalDLDoc.get();
+        } else {
+            throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+        }
+        try {
             String docLocation = dlDoc.getLocation();
             log.info("DLDocumentService - Deletion on FTP started....");
             if (!dlDoc.getFolder()) {
@@ -506,7 +512,15 @@ public class DLDocumentService {
                 boolean isDocDeleted = ftpService.deleteFile(docLocation, dlDoc.getVersionGUId());
                 log.info("DLDocumentService - Deletion on FTP ended with success: " + isDocDeleted);
                 if (isDocDeleted) {
-                    dlDocumentRepository.deleteById(dlDocumentId);
+                    if (dlDocumentActivityRepository.existsByDocId(dlDocumentId)) {
+                        dlDocumentActivityRepository.deleteAllByDocId(dlDocumentId);
+                    }
+                    if (dlDocumentVersionRepository.existsByDlDocument_Id(dlDocumentId)) {
+                        dlDocumentVersionRepository.deleteAllByDlDocument_Id(dlDocumentId);
+                    }
+                    if (dlDocumentRepository.existsById(dlDocumentId)) {
+                        dlDocumentRepository.deleteById(dlDocumentId);
+                    }
                 }
             } else {
                 List<Long> childFolderIds = new ArrayList<>();
@@ -514,40 +528,70 @@ public class DLDocumentService {
                 Long currParent = dlDocumentId;
                 if (checkIsParent(currParent)) {
                     childDocs = getChildren(currParent);
-                    for (DLDocument doc : childDocs) {
+//                    for (DLDocument doc : childDocs) {
+                    for (ListIterator<DLDocument> it = childDocs.listIterator(); it.hasNext();){
+                        DLDocument doc = it.next();
                         if (!doc.getFolder()) {
                             deleteDLDocument(doc.getId());
-                            childDocs.removeIf(document-> Objects.equals(document.getId(), doc.getId()));
+                            it.remove();
+//                            childDocs.removeIf(document-> Objects.equals(document.getId(), doc.getId()));
                             /*int removeIndex = IntStream.range(0, childDocs.size())
                                     .filter(i -> Objects.equals(childDocs.get(i).getId(), doc.getId()))
                                     .findFirst().orElse(-1);
                             childDocs.remove(removeIndex);*/
                         } else {
-                            childFolderIds.add(doc.getId());
-                            childDocs.removeIf(document-> Objects.equals(document.getId(), doc.getId()));
+                            Long childFolderId = doc.getId();
+//                            childFolderIds.add(doc.getId());
+                            it.remove();
+//                            childDocs.removeIf(document-> Objects.equals(document.getId(), doc.getId()));
                             /*int removeIndex = IntStream.range(0, childDocs.size())
                                     .filter(i -> Objects.equals(childDocs.get(i).getId(), doc.getId()))
                                     .findFirst().orElse(-1);
                             childDocs.remove(removeIndex);*/
-                            for (Long folId : childFolderIds) {
-                                if (checkIsParent(folId)) {
-                                    currParent = folId;
-                                    deleteDLDocument(folId);
-                                    dlDocumentRepository.deleteById(folId);
-                                    childFolderIds.remove(folId);
+//                            for (Long folId : childFolderIds) {
+                                if (checkIsParent(childFolderId)) {
+                                    currParent = childFolderId;
+                                    deleteDLDocument(childFolderId);
+                                    if (dlDocumentActivityRepository.existsByDocId(childFolderId)) {
+                                        dlDocumentActivityRepository.deleteAllByDocId(childFolderId);
+                                    }
+                                    if (dlDocumentVersionRepository.existsByDlDocument_Id(childFolderId)) {
+                                        dlDocumentVersionRepository.deleteAllByDlDocument_Id(childFolderId);
+                                    }
+                                    if (dlDocumentRepository.existsById(childFolderId)) {
+                                        dlDocumentRepository.deleteById(childFolderId);
+                                    }
+//                                    childFolderIds.remove(childFolderId);
                                     break;
                                 } else {
-                                    dlDocumentRepository.deleteById(folId);
-                                    childFolderIds.remove(folId);
+                                    if (dlDocumentActivityRepository.existsByDocId(childFolderId)) {
+                                        dlDocumentActivityRepository.deleteAllByDocId(childFolderId);
+                                    }
+                                    if (dlDocumentVersionRepository.existsByDlDocument_Id(childFolderId)) {
+                                        dlDocumentVersionRepository.deleteAllByDlDocument_Id(childFolderId);
+                                    }
+                                    if (dlDocumentRepository.existsById(childFolderId)) {
+                                        dlDocumentRepository.deleteById(childFolderId);
+                                    }
+//                                    childFolderIds.remove(folId);
                                 }
-                            }
+//                            }
                         }
                     }
                 } else {
-                    dlDocumentRepository.deleteById(currParent);
+                    if (dlDocumentActivityRepository.existsByDocId(currParent)) {
+                        dlDocumentActivityRepository.deleteAllByDocId(currParent);
+                    }
+                    if (dlDocumentVersionRepository.existsByDlDocument_Id(currParent)) {
+                        dlDocumentVersionRepository.deleteAllByDlDocument_Id(currParent);
+                    }
+                    if (dlDocumentRepository.existsById(currParent)) {
+                        dlDocumentRepository.deleteById(currParent);
+                    }
                 }
             }
         } catch (Exception e) {
+            log.error(e.getMessage());
             ResponseUtility.exceptionResponse(e);
         }
     }
@@ -657,12 +701,45 @@ public class DLDocumentService {
             Graphics2D g = newImage.createGraphics();
             g.drawImage(in, 0, 0, null);
             g.dispose();
-            instance.setDatapath("./tessdata");
+            instance.setDatapath("./testdata");
             content = instance.doOCR(newImage);
         } catch (TesseractException | IOException e) {
             System.err.println(e.getMessage());
 
         }
         return content;
+    }
+
+    @Transactional(rollbackFor = {Throwable.class})
+    public void restoreArchivedDlDocument(DLDocumentRestoreDTO docRestoreDTO) throws CustomException {
+        if (AppUtility.isEmpty(docRestoreDTO)){
+            throw new DataValidationException(AppUtility.getResourceMessage("document.ids.not.found"));
+        }
+        List dlDocumentIds = docRestoreDTO.getDlDocumentIds();
+        if (dlDocumentIds.size() == 1) {
+            try {
+                DLDocument doc = dlDocumentRepository.findByIdAndAndArchivedTrue((Long) dlDocumentIds.get(0));
+                if (AppUtility.isEmpty(doc)) {
+                    throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+                }
+                doc.setArchived(false);
+                dlDocumentRepository.save(doc);
+            } catch (Exception e) {
+                ResponseUtility.exceptionResponse(e);
+            }
+        } else {
+            for (Object docId : dlDocumentIds) {
+                try {
+                    DLDocument doc = dlDocumentRepository.findByIdAndAndArchivedTrue((Long) docId);
+                    if (AppUtility.isEmpty(doc)) {
+                        throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+                    }
+                    doc.setArchived(false);
+                    dlDocumentRepository.save(doc);
+                } catch (Exception e) {
+                    ResponseUtility.exceptionResponse(e);
+                }
+            }
+        }
     }
 }

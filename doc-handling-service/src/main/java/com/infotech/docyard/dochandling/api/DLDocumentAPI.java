@@ -2,6 +2,7 @@ package com.infotech.docyard.dochandling.api;
 
 import com.infotech.docyard.dochandling.dl.entity.DLDocument;
 import com.infotech.docyard.dochandling.dto.DLDocumentDTO;
+import com.infotech.docyard.dochandling.dto.DLDocumentRestoreDTO;
 import com.infotech.docyard.dochandling.dto.UploadDocumentDTO;
 import com.infotech.docyard.dochandling.exceptions.CustomException;
 import com.infotech.docyard.dochandling.exceptions.DataValidationException;
@@ -198,6 +199,7 @@ public class DLDocumentAPI {
         try {
             documentService.deleteDLDocument(dlDocumentId);
         } catch (Exception e) {
+            log.error(e.getMessage());
             ResponseUtility.exceptionResponse(e);
         }
         return ResponseUtility.deleteSuccessResponse(null, AppUtility.getResourceMessage("document.delete.success"));
@@ -220,6 +222,24 @@ public class DLDocumentAPI {
             ResponseUtility.exceptionResponse(e);
         }
         return ResponseUtility.successResponseForPut(dlDocument, "Document Archived");
+    }
+
+    @RequestMapping(value = "/restore-archived", method = RequestMethod.PUT)
+    public CustomResponse restoreArchivedDlDocument(HttpServletRequest request,
+                                                    @RequestBody DLDocumentRestoreDTO dlDocumentIds)
+            throws DataValidationException, NoDataFoundException, CustomException {
+        log.info("restoreArchivedDlDocument API initiated...");
+
+
+        if (AppUtility.isEmpty(dlDocumentIds)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("ids.not.found"));
+        }
+        try {
+            documentService.restoreArchivedDlDocument(dlDocumentIds);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.successResponseForPut(null, "Documents Archived");
     }
 
     @RequestMapping(value = "/trash/owner/{ownerId}", method = RequestMethod.GET)
