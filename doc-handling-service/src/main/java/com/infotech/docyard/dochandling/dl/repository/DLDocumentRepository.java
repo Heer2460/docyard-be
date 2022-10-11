@@ -47,4 +47,7 @@ public interface DLDocumentRepository extends JpaRepository<DLDocument, Long> {
 
     int countAllByArchivedFalseAndFolderFalseAndParentId(Long parentId);
 
+    List<DLDocument> findAllByFolderFalseAndArchivedFalseAndOcrDoneFalseAndOcrSupportedTrue();
+
+
 }

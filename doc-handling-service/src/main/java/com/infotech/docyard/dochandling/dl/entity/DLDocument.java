@@ -68,6 +68,12 @@ public class DLDocument extends BaseEntity implements Serializable {
     @Column(name = "CONTENT")
     private String content;
 
+    @Column(name = "IS_OCR_DONE", columnDefinition = "boolean default false")
+    private Boolean ocrDone;
+
+    @Column(name = "IS_OCR_SUPPORTED", columnDefinition = "boolean default false")
+    private Boolean ocrSupported;
+
     @Column(name = "CURRENT_VERSION")
     private Double currentVersion;
 

@@ -28,7 +28,7 @@ import java.util.List;
 public class DLDocumentAPI {
 
     @Autowired
-    private DLDocumentService documentService;
+    private DLDocumentService dlDocumentService;
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public CustomResponse getAllDLDocumentsByFolderAndArchive(HttpServletRequest request,
@@ -38,7 +38,7 @@ public class DLDocumentAPI {
 
         List<DLDocumentDTO> documentDTOList = null;
         try {
-            documentDTOList = documentService.getDocumentsByFolderIdAndArchive(folderId, archived);
+            documentDTOList = dlDocumentService.getDocumentsByFolderIdAndArchive(folderId, archived);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -58,7 +58,7 @@ public class DLDocumentAPI {
         }
         List<DLDocumentDTO> documentDTOList = null;
         try {
-            documentDTOList = documentService.getDocumentsByOwnerIdFolderIdAndArchive(ownerId, folderId, archived);
+            documentDTOList = dlDocumentService.getDocumentsByOwnerIdFolderIdAndArchive(ownerId, folderId, archived);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -78,7 +78,7 @@ public class DLDocumentAPI {
         }
         List<DLDocumentDTO> documentDTOList = null;
         try {
-            documentDTOList = documentService.getAllFavouriteDLDocumentsByOwnerIdFolderAndArchive(ownerId, folderId, archived);
+            documentDTOList = dlDocumentService.getAllFavouriteDLDocumentsByOwnerIdFolderAndArchive(ownerId, folderId, archived);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -92,7 +92,7 @@ public class DLDocumentAPI {
 
         List<DLDocumentDTO> documentDTOList = null;
         try {
-            documentDTOList = documentService.getAllFavouriteDLDocumentsByFolder(folderId);
+            documentDTOList = dlDocumentService.getAllFavouriteDLDocumentsByFolder(folderId);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -109,7 +109,7 @@ public class DLDocumentAPI {
         }
         List<DLDocumentDTO> documentDTOList = null;
         try {
-            documentDTOList = documentService.getAllRecentDLDocumentByOwnerId(ownerId);
+            documentDTOList = dlDocumentService.getAllRecentDLDocumentByOwnerId(ownerId);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -129,7 +129,7 @@ public class DLDocumentAPI {
             throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
         }
         try {
-            dlDocumentDTO = documentService.getDLDocumentById(dlDocumentId);
+            dlDocumentDTO = dlDocumentService.getDLDocumentById(dlDocumentId);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -144,15 +144,12 @@ public class DLDocumentAPI {
             throws CustomException, DataValidationException, NoDataFoundException {
         log.info("uploadDocuments API initiated...");
 
-        if (AppUtility.isEmpty(uploadDocumentDTO)) {
-            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
-        }
-        if (AppUtility.isEmpty(files)) {
+        if (AppUtility.isEmpty(uploadDocumentDTO) || AppUtility.isEmpty(files)) {
             throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
         }
         DLDocument dlDocument = null;
         try {
-            dlDocument = documentService.uploadDocuments(uploadDocumentDTO, files);
+            dlDocument = dlDocumentService.uploadDocuments(uploadDocumentDTO, files);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -170,7 +167,7 @@ public class DLDocumentAPI {
         }
         DLDocument dlDocument = null;
         try {
-            dlDocument = documentService.createFolder(folderRequestDTO);
+            dlDocument = dlDocumentService.createFolder(folderRequestDTO);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -189,7 +186,7 @@ public class DLDocumentAPI {
         }
         DLDocument dlDocument = null;
         try {
-            dlDocument = documentService.updateFavourite(dlDocumentId, favourite);
+            dlDocument = dlDocumentService.updateFavourite(dlDocumentId, favourite);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -207,7 +204,7 @@ public class DLDocumentAPI {
         }
         DLDocument dlDocument = null;
         try {
-            dlDocument = documentService.renameDLDocument(dlDocumentDTO);
+            dlDocument = dlDocumentService.renameDLDocument(dlDocumentDTO);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -224,7 +221,7 @@ public class DLDocumentAPI {
             throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
         }
         try {
-            documentService.deleteDLDocument(dlDocumentId);
+            dlDocumentService.deleteDLDocument(dlDocumentId);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -246,7 +243,7 @@ public class DLDocumentAPI {
             throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
         }
         try {
-            dlDocument = documentService.archiveDlDocument(dlDocumentId, archive);
+            dlDocument = dlDocumentService.archiveDlDocument(dlDocumentId, archive);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -263,7 +260,7 @@ public class DLDocumentAPI {
         }
         List<DLDocumentDTO> documentDTOList = null;
         try {
-            documentDTOList = documentService.getAllTrashDLDocumentByOwnerId(ownerId);
+            documentDTOList = dlDocumentService.getAllTrashDLDocumentByOwnerId(ownerId);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -286,7 +283,7 @@ public class DLDocumentAPI {
             throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
         }
         try {
-            inputStreamResource = documentService.downloadDLDocument(dlDocumentId);
+            inputStreamResource = dlDocumentService.downloadDLDocument(dlDocumentId);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
