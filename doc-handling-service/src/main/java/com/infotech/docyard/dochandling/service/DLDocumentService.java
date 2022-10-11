@@ -64,8 +64,8 @@ public class DLDocumentService {
     @Autowired
     private RestTemplate restTemplate;
 
-    public List<DLDocumentDTO> getDocumentsByFolderIdAndArchive(Long folderId, Boolean archived) {
-        log.info("DLDocumentService - getDocumentsByFolderIdAndArchive method called...");
+    public List<DLDocumentDTO> getDLDocumentsByFolderIdAndArchive(Long folderId, Boolean archived) {
+        log.info("DLDocumentService - getDlDocumentsByFolderIdAndArchive method called...");
 
         List<DLDocumentDTO> documentDTOList = new ArrayList<>();
         List<DLDocument> dlDocumentList;
@@ -93,8 +93,8 @@ public class DLDocumentService {
         return documentDTOList;
     }
 
-    public List<DLDocumentDTO> getDocumentsByOwnerIdFolderIdAndArchive(Long ownerId, Long folderId, Boolean archived) {
-        log.info("DLDocumentService - getDocumentsByOwnerIdFolderIdAndArchive method called...");
+    public List<DLDocumentDTO> getDLDocumentsByOwnerIdFolderIdAndArchive(Long ownerId, Long folderId, Boolean archived) {
+        log.info("DLDocumentService - getDlDocumentsByOwnerIdFolderIdAndArchive method called...");
 
         List<DLDocumentDTO> documentDTOList = new ArrayList<>();
         List<DLDocument> dlDocumentList;
@@ -120,6 +120,32 @@ public class DLDocumentService {
             documentDTOList.add(dto);
         }
         return documentDTOList;
+    }
+
+    public List<DLDocumentDTO> getDocumentsByOwnerIdFolderIdAndArchive(Long ownerId, Long folderId, Boolean archived) {
+        log.info("DLDocumentService - getDocumentsByOwnerIdFolderIdAndArchive method called...");
+
+        List<DLDocumentDTO> documentDTOList = new ArrayList<>();
+        List<DLDocument> dlDocumentList;
+        if (AppUtility.isEmpty(folderId) || folderId == 0L) {
+            dlDocumentList = dlDocumentRepository.findAllByAndCreatedByAndArchivedAndFolderFalseOrderByUpdatedOnDesc(ownerId, archived);
+        } else {
+            dlDocumentList = dlDocumentRepository.findAllByCreatedByAndParentIdAndArchivedAndFolderFalseOrderByUpdatedOnDesc(ownerId, folderId, archived);
+        }
+        for (DLDocument dlDoc : dlDocumentList) {
+            DLDocumentDTO dto = new DLDocumentDTO();
+            dto.convertToDTO(dlDoc, false);
+            documentDTOList.add(dto);
+        }
+        return documentDTOList;
+    }
+
+    public String getUsedSpaceByUserId(Long ownerId) {
+        log.info("DLDocumentService - getUsedSpaceByUserId method called...");
+
+        List<DLDocument> dlDocumentList = dlDocumentRepository.findAllByCreatedByAndArchivedAndFolderFalseOrderByUpdatedOnDesc(ownerId, false);
+        long usedSpace = dlDocumentList.stream().filter(d -> d.getSizeBytes() != null).mapToLong(DLDocument::getSizeBytes).sum();
+        return DocumentUtil.getFileSize(usedSpace);
     }
 
     public List<DLDocumentDTO> getAllFavouriteDLDocumentsByOwnerIdFolderAndArchive(Long ownerId, Long folderId, Boolean archived) {
@@ -697,7 +723,7 @@ public class DLDocumentService {
     }
 
     @Transactional(rollbackFor = {Throwable.class})
-    public void restoreArchivedDlDocument(DLDocumentListDTO docRestoreDTO) throws CustomException {
+    public void restoreArchivedDlDocument(DLDocumentRestoreDTO docRestoreDTO) throws CustomException {
         if (AppUtility.isEmpty(docRestoreDTO)){
             throw new DataValidationException(AppUtility.getResourceMessage("document.ids.not.found"));
         }

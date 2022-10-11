@@ -39,12 +39,11 @@ public class DLDocumentAPI {
 
         List<DLDocumentDTO> documentDTOList = null;
         try {
-            documentDTOList = dlDocumentService.getDocumentsByFolderIdAndArchive(folderId, archived);
+            documentDTOList = dlDocumentService.getDLDocumentsByFolderIdAndArchive(folderId, archived);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return ResponseUtility
-                .buildResponseList(documentDTOList);
+        return ResponseUtility.buildResponseList(documentDTOList);
     }
 
     @RequestMapping(value = "/owner/{ownerId}", method = RequestMethod.GET)
@@ -59,12 +58,47 @@ public class DLDocumentAPI {
         }
         List<DLDocumentDTO> documentDTOList = null;
         try {
+            documentDTOList = dlDocumentService.getDLDocumentsByOwnerIdFolderIdAndArchive(ownerId, folderId, archived);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.buildResponseList(documentDTOList);
+    }
+
+    @RequestMapping(value = "/document/owner/{ownerId}", method = RequestMethod.GET)
+    public CustomResponse getAllDocumentsByOwnerIdFolderAndArchive(HttpServletRequest request,
+                                                                   @PathVariable("ownerId") Long ownerId,
+                                                                   @RequestParam(value = "folderId", required = false) Long folderId,
+                                                                   @RequestParam(value = "archived") Boolean archived) throws CustomException {
+        log.info("getAllDocumentsByOwnerIdFolderAndArchive API initiated...");
+
+        if (AppUtility.isEmpty(ownerId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
+        List<DLDocumentDTO> documentDTOList = null;
+        try {
             documentDTOList = dlDocumentService.getDocumentsByOwnerIdFolderIdAndArchive(ownerId, folderId, archived);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return ResponseUtility
-                .buildResponseList(documentDTOList);
+        return ResponseUtility.buildResponseList(documentDTOList);
+    }
+
+    @RequestMapping(value = "/used-space/user/{userId}", method = RequestMethod.GET)
+    public CustomResponse getUsedSpaceByUserId(HttpServletRequest request,
+                                               @PathVariable("userId") Long ownerId) throws CustomException {
+        log.info("getUsedSpaceByUserId API initiated...");
+
+        if (AppUtility.isEmpty(ownerId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
+        String usedSpace = null;
+        try {
+            usedSpace = dlDocumentService.getUsedSpaceByUserId(ownerId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.buildResponseObject(usedSpace);
     }
 
     @RequestMapping(value = "/favourite/owner/{ownerId}", method = RequestMethod.GET)

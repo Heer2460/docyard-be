@@ -1,5 +1,6 @@
 package com.infotech.docyard.um.api.auth;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.infotech.docyard.um.dto.UserDTO;
 import com.infotech.docyard.um.exceptions.CustomException;
 import com.infotech.docyard.um.exceptions.DataValidationException;
@@ -30,16 +31,20 @@ public class AuthAPI {
 
     @RequestMapping(value = "/sign-in/{username}", method = RequestMethod.POST)
     public ResponseEntity<?> getSignIn(HttpServletRequest request,
-                                       @PathVariable(name = "username") String username) throws NoDataFoundException {
+                                       @PathVariable(name = "username") String username) throws NoDataFoundException, CustomException {
         UserDTO userDTO = null;
         log.info("User Sign In API initiated...");
 
-        if(!AppUtility.isEmpty(username)){
-            userDTO = umService.userSignIn(username);
-            if (!AppUtility.isEmpty(userDTO)) {
-                if (userDTO.getId() == -1) {
-                    return new ResponseEntity<>(userDTO, HttpStatus.LOCKED);
+        if (!AppUtility.isEmpty(username)) {
+            try {
+                userDTO = umService.userSignIn(username);
+                if (!AppUtility.isEmpty(userDTO)) {
+                    if (userDTO.getId() == -1) {
+                        return new ResponseEntity<>(userDTO, HttpStatus.LOCKED);
+                    }
                 }
+            } catch (JsonProcessingException ex) {
+                throw new CustomException(ex);
             }
         }
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
