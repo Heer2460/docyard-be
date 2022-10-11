@@ -120,6 +120,7 @@ public class FTPService {
 
         FTPClient ftpClient = createFtp();
         try {
+            ftpClient.changeWorkingDirectory(config.getRoot());
             FTPFile[] ftpFiles = ftpClient.listFiles();
             boolean exist = ftpClient.deleteFile(fileName);
             if (!exist) {

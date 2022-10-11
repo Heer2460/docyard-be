@@ -40,6 +40,7 @@ import java.io.InputStream;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.*;
+import java.util.stream.IntStream;
 
 @Service
 @Log4j2
@@ -489,6 +490,7 @@ public class DLDocumentService {
         return doc;
     }
 
+    @Transactional(rollbackFor = {Throwable.class})
     public void deleteDLDocument(Long dlDocumentId) throws Exception {
         log.info("DLDocumentService - deleteDocument method called...");
 
@@ -499,6 +501,8 @@ public class DLDocumentService {
             String docLocation = dlDoc.getLocation();
             log.info("DLDocumentService - Deletion on FTP started....");
             if (!dlDoc.getFolder()) {
+
+//                String guId = dlDoc.getVersionGUId().substring(dlDoc.getVersionGUId().indexOf('-') + 1);
                 boolean isDocDeleted = ftpService.deleteFile(docLocation, dlDoc.getVersionGUId());
                 log.info("DLDocumentService - Deletion on FTP ended with success: " + isDocDeleted);
                 if (isDocDeleted) {
@@ -513,10 +517,18 @@ public class DLDocumentService {
                     for (DLDocument doc : childDocs) {
                         if (!doc.getFolder()) {
                             deleteDLDocument(doc.getId());
-                            childDocs.remove(doc);
+                            childDocs.removeIf(document-> Objects.equals(document.getId(), doc.getId()));
+                            /*int removeIndex = IntStream.range(0, childDocs.size())
+                                    .filter(i -> Objects.equals(childDocs.get(i).getId(), doc.getId()))
+                                    .findFirst().orElse(-1);
+                            childDocs.remove(removeIndex);*/
                         } else {
                             childFolderIds.add(doc.getId());
-                            childDocs.remove(doc);
+                            childDocs.removeIf(document-> Objects.equals(document.getId(), doc.getId()));
+                            /*int removeIndex = IntStream.range(0, childDocs.size())
+                                    .filter(i -> Objects.equals(childDocs.get(i).getId(), doc.getId()))
+                                    .findFirst().orElse(-1);
+                            childDocs.remove(removeIndex);*/
                             for (Long folId : childFolderIds) {
                                 if (checkIsParent(folId)) {
                                     currParent = folId;
