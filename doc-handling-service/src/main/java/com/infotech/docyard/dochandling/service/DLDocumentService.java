@@ -562,7 +562,7 @@ public class DLDocumentService {
                                         dlDocumentRepository.deleteById(childFolderId);
                                     }
 //                                    childFolderIds.remove(childFolderId);
-                                    break;
+//                                    break;
                                 } else {
                                     if (dlDocumentActivityRepository.existsByDocId(childFolderId)) {
                                         dlDocumentActivityRepository.deleteAllByDocId(childFolderId);
