@@ -11,19 +11,19 @@ pipeline {
         }
           stage('Build') {
          steps{
-            sh 'mvn -Dmaven.test.failure.ignore=true install'
+            sh 'mvn clean install'
         }
      
        }
-//      stage('Test') {
-//          steps{
-//              echo 'This is testing phase.'
-//          }
-//        }
-//       stage('Deploy') {
-//          steps{
-//              echo 'This is deployment phase.'
-//          }
-//        }
+     stage('Test') {
+         steps{
+             echo 'This is testing phase.'
+         }
+       }
+      stage('Deploy') {
+         steps{
+             echo 'This is deployment phase.'
+         }
+       }
     }
 }
