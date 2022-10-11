@@ -13,7 +13,7 @@ pipeline {
          steps{
              sh 'mvn clean install -f docyard-be/pom.xml'
         }
-                mvn install -DskipTests=false.
+       
        }
      stage('Test') {
          steps{
