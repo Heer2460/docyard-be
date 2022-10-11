@@ -39,6 +39,7 @@ public class DLDocumentCommentDTO extends BaseDTO<DLDocumentCommentDTO, DLDocume
         this.message = entity.getMessage();
         this.userId = entity.getUserId();
         this.postedOn = DateTimeUtil.convertDateToUFDateFormat(entity.getUpdatedOn());
+        this.docId = entity.getDlDocument().getId();
         this.updatedOn = entity.getUpdatedOn();
         this.createdOn = entity.getCreatedOn();
         this.updatedBy = entity.getUpdatedBy();
