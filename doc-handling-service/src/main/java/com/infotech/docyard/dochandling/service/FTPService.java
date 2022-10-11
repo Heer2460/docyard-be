@@ -1,6 +1,7 @@
 package com.infotech.docyard.dochandling.service;
 
 import com.infotech.docyard.dochandling.config.SFTPProperties;
+import com.infotech.docyard.dochandling.util.AppUtility;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTP;
@@ -123,10 +124,13 @@ public class FTPService {
             FTPFile[] ftpFiles = ftpClient.listFiles();
             ftpClient.changeWorkingDirectory(config.getRoot());
             ftpFiles = ftpClient.listFiles();
-            boolean deleted = ftpClient.deleteFile(fileName);
-            if (!deleted) {
-                log.error("Remote path error. path:{}", targetPath);
-                throw new Exception("Delete File failure");
+            ftpFiles = Arrays.stream(ftpFiles).filter(file -> file.getName().equals(fileName)).toArray(FTPFile[]::new);
+            if ((!AppUtility.isEmpty(ftpFiles)) && (ftpFiles.length != 0)) {
+                boolean deleted = ftpClient.deleteFile(fileName);
+                if (!deleted) {
+                    log.error("Remote path error. path:{}", targetPath);
+                    throw new Exception("Delete File failure");
+                }
             }
             return true;
         } catch (Exception e) {

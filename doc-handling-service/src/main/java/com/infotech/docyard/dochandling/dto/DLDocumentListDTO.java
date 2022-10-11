@@ -5,6 +5,6 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class DLDocumentRestoreDTO {
+public class DLDocumentListDTO {
     private List<Long> dlDocumentIds;
 }
