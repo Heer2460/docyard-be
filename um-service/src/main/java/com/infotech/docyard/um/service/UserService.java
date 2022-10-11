@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.infotech.docyard.um.dl.entity.*;
+import com.infotech.docyard.um.dl.entity.Module;
 import com.infotech.docyard.um.dl.repository.*;
 import com.infotech.docyard.um.dto.*;
 import com.infotech.docyard.um.enums.EmailStatusEnum;

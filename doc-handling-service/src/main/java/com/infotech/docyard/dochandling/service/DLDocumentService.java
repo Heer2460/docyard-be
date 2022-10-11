@@ -2,15 +2,19 @@ package com.infotech.docyard.dochandling.service;
 
 import com.infotech.docyard.dochandling.dl.entity.DLDocument;
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentActivity;
+import com.infotech.docyard.dochandling.dl.entity.DLDocumentComment;
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentVersion;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentActivityRepository;
+import com.infotech.docyard.dochandling.dl.repository.DLDocumentCommentRepository;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentRepository;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentVersionRepository;
 import com.infotech.docyard.dochandling.dto.DLDocumentDTO;
+import com.infotech.docyard.dochandling.dto.DLDocumentRestoreDTO;
 import com.infotech.docyard.dochandling.dto.UploadDocumentDTO;
 import com.infotech.docyard.dochandling.enums.DLActivityTypeEnum;
 import com.infotech.docyard.dochandling.enums.FileTypeEnum;
 import com.infotech.docyard.dochandling.enums.FileViewerEnum;
+import com.infotech.docyard.dochandling.exceptions.CustomException;
 import com.infotech.docyard.dochandling.exceptions.DataValidationException;
 import com.infotech.docyard.dochandling.util.AppConstants;
 import com.infotech.docyard.dochandling.util.AppUtility;
@@ -43,6 +47,7 @@ import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.*;
+import java.util.stream.IntStream;
 
 @Service
 @Log4j2
@@ -52,6 +57,8 @@ public class DLDocumentService {
     private DLDocumentRepository dlDocumentRepository;
     @Autowired
     private DLDocumentVersionRepository dlDocumentVersionRepository;
+    @Autowired
+    private DLDocumentCommentRepository dlDocumentCommentRepository;
     @Autowired
     private FTPService ftpService;
     @Autowired
@@ -449,54 +456,50 @@ public class DLDocumentService {
         return doc;
     }
 
+    @Transactional(rollbackFor = {Throwable.class})
     public void deleteDLDocument(Long dlDocumentId) throws Exception {
         log.info("DLDocumentService - deleteDocument method called...");
-
-        DLDocument dlDoc = null;
-        Optional<DLDocument> optionalDLDoc = dlDocumentRepository.findById(dlDocumentId);
-        try {
-            dlDoc = optionalDLDoc.get();
-            String docLocation = dlDoc.getLocation();
-            log.info("DLDocumentService - Deletion on FTP started....");
-            if (!dlDoc.getFolder()) {
-                boolean isDocDeleted = ftpService.deleteFile(docLocation, dlDoc.getVersionGUId());
-                log.info("DLDocumentService - Deletion on FTP ended with success: " + isDocDeleted);
-                if (isDocDeleted) {
-                    dlDocumentRepository.deleteById(dlDocumentId);
-                }
-            } else {
-                List<Long> childFolderIds = new ArrayList<>();
-                List<DLDocument> childDocs;
-                Long currParent = dlDocumentId;
-                if (checkIsParent(currParent)) {
-                    childDocs = getChildren(currParent);
-                    for (DLDocument doc : childDocs) {
-                        if (!doc.getFolder()) {
-                            deleteDLDocument(doc.getId());
-                            childDocs.remove(doc);
-                        } else {
-                            childFolderIds.add(doc.getId());
-                            childDocs.remove(doc);
-                            for (Long folId : childFolderIds) {
-                                if (checkIsParent(folId)) {
-                                    currParent = folId;
-                                    deleteDLDocument(folId);
-                                    dlDocumentRepository.deleteById(folId);
-                                    childFolderIds.remove(folId);
-                                    break;
-                                } else {
-                                    dlDocumentRepository.deleteById(folId);
-                                    childFolderIds.remove(folId);
-                                }
+        if (!AppUtility.isEmpty(dlDocumentId)) {
+            if (dlDocumentRepository.existsById(dlDocumentId)) {
+                Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
+                if (opDoc.isPresent()) {
+                    DLDocument dlDocument = opDoc.get();
+                    Boolean parent = checkIsParent(dlDocumentId);
+                    if (parent) {
+                        List<DLDocument> childDocs = getChildren(dlDocumentId);
+                        if (!(childDocs == null || AppUtility.isEmpty(childDocs))) {
+                            for (DLDocument dldoc : childDocs) {
+                                deleteDLDocument(dldoc.getId());
                             }
                         }
                     }
-                } else {
-                    dlDocumentRepository.deleteById(currParent);
+                    try {
+                        deleteFileWithDependencies(dlDocument);
+                    } catch (Exception e) {
+                        throw new DataValidationException(AppUtility.getResourceMessage("document.deleted.failure"));
+                    }
                 }
             }
-        } catch (Exception e) {
-            ResponseUtility.exceptionResponse(e);
+        }
+    }
+
+    public void deleteFileWithDependencies(DLDocument dldocument) throws Exception {
+        boolean deleted = false;
+        Long docId = dldocument.getId();
+        if (!dldocument.getFolder()) {
+            deleted = ftpService.deleteFile(dldocument.getLocation(), dldocument.getVersionGUId());
+        }
+        if (deleted || dldocument.getFolder()) {
+            if (dlDocumentVersionRepository.existsByDlDocument_Id(docId)){
+                dlDocumentVersionRepository.deleteAllByDlDocument_Id(docId);
+            }
+            if (dlDocumentActivityRepository.existsByDocId(docId)){
+                dlDocumentActivityRepository.deleteAllByDocId(docId);
+            }
+            if (dlDocumentCommentRepository.existsByDlDocument_Id(docId)){
+                dlDocumentCommentRepository.deleteAllByDlDocument_Id(docId);
+            }
+            dlDocumentRepository.deleteById(docId);
         }
     }
 
@@ -668,11 +671,44 @@ public class DLDocumentService {
             Graphics2D g = newImage.createGraphics();
             g.drawImage(in, 0, 0, null);
             g.dispose();
-            instance.setDatapath("./tessdata");
+            instance.setDatapath("./testdata");
             content = instance.doOCR(newImage);
         } catch (TesseractException | IOException e) {
             log.error(e.getMessage());
         }
         return content;
+    }
+
+    @Transactional(rollbackFor = {Throwable.class})
+    public void restoreArchivedDlDocument(DLDocumentRestoreDTO docRestoreDTO) throws CustomException {
+        if (AppUtility.isEmpty(docRestoreDTO)){
+            throw new DataValidationException(AppUtility.getResourceMessage("document.ids.not.found"));
+        }
+        List dlDocumentIds = docRestoreDTO.getDlDocumentIds();
+        if (dlDocumentIds.size() == 1) {
+            try {
+                DLDocument doc = dlDocumentRepository.findByIdAndAndArchivedTrue((Long) dlDocumentIds.get(0));
+                if (AppUtility.isEmpty(doc)) {
+                    throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+                }
+                doc.setArchived(false);
+                dlDocumentRepository.save(doc);
+            } catch (Exception e) {
+                ResponseUtility.exceptionResponse(e);
+            }
+        } else {
+            for (Object docId : dlDocumentIds) {
+                try {
+                    DLDocument doc = dlDocumentRepository.findByIdAndAndArchivedTrue((Long) docId);
+                    if (AppUtility.isEmpty(doc)) {
+                        throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+                    }
+                    doc.setArchived(false);
+                    dlDocumentRepository.save(doc);
+                } catch (Exception e) {
+                    ResponseUtility.exceptionResponse(e);
+                }
+            }
+        }
     }
 }
