@@ -46,12 +46,19 @@ public class DepartmentService {
     }
 
     @Transactional
-    public Department saveAndUpdateDepartment(DepartmentDTO departmentDTO) {
-        log.info("saveAndUpdateDepartment method called..");
+    public Department saveDepartment(DepartmentDTO departmentDTO) {
+        log.info("saveDepartment method called..");
 
         if (departmentRepository.existsByCode(departmentDTO.getCode())) {
             throw new DBConstraintViolationException("Code Already Exists");
         }
+        return departmentRepository.save(departmentDTO.convertToEntity());
+    }
+
+    @Transactional
+    public Department UpdateDepartment(DepartmentDTO departmentDTO) {
+        log.info("UpdateDepartment method called..");
+
         return departmentRepository.save(departmentDTO.convertToEntity());
     }
 

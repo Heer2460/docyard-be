@@ -82,7 +82,7 @@ public class DepartmentAPI {
         log.info("createDepartment API initiated...");
         Department department = null;
         try {
-            department = departmentService.saveAndUpdateDepartment(departmentDTO);
+            department = departmentService.saveDepartment(departmentDTO);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e, AppConstants.DBConstraints.UNQ_DEPARTMENT_CODE);
         }
@@ -97,7 +97,7 @@ public class DepartmentAPI {
 
         Department department = null;
         try {
-            department = departmentService.saveAndUpdateDepartment(departmentDTO);
+            department = departmentService.UpdateDepartment(departmentDTO);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e, AppConstants.DBConstraints.UNQ_DEPARTMENT_CODE);
         }
