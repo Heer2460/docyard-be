@@ -3,8 +3,12 @@ package com.infotech.docyard.um.service;
 import com.infotech.docyard.um.dl.entity.Department;
 import com.infotech.docyard.um.dl.repository.AdvSearchRepository;
 import com.infotech.docyard.um.dl.repository.DepartmentRepository;
+import com.infotech.docyard.um.dl.repository.UserRepository;
 import com.infotech.docyard.um.dto.DepartmentDTO;
 import com.infotech.docyard.um.exceptions.DBConstraintViolationException;
+import com.infotech.docyard.um.exceptions.DataValidationException;
+import com.infotech.docyard.um.util.AppConstants;
+import com.infotech.docyard.um.util.AppUtility;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +26,8 @@ public class DepartmentService {
     private DepartmentRepository departmentRepository;
     @Autowired
     private AdvSearchRepository advSearchRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     public List<Department> searchDepartmentByCodeAndDescription(String code, String name, String status) {
         log.info("searchDepartmentByName method called..");
@@ -59,12 +65,21 @@ public class DepartmentService {
     public Department UpdateDepartment(DepartmentDTO departmentDTO) {
         log.info("UpdateDepartment method called..");
 
+        if (departmentDTO.getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND)) {
+            if (userRepository.existsByDepartmentIdsAndStatus(departmentDTO.getId().toString(), AppConstants.Status.ACTIVE)) {
+                throw new DataValidationException(AppUtility.getResourceMessage("record.cannot.be.suspended.dependency"));
+            }
+        }
+
         return departmentRepository.save(departmentDTO.convertToEntity());
     }
 
     @Transactional
     public void deleteDepartment(Long id) {
         log.info("deleteDepartment method called..");
+        if (userRepository.existsByDepartmentIdsAndStatus(id.toString(), AppConstants.Status.ACTIVE)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("record.cannot.be.deleted.dependency"));
+        }
 
         departmentRepository.deleteById(id);
     }
