@@ -12,4 +12,7 @@ public interface RolePermissionRepository extends JpaRepository<RolePermission, 
 
     @Query("SELECT rp from RolePermission rp where rp.role.id in :roleIds")
     List<RolePermission> findAllRole_idIn(@Param("roleIds") Set<Long> roleIds);
+
+    boolean existsByRole_Id(Long roleId);
+
 }

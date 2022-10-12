@@ -2,7 +2,7 @@ package com.infotech.docyard.dochandling.api;
 
 import com.infotech.docyard.dochandling.dl.entity.DLDocument;
 import com.infotech.docyard.dochandling.dto.DLDocumentDTO;
-import com.infotech.docyard.dochandling.dto.DLDocumentRestoreDTO;
+import com.infotech.docyard.dochandling.dto.DLDocumentListDTO;
 import com.infotech.docyard.dochandling.dto.UploadDocumentDTO;
 import com.infotech.docyard.dochandling.exceptions.CustomException;
 import com.infotech.docyard.dochandling.exceptions.DataValidationException;
@@ -246,19 +246,18 @@ public class DLDocumentAPI {
         return ResponseUtility.buildResponseObject(dlDocument, new DLDocumentDTO(), true);
     }
 
-    @RequestMapping(value = "/{dlDocumentId}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
     public CustomResponse deleteDLDocument(HttpServletRequest request,
-                                           @PathVariable(value = "dlDocumentId") Long dlDocumentId)
+                                           @RequestBody DLDocumentListDTO dlDocumentIds)
             throws CustomException, DataValidationException, NoDataFoundException {
         log.info("deleteDLDocument API initiated...");
 
-        if (AppUtility.isEmpty(dlDocumentId)) {
+        if (AppUtility.isEmpty(dlDocumentIds)) {
             throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
         }
         try {
-            dlDocumentService.deleteDLDocument(dlDocumentId);
+            dlDocumentService.deleteDLDocument(dlDocumentIds);
         } catch (Exception e) {
-            log.error(e.getMessage());
             ResponseUtility.exceptionResponse(e);
         }
         return ResponseUtility.deleteSuccessResponse(null, AppUtility.getResourceMessage("document.delete.success"));
@@ -288,7 +287,7 @@ public class DLDocumentAPI {
 
     @RequestMapping(value = "/restore-archived", method = RequestMethod.PUT)
     public CustomResponse restoreArchivedDlDocument(HttpServletRequest request,
-                                                    @RequestBody DLDocumentRestoreDTO dlDocumentIds)
+                                                    @RequestBody DLDocumentListDTO dlDocumentIds)
             throws DataValidationException, NoDataFoundException, CustomException {
         log.info("restoreArchivedDlDocument API initiated...");
 
