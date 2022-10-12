@@ -723,7 +723,7 @@ public class DLDocumentService {
     }
 
     @Transactional(rollbackFor = {Throwable.class})
-    public void restoreArchivedDlDocument(DLDocumentRestoreDTO docRestoreDTO) throws CustomException {
+    public void restoreArchivedDlDocument(DLDocumentListDTO docRestoreDTO) throws CustomException {
         if (AppUtility.isEmpty(docRestoreDTO)){
             throw new DataValidationException(AppUtility.getResourceMessage("document.ids.not.found"));
         }
