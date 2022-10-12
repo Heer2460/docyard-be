@@ -26,6 +26,9 @@ public class GroupService {
     private GroupRepository groupRepository;
     @Autowired
     private AdvSearchRepository advSearchRepository;
+    @Autowired
+    private UserRepository userRepository;
+
 
     public List<Group> searchGroup(String code, String name, String status, List<Long>role) {
         log.info("searchGroup method called..");
@@ -50,7 +53,7 @@ public class GroupService {
     }
 
     @Transactional
-    public Group saveAndUpdateGroup(GroupDTO groupDTO) {
+    public Group saveGroup(GroupDTO groupDTO) {
         log.info("saveAndUpdateGroup method called..");
 
         Group group = groupDTO.convertToEntity();
@@ -64,8 +67,17 @@ public class GroupService {
         return groups;
     }
 
-    @Autowired
-    private UserRepository userRepository;
+    @Transactional
+    public Group UpdateGroup(GroupDTO groupDTO) {
+        log.info("saveAndUpdateGroup method called..");
+
+        Group group = groupDTO.convertToEntity();
+        if(AppUtility.isEmpty(group.getGroupRoles())){
+            group.setGroupRoles(groupDTO.groupRoles(group));
+        }
+        Group groups = groupRepository.save(group);
+        return groups;
+    }
 
     @Transactional
     public void deleteGroup(Long id) {
