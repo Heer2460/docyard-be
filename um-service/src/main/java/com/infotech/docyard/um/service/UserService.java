@@ -451,4 +451,19 @@ public class UserService {
         }
         return user.get();
     }
+
+    @Transactional
+    public void unsuccessfulLoginAttempt(String username) {
+        log.info("unsuccessfulLoginAttempt method called...");
+        User user = userRepository.findByUsername(username);
+        if (!AppUtility.isEmpty(user)) {
+
+            user.setUnsuccessfulLoginAttempt(AppUtility.isEmpty(user.getUnsuccessfulLoginAttempt()) ? 1 : user.getUnsuccessfulLoginAttempt() + 1);
+            if (user.getUnsuccessfulLoginAttempt() >= 3) {
+                user.setStatus(AppConstants.Status.LOCKED);
+            }
+            userRepository.save(user);
+        }
+
+    }
 }

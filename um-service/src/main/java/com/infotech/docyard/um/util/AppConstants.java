@@ -11,6 +11,7 @@ public class AppConstants {
         public final static String SUSPEND = "Suspend";
         public final static String TERMINATE = "Terminate";
 
+        public static final String LOCKED = "Locked";
     }
 
     public static class DateFormats {
