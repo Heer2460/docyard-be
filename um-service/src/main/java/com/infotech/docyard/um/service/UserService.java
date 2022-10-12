@@ -162,10 +162,10 @@ public class UserService {
 
         Optional<User> user = userRepository.findById(id);
 
-        if(user.isPresent()){
-            if(user.get().getStatus().equalsIgnoreCase(AppConstants.Status.ACTIVE)){
+        if (user.isPresent()) {
+            if (user.get().getStatus().equalsIgnoreCase(AppConstants.Status.ACTIVE)) {
                 throw new DataValidationException(AppUtility.getResourceMessage("record.cannot.be.deleted.dependency"));
-            }else{
+            } else {
                 userRepository.deleteById(id);
             }
         }
@@ -317,8 +317,10 @@ public class UserService {
         if (!AppUtility.isEmpty(user)) {
             userDTO = new UserDTO();
             userDTO.convertToDTO(user, false);
-            if (user.getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND) || user.getGroup().getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND)) {
-                throw new DataValidationException("User is suspended please contact administration. ");
+            if (user.getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND)
+                    || user.getGroup().getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND)
+                    || user.getStatus().equalsIgnoreCase(AppConstants.Status.TERMINATE)) {
+                throw new DataValidationException("User is suspended / terminated please contact administration. ");
             }
             List<GroupRole> groupRoleList = groupRoleRepository.findAllByGroup_id(user.getGroup().getId());
             Set<Long> roleIds = groupRoleList.stream().map(GroupRole::getRole).map(Role::getId).collect(Collectors.toSet());
