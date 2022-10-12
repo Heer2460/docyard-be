@@ -79,7 +79,7 @@ public class GroupService {
         if (groupDTO.getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND)) {
             if (groupRoleRepository.existsByGroup_IdAndRole_Status(groupDTO.getId(), AppConstants.Status.ACTIVE)
                     || userRepository.existsByGroup_IdAndStatus(groupDTO.getId(), AppConstants.Status.ACTIVE)) {
-                throw new DataValidationException(AppUtility.getResourceMessage("record.cannot.be.deleted.dependency"));
+                throw new DataValidationException(AppUtility.getResourceMessage("record.cannot.be.suspended.dependency"));
             }
         }
         if (AppUtility.isEmpty(group.getGroupRoles())) {
