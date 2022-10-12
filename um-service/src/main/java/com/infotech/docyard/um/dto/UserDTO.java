@@ -42,6 +42,7 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
     private List<ModuleAction> moduleActionList;
     private List<ModuleDTO> moduleDTOList;
     private String spaceUsed;
+    private Integer unsuccessfulLoginAttempt;
 
     public UserDTO() {
 
@@ -78,6 +79,7 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
         user.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
         user.setCreatedBy(this.getCreatedBy());
         user.setUpdatedBy(this.getUpdatedBy());
+        user.setUnsuccessfulLoginAttempt(this.unsuccessfulLoginAttempt);
         return user;
     }
 
@@ -105,6 +107,7 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
         user.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
         user.setUpdatedBy(this.getUpdatedBy());
         user.setCreatedBy(this.getCreatedBy());
+        user.setUnsuccessfulLoginAttempt(this.unsuccessfulLoginAttempt);
         return user;
     }
 
@@ -133,6 +136,7 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
         this.updatedBy = entity.getUpdatedBy();
         this.createdBy = entity.getCreatedBy();
         this.password = entity.getPassword();
+        this.unsuccessfulLoginAttempt= entity.getUnsuccessfulLoginAttempt();
     }
 
     @Override

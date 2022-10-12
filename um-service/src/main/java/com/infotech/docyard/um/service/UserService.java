@@ -162,10 +162,10 @@ public class UserService {
 
         Optional<User> user = userRepository.findById(id);
 
-        if(user.isPresent()){
-            if(user.get().getStatus().equalsIgnoreCase(AppConstants.Status.ACTIVE)){
+        if (user.isPresent()) {
+            if (user.get().getStatus().equalsIgnoreCase(AppConstants.Status.ACTIVE)) {
                 throw new DataValidationException(AppUtility.getResourceMessage("record.cannot.be.deleted.dependency"));
-            }else{
+            } else {
                 userRepository.deleteById(id);
             }
         }
@@ -448,5 +448,20 @@ public class UserService {
             throw new NoDataFoundException(AppUtility.getResourceMessage("user.not.found"));
         }
         return user.get();
+    }
+
+    @Transactional
+    public void unsuccessfulLoginAttempt(String username) {
+        log.info("unsuccessfulLoginAttempt method called...");
+        User user = userRepository.findByUsername(username);
+        if (!AppUtility.isEmpty(user)) {
+
+            user.setUnsuccessfulLoginAttempt(AppUtility.isEmpty(user.getUnsuccessfulLoginAttempt()) ? 1 : user.getUnsuccessfulLoginAttempt() + 1);
+            if (user.getUnsuccessfulLoginAttempt() >= 3) {
+                user.setStatus(AppConstants.Status.LOCKED);
+            }
+            userRepository.save(user);
+        }
+
     }
 }

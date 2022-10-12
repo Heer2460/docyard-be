@@ -10,6 +10,7 @@ public class AppConstants {
         public final static String ACTIVE = "Active";
         public final static String SUSPEND = "Suspend";
 
+        public static final String LOCKED = "Locked";
     }
 
     public static class DateFormats {

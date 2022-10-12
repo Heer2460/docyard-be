@@ -67,4 +67,18 @@ public class UnAuthAPI {
 
         return ResponseUtility.buildResponseObject(user, new UserDTO(), true);
     }
+
+    @RequestMapping(value = "/un-success/{username}", method = RequestMethod.PUT)
+    public CustomResponse unsuccessfulLoginAttempt(HttpServletRequest request,
+                                        @PathVariable(name = "username") String username)
+            throws DataValidationException, NoDataFoundException {
+        log.info("unsuccessfulLoginAttempt API initiated...");
+
+        if (AppUtility.isEmpty(username)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
+        userService.unsuccessfulLoginAttempt(username);
+
+        return ResponseUtility.buildResponseObject(new User());
+    }
 }

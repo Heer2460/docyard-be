@@ -63,6 +63,10 @@ public class User extends BaseEntity implements Serializable {
     @Column(name = "PASSWORD_REST_TOKEN")
     private String passwordResetToken;
 
+    @Column(name = "UN_SUC_LOGIN_ATTEMPTS")
+    private Integer unsuccessfulLoginAttempt;
+
+
     @JsonIgnore
     @Lob
     @Column(name = "PROFILE_PHOTO")
