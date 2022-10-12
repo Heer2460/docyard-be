@@ -162,10 +162,10 @@ public class UserService {
 
         Optional<User> user = userRepository.findById(id);
 
-        if(user.isPresent()){
-            if(user.get().getStatus().equalsIgnoreCase(AppConstants.Status.ACTIVE)){
+        if (user.isPresent()) {
+            if (user.get().getStatus().equalsIgnoreCase(AppConstants.Status.ACTIVE)) {
                 throw new DataValidationException(AppUtility.getResourceMessage("record.cannot.be.deleted.dependency"));
-            }else{
+            } else {
                 userRepository.deleteById(id);
             }
         }
@@ -198,7 +198,7 @@ public class UserService {
     }
 
     @Transactional(rollbackFor = {Throwable.class})
-    public User resetPassword(ResetPasswordDTO resetPasswordDTO) throws DataValidationException, NoDataFoundException {
+    public User resetPasswordV1(ResetPasswordDTO resetPasswordDTO) throws DataValidationException, NoDataFoundException {
         log.info("resetPassword method called..");
 
         Optional<User> user = userRepository.findById(resetPasswordDTO.getUserId());
@@ -317,8 +317,10 @@ public class UserService {
         if (!AppUtility.isEmpty(user)) {
             userDTO = new UserDTO();
             userDTO.convertToDTO(user, false);
-            if (user.getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND) || user.getGroup().getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND)) {
-                throw new DataValidationException("User is suspended please contact administration. ");
+            if (user.getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND)
+                    || user.getGroup().getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND)
+                    || user.getStatus().equalsIgnoreCase(AppConstants.Status.TERMINATE)) {
+                throw new DataValidationException("User is suspended / terminated please contact administration. ");
             }
             List<GroupRole> groupRoleList = groupRoleRepository.findAllByGroup_id(user.getGroup().getId());
             Set<Long> roleIds = groupRoleList.stream().map(GroupRole::getRole).map(Role::getId).collect(Collectors.toSet());
@@ -421,4 +423,47 @@ public class UserService {
         return new ArrayList<>(map.values());
     }
 
+    @Transactional(rollbackFor = {Throwable.class})
+    public User resetPassword(ChangePasswordDTO changePasswordDTO)
+            throws DataValidationException, NoDataFoundException {
+        log.info("resetPassword method called..");
+
+        Optional<User> user = userRepository.findById(changePasswordDTO.getUserId());
+        if (user.isPresent()) {
+            User u = user.get();
+            u.setForcePasswordChange(false);
+            u.setPasswordExpired(false);
+            u.setPassword(new BCryptPasswordEncoder().encode(changePasswordDTO.getNewPassword()));
+            u.setLastPassUpdatedOn(ZonedDateTime.now());
+
+            userRepository.save(u);
+
+            if (!AppUtility.isEmpty(changePasswordDTO.getToken())) {
+                ForgotPasswordLink fpl = forgotPasswordLinkRepository.findByToken(changePasswordDTO.getToken());
+                if (!AppUtility.isEmpty(fpl)) {
+                    fpl.setExpired(true);
+
+                    forgotPasswordLinkRepository.save(fpl);
+                }
+            }
+        } else {
+            throw new NoDataFoundException(AppUtility.getResourceMessage("user.not.found"));
+        }
+        return user.get();
+    }
+
+    @Transactional
+    public void unsuccessfulLoginAttempt(String username) {
+        log.info("unsuccessfulLoginAttempt method called...");
+        User user = userRepository.findByUsername(username);
+        if (!AppUtility.isEmpty(user)) {
+
+            user.setUnsuccessfulLoginAttempt(AppUtility.isEmpty(user.getUnsuccessfulLoginAttempt()) ? 1 : user.getUnsuccessfulLoginAttempt() + 1);
+            if (user.getUnsuccessfulLoginAttempt() >= 3) {
+                user.setStatus(AppConstants.Status.LOCKED);
+            }
+            userRepository.save(user);
+        }
+
+    }
 }

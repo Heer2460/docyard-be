@@ -81,7 +81,7 @@ public class RoleAPI {
         log.info("createRole API initiated...");
         Role role = null;
         try {
-            role = roleService.saveAndUpdateRole(roleDTO);
+            role = roleService.saveRole(roleDTO);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e, AppConstants.DBConstraints.UNQ_ROLE_CODE);
         }
@@ -96,7 +96,7 @@ public class RoleAPI {
 
         Role role = null;
         try {
-            role = roleService.saveAndUpdateRole(roleDTO);
+            role = roleService.UpdateRole(roleDTO);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e, AppConstants.DBConstraints.UNQ_ROLE_CODE);
         }

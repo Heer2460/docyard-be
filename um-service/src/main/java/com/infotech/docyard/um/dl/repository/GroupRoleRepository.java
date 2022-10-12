@@ -7,4 +7,7 @@ import java.util.List;
 
 public interface GroupRoleRepository extends JpaRepository<GroupRole, Long> {
     List<GroupRole> findAllByGroup_id(Long groupId);
+
+    boolean existsByGroup_IdAndRole_Status(Long groupId, String roleStatus);
+
 }

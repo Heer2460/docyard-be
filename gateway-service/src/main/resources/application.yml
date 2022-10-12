@@ -17,6 +17,10 @@ spring:
         - id: um-service
           uri: lb://um-service
           predicates:
+            - Path=/um/un-auth/**
+        - id: um-service
+          uri: lb://um-service
+          predicates:
             - Path=/um/**
           filters:
             - AuthFilter
@@ -28,6 +32,8 @@ spring:
           uri: lb://doc-handling-service
           predicates:
             - Path=/dl/**
+          filters:
+            - AuthFilter
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
     discovery:

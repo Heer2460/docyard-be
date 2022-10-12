@@ -51,7 +51,7 @@ public class RoleService {
     }
 
     @Transactional
-    public Role saveAndUpdateRole(RoleDTO roleDTO) {
+    public Role saveRole(RoleDTO roleDTO) {
         log.info("saveAndUpdateRole method called..");
         Role role = roleDTO.convertToEntity();
         if (AppUtility.isEmpty(role.getRolePermissions())) {
@@ -59,6 +59,16 @@ public class RoleService {
         }
         if (roleRepository.existsByCode(roleDTO.getCode())) {
             throw new DBConstraintViolationException("Code Already Exists");
+        }
+        return roleRepository.save(role);
+    }
+
+    @Transactional
+    public Role UpdateRole(RoleDTO roleDTO) {
+        log.info("saveAndUpdateRole method called..");
+        Role role = roleDTO.convertToEntity();
+        if (AppUtility.isEmpty(role.getRolePermissions())) {
+            role.setRolePermissions(roleDTO.RolePermission(role));
         }
         return roleRepository.save(role);
     }

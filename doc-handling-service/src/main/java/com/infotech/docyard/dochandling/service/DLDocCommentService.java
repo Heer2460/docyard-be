@@ -1,10 +1,13 @@
 package com.infotech.docyard.dochandling.service;
 
 import com.infotech.docyard.dochandling.dl.entity.DLDocument;
+import com.infotech.docyard.dochandling.dl.entity.DLDocumentActivity;
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentComment;
+import com.infotech.docyard.dochandling.dl.repository.DLDocumentActivityRepository;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentCommentRepository;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentRepository;
 import com.infotech.docyard.dochandling.dto.DLDocumentCommentDTO;
+import com.infotech.docyard.dochandling.enums.DLActivityTypeEnum;
 import com.infotech.docyard.dochandling.exceptions.DataValidationException;
 import com.infotech.docyard.dochandling.util.AppUtility;
 import lombok.extern.log4j.Log4j2;
@@ -13,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 @Service
@@ -25,6 +29,8 @@ public class DLDocCommentService {
     private RestTemplate restTemplate;
     @Autowired
     private DLDocumentRepository dlDocumentRepository;
+    @Autowired
+    private DLDocumentActivityRepository dlDocumentActivityRepository;
 
     public List<DLDocumentCommentDTO> getAllCommentsByDocumentId(Long documentId) {
         log.info("DLDocCommentService - getAllCommentsByDocumentId method called...");
@@ -56,16 +62,26 @@ public class DLDocCommentService {
             dlDocumentComment = commentDTO.convertToEntity();
             dlDocumentComment.setDlDocument(dlDocument);
             dlDocumentCommentRepository.save(dlDocumentComment);
+
+            DLDocumentActivity activity = new DLDocumentActivity(dlDocumentComment.getCreatedBy(), DLActivityTypeEnum.COMMENT_POSTED.getValue(),
+                    dlDocumentComment.getId(), dlDocumentComment.getId());
+            activity.setCreatedOn(ZonedDateTime.now());
+            dlDocumentActivityRepository.save(activity);
         }
         return dlDocumentComment;
     }
 
-    public void deleteDocumentComment(Long documentId) throws IOException {
+    public void deleteDocumentComment(Long documentId) {
         log.info("DLDocCommentService - deleteDocumentComment method called...");
 
         Optional<DLDocumentComment> dlDocumentComment = dlDocumentCommentRepository.findById(documentId);
         if (dlDocumentComment.isPresent()) {
             dlDocumentCommentRepository.delete(dlDocumentComment.get());
+
+            DLDocumentActivity activity = new DLDocumentActivity(dlDocumentComment.get().getCreatedBy(), DLActivityTypeEnum.COMMENT_DELETED.getValue(),
+                    dlDocumentComment.get().getId(), dlDocumentComment.get().getId());
+            activity.setCreatedOn(ZonedDateTime.now());
+            dlDocumentActivityRepository.save(activity);
         } else {
             throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
         }

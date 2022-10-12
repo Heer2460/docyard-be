@@ -732,7 +732,7 @@ public class DLDocumentService {
         List dlDocumentIds = docRestoreDTO.getDlDocumentIds();
         if (dlDocumentIds.size() == 1) {
             try {
-                DLDocument doc = dlDocumentRepository.findByIdAndAndArchivedTrue((Long) dlDocumentIds.get(0));
+                DLDocument doc = dlDocumentRepository.findByIdAndArchivedTrue((Long) dlDocumentIds.get(0));
                 if (AppUtility.isEmpty(doc)) {
                     throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
                 }
@@ -744,7 +744,7 @@ public class DLDocumentService {
         } else {
             for (Object docId : dlDocumentIds) {
                 try {
-                    DLDocument doc = dlDocumentRepository.findByIdAndAndArchivedTrue((Long) docId);
+                    DLDocument doc = dlDocumentRepository.findByIdAndArchivedTrue((Long) docId);
                     if (AppUtility.isEmpty(doc)) {
                         throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
                     }

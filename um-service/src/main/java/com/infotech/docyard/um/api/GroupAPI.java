@@ -84,7 +84,7 @@ public class GroupAPI {
         log.info("createGroup API initiated...");
         Group group = null;
         try {
-            group = groupService.saveAndUpdateGroup(groupDTO);
+            group = groupService.saveGroup(groupDTO);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e, AppConstants.DBConstraints.UNQ_GROUP_CODE);
         }
@@ -99,7 +99,7 @@ public class GroupAPI {
 
         Group group = null;
         try {
-            group = groupService.saveAndUpdateGroup(groupDTO);
+            group = groupService.UpdateGroup(groupDTO);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e, AppConstants.DBConstraints.UNQ_GROUP_CODE);
         }
