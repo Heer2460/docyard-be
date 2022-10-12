@@ -17,6 +17,10 @@ spring:
         - id: um-service
           uri: lb://um-service
           predicates:
+            - Path=/um/un-auth/**
+        - id: um-service
+          uri: lb://um-service
+          predicates:
             - Path=/um/**
           filters:
             - AuthFilter

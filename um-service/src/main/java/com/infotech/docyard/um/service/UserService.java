@@ -198,7 +198,7 @@ public class UserService {
     }
 
     @Transactional(rollbackFor = {Throwable.class})
-    public User resetPassword(ResetPasswordDTO resetPasswordDTO) throws DataValidationException, NoDataFoundException {
+    public User resetPasswordV1(ResetPasswordDTO resetPasswordDTO) throws DataValidationException, NoDataFoundException {
         log.info("resetPassword method called..");
 
         Optional<User> user = userRepository.findById(resetPasswordDTO.getUserId());
@@ -421,4 +421,32 @@ public class UserService {
         return new ArrayList<>(map.values());
     }
 
+    @Transactional(rollbackFor = {Throwable.class})
+    public User resetPassword(ChangePasswordDTO changePasswordDTO)
+            throws DataValidationException, NoDataFoundException {
+        log.info("resetPassword method called..");
+
+        Optional<User> user = userRepository.findById(changePasswordDTO.getUserId());
+        if (user.isPresent()) {
+            User u = user.get();
+            u.setForcePasswordChange(false);
+            u.setPasswordExpired(false);
+            u.setPassword(new BCryptPasswordEncoder().encode(changePasswordDTO.getNewPassword()));
+            u.setLastPassUpdatedOn(ZonedDateTime.now());
+
+            userRepository.save(u);
+
+            if (!AppUtility.isEmpty(changePasswordDTO.getToken())) {
+                ForgotPasswordLink fpl = forgotPasswordLinkRepository.findByToken(changePasswordDTO.getToken());
+                if (!AppUtility.isEmpty(fpl)) {
+                    fpl.setExpired(true);
+
+                    forgotPasswordLinkRepository.save(fpl);
+                }
+            }
+        } else {
+            throw new NoDataFoundException(AppUtility.getResourceMessage("user.not.found"));
+        }
+        return user.get();
+    }
 }

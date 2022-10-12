@@ -193,26 +193,13 @@ public class UserAPI {
 
         User user = null;
         try {
-            user = userService.resetPassword(resetPasswordDTO);
+            user = userService.resetPasswordV1(resetPasswordDTO);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
         return ResponseUtility.successResponse(user, AppUtility.getResourceMessage("password.reset.success"));
     }
 
-    @RequestMapping(value = "/forgot-password", method = RequestMethod.PUT)
-    public CustomResponse forgotPassword(HttpServletRequest request,
-                                         @RequestParam(value = "email") String email)
-            throws DataValidationException, NoDataFoundException, IOException, CustomException {
-        log.info("forgotPassword API initiated...");
-
-        try {
-            userService.forgotPassword(email);
-        } catch (Exception e) {
-            ResponseUtility.exceptionResponse(e);
-        }
-        return ResponseUtility.successResponseForPut(null, AppUtility.getResourceMessage("password.reset.link.token"));
-    }
 
     @RequestMapping(value = "/validate-token-reset-password", method = RequestMethod.PUT)
     public CustomResponse verifyTokenAndResetPassword(HttpServletRequest request,
