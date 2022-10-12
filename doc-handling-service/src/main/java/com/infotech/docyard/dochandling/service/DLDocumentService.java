@@ -480,6 +480,7 @@ public class DLDocumentService {
         return doc;
     }
 
+    @Transactional(rollbackFor = {Throwable.class})
     public void deleteDLDocument(DLDocumentListDTO dlDocumentIds) throws Exception {
         if (!AppUtility.isEmpty(dlDocumentIds)) {
             if (!AppUtility.isEmpty(dlDocumentIds.getDlDocumentIds())) {
@@ -495,6 +496,7 @@ public class DLDocumentService {
         }
     }
 
+    @Transactional(rollbackFor = {Throwable.class})
     public void deleteDLDocument(Long dlDocumentId) throws Exception {
         log.info("DLDocumentService - deleteDocument method called...");
         if (!AppUtility.isEmpty(dlDocumentId)) {
@@ -506,8 +508,8 @@ public class DLDocumentService {
                     if (parent) {
                         List<DLDocument> childDocs = getChildren(dlDocumentId);
                         if (!(childDocs == null || AppUtility.isEmpty(childDocs))) {
-                            for (DLDocument dldoc : childDocs) {
-                                deleteDLDocument(dldoc.getId());
+                            for (DLDocument dlDoc : childDocs) {
+                                deleteDLDocument(dlDoc.getId());
                             }
                         }
                     }

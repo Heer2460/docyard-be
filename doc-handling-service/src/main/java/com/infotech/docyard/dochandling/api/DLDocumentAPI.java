@@ -31,6 +31,18 @@ public class DLDocumentAPI {
     @Autowired
     private DLDocumentService dlDocumentService;
 
+    /*@RequestMapping(value = "/", method = RequestMethod.GET)
+    public CustomResponse getAllDLDocumentsByFolderAndArchive(HttpServletRequest request,
+                                                              @RequestParam(value = "name", required = false) String name,
+                                                              @RequestParam(value = "title", required = false) String title,
+                                                              @RequestParam(value = "ocrDone", required = false) boolean ocrDone,
+                                                              @RequestParam(value = "ocrSupported", required = false) boolean ocrSupported,
+                                                              @RequestParam(value = "extension", required = false) String extension,
+                                                              @RequestParam(value = "folderId", required = false) Long folderId,
+                                                              ) {
+
+    }*/
+
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public CustomResponse getAllDLDocumentsByFolderAndArchive(HttpServletRequest request,
                                                               @RequestParam(value = "folderId", required = false) Long folderId,
