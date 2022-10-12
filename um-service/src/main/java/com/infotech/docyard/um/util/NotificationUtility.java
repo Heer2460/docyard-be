@@ -23,6 +23,20 @@ public class NotificationUtility {
         return content.toString();
     }
 
+    public static String buildChangePasswordContent(User user) {
+        log.info("buildChangePasswordContent API initiated...");
+
+        StringBuilder content = new StringBuilder("Dear " + user.getName() + ", </br>");
+        content.append("Dear user your password has been changed ");
+        content.append("</br> ");
+        content.append("</br> ");
+        content.append("</br> ");
+
+        content.append("Thanks ");
+
+        return content.toString();
+    }
+
     public static String buildCreateUserEmailContent(UserDTO userDTO, String baseFELink) {
         log.info("buildCreateUserEmailContent API initiated...");
 
