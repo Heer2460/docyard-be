@@ -12,12 +12,15 @@ public class DLDocumentActivityResponseDTO extends BaseDTO implements Serializab
     private String action;
     private String docName;
     private String activityPerformedOn;
+    private String comment;
 
-    public DLDocumentActivityResponseDTO (String userName, String action, String docName, String activityPerformedOn) {
+    public DLDocumentActivityResponseDTO (String userName, String action, String docName, String activityPerformedOn,
+                                          String comment) {
         this.userName = userName;
         this.action = action;
         this.docName = docName;
         this.activityPerformedOn = activityPerformedOn;
+        this.comment = comment;
     }
 
     public DLDocumentActivityResponseDTO () {

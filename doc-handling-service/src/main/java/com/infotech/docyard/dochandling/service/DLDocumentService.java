@@ -64,6 +64,12 @@ public class DLDocumentService {
     @Autowired
     private RestTemplate restTemplate;
 
+    public List<DLDocument> searchDLDocuments(String searchKey) {
+        log.info("DLDocumentService - searchDLDocuments method called...");
+
+        return dlDocumentRepository.findDLDocumentBySearchKey(searchKey);
+    }
+
     public List<DLDocumentDTO> getDLDocumentsByFolderIdAndArchive(Long folderId, Boolean archived) {
         log.info("DLDocumentService - getDlDocumentsByFolderIdAndArchive method called...");
 
@@ -531,14 +537,14 @@ public class DLDocumentService {
             deleted = ftpService.deleteFile(dldocument.getLocation(), dldocument.getVersionGUId());
         }
         if (deleted || dldocument.getFolder()) {
-            try{
-                if (dlDocumentVersionRepository.existsByDlDocument_Id(docId)){
+            try {
+                if (dlDocumentVersionRepository.existsByDlDocument_Id(docId)) {
                     dlDocumentVersionRepository.deleteAllByDlDocument_Id(docId);
                 }
-                if (dlDocumentActivityRepository.existsByDocId(docId)){
+                if (dlDocumentActivityRepository.existsByDocId(docId)) {
                     dlDocumentActivityRepository.deleteAllByDocId(docId);
                 }
-                if (dlDocumentCommentRepository.existsByDlDocument_Id(docId)){
+                if (dlDocumentCommentRepository.existsByDlDocument_Id(docId)) {
                     dlDocumentCommentRepository.deleteAllByDlDocument_Id(docId);
                 }
                 dlDocumentRepository.deleteById(docId);
@@ -726,7 +732,7 @@ public class DLDocumentService {
 
     @Transactional(rollbackFor = {Throwable.class})
     public void restoreArchivedDlDocument(DLDocumentListDTO docRestoreDTO) throws CustomException {
-        if (AppUtility.isEmpty(docRestoreDTO)){
+        if (AppUtility.isEmpty(docRestoreDTO)) {
             throw new DataValidationException(AppUtility.getResourceMessage("document.ids.not.found"));
         }
         List dlDocumentIds = docRestoreDTO.getDlDocumentIds();
