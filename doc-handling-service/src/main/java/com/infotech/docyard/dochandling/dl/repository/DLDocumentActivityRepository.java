@@ -12,6 +12,6 @@ public interface DLDocumentActivityRepository extends JpaRepository<DLDocumentAc
 
     Boolean existsByDocId(Long id);
 
-    List<DLDocumentActivity> findAllByUserId(Long id);
+    List<DLDocumentActivity> findAllByUserIdOrderByUpdatedOnDesc(Long id);
 
 }

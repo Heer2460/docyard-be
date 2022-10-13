@@ -37,7 +37,6 @@ public class DLDocumentVersion extends BaseEntity implements Serializable {
     private Double version;
 
     @JsonIgnore
-    @NotFound(action = NotFoundAction.IGNORE)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "DOC_ID", nullable = false)
     private DLDocument dlDocument;

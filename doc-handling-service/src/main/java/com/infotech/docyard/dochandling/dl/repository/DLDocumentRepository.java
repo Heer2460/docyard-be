@@ -3,6 +3,8 @@ package com.infotech.docyard.dochandling.dl.repository;
 
 import com.infotech.docyard.dochandling.dl.entity.DLDocument;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.ZonedDateTime;
@@ -18,6 +20,7 @@ public interface DLDocumentRepository extends JpaRepository<DLDocument, Long> {
     List<DLDocument> findByParentIdAndArchivedOrderByUpdatedOnDesc(Long folderId, Boolean archived);
 
     List<DLDocument> findByCreatedByAndParentIdAndArchivedOrderByUpdatedOnDesc(Long ownerId, Long folderId, Boolean archived);
+
     List<DLDocument> findAllByCreatedByAndParentIdAndArchivedAndFolderFalseOrderByUpdatedOnDesc(Long ownerId, Long folderId, Boolean archived);
 
     List<DLDocument> findAllByCreatedByAndArchivedAndFolderFalseOrderByUpdatedOnDesc(Long ownerId, Boolean archived);
@@ -58,5 +61,12 @@ public interface DLDocumentRepository extends JpaRepository<DLDocument, Long> {
 
     List<DLDocument> findAllByFolderFalseAndArchivedFalseAndOcrDoneFalseAndOcrSupportedTrue();
 
-
+    @Query("SELECT DISTINCT d FROM DLDocument d LEFT JOIN d.documentComments c " +
+            "WHERE d.name LIKE %:searchKey% " +
+            "OR d.title LIKE %:searchKey% " +
+            "OR d.versionGUId LIKE %:searchKey% " +
+            "OR d.content LIKE %:searchKey% " +
+            "OR c.message LIKE %:searchKey% " +
+            "order by d.updatedOn desc")
+    List<DLDocument> findDLDocumentBySearchKey(@Param("searchKey") String searchKey);
 }
