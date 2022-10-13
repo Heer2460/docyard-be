@@ -28,7 +28,7 @@ public class RoleDTO extends BaseDTO<RoleDTO, Role> {
         role.setId(this.id);
         role.setCode(this.code);
         role.setStatus(this.status);
-        role.setName(this.name);
+        role.setName(AppUtility.isEmpty(this.name) ? this.name : this.name.trim());
         role.setRemarks(this.remarks);
         role.setCreatedOn(AppUtility.isEmpty(this.createdOn) ? ZonedDateTime.now() : this.createdOn);
         role.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);

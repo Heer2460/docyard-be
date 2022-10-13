@@ -7,7 +7,7 @@ import lombok.Data;
 import java.time.ZonedDateTime;
 
 @Data
-public class DepartmentDTO  extends BaseDTO<DepartmentDTO, Department> {
+public class DepartmentDTO extends BaseDTO<DepartmentDTO, Department> {
 
     private Long id;
     private String code;
@@ -21,7 +21,7 @@ public class DepartmentDTO  extends BaseDTO<DepartmentDTO, Department> {
         department.setId(this.id);
         department.setCode(this.code);
         department.setStatus(this.status);
-        department.setName(this.name);
+        department.setName(AppUtility.isEmpty(this.name) ? this.name : this.name.trim());
         department.setCreatedOn(AppUtility.isEmpty(this.createdOn) ? ZonedDateTime.now() : this.createdOn);
         department.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
         department.setCreatedBy(this.getCreatedBy());
