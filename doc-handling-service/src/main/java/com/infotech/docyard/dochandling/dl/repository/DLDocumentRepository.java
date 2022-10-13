@@ -62,11 +62,12 @@ public interface DLDocumentRepository extends JpaRepository<DLDocument, Long> {
     List<DLDocument> findAllByFolderFalseAndArchivedFalseAndOcrDoneFalseAndOcrSupportedTrue();
 
     @Query("SELECT DISTINCT d FROM DLDocument d LEFT JOIN d.documentComments c " +
-            "WHERE d.name LIKE %:searchKey% " +
+            "WHERE d.archived = false " +
+            "AND (d.name LIKE %:searchKey% " +
             "OR d.title LIKE %:searchKey% " +
             "OR d.versionGUId LIKE %:searchKey% " +
             "OR d.content LIKE %:searchKey% " +
-            "OR c.message LIKE %:searchKey% " +
+            "OR c.message LIKE %:searchKey%) " +
             "order by d.updatedOn desc")
     List<DLDocument> findDLDocumentBySearchKey(@Param("searchKey") String searchKey);
 }
