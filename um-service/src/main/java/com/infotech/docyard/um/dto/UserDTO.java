@@ -61,7 +61,7 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
         user.setId(this.id);
         user.setUsername(this.username);
         user.setEmail(this.email);
-        user.setName(this.name);
+        user.setName(AppUtility.isEmpty(this.name) ? this.name : this.name.trim());
         user.setPhoneNumber(this.phoneNumber);
         user.setMobileNumber(this.mobileNumber);
         if (!AppUtility.isEmpty(this.groupId)) {
@@ -136,7 +136,7 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
         this.updatedBy = entity.getUpdatedBy();
         this.createdBy = entity.getCreatedBy();
         this.password = entity.getPassword();
-        this.unsuccessfulLoginAttempt= entity.getUnsuccessfulLoginAttempt();
+        this.unsuccessfulLoginAttempt = entity.getUnsuccessfulLoginAttempt();
     }
 
     @Override

@@ -29,7 +29,7 @@ public class GroupDTO extends BaseDTO<GroupDTO, Group> {
         group.setId(this.id);
         group.setCode(this.code);
         group.setStatus(this.status);
-        group.setName(this.name);
+        group.setName(AppUtility.isEmpty(this.name) ? this.name : this.name.trim());
         group.setRemarks(this.remarks);
         group.setCreatedOn(AppUtility.isEmpty(this.createdOn) ? ZonedDateTime.now() : this.createdOn);
         group.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
@@ -66,7 +66,7 @@ public class GroupDTO extends BaseDTO<GroupDTO, Group> {
         if (!AppUtility.isEmpty(this.role)) {
             for (Long id : this.role) {
                 Role role = new Role(id);
-                GroupRole gr = new GroupRole(group,role);
+                GroupRole gr = new GroupRole(group, role);
                 groupRoleList.add(gr);
             }
         }
