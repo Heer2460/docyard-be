@@ -172,32 +172,6 @@ public class UserService {
     }
 
     @Transactional(rollbackFor = {Throwable.class})
-    public User changePassword(ChangePasswordDTO changePasswordDTO) throws DataValidationException, NoDataFoundException {
-        log.info("changePassword method called..");
-
-        Optional<User> user = userRepository.findById(changePasswordDTO.getUserId());
-        if (user.isPresent()) {
-            if (BCrypt.checkpw(changePasswordDTO.getCurrentPassword(), user.get().getPassword())) {
-                if (!BCrypt.checkpw(changePasswordDTO.getNewPassword(), user.get().getPassword())) {
-                    User u = user.get();
-                    u.setPassword(new BCryptPasswordEncoder().encode(changePasswordDTO.getNewPassword()));
-                    u.setForcePasswordChange(false);
-                    u.setPasswordExpired(false);
-                    u.setLastPassUpdatedOn(ZonedDateTime.now());
-                    userRepository.save(u);
-                } else {
-                    throw new DataValidationException(AppUtility.getResourceMessage("user.same.password"));
-                }
-            } else {
-                throw new DataValidationException(AppUtility.getResourceMessage("user.wrong.current.password"));
-            }
-        } else {
-            throw new NoDataFoundException(AppUtility.getResourceMessage("user.not.found"));
-        }
-        return user.get();
-    }
-
-    @Transactional(rollbackFor = {Throwable.class})
     public User resetPasswordV1(ResetPasswordDTO resetPasswordDTO) throws DataValidationException, NoDataFoundException {
         log.info("resetPassword method called..");
 
@@ -221,6 +195,47 @@ public class UserService {
         log.info("searchUserByUserName method called..");
 
         return userRepository.findByUsername(username);
+    }
+
+    @Transactional(rollbackFor = {Throwable.class})
+    public User changePassword(ChangePasswordDTO changePasswordDTO) throws DataValidationException, NoDataFoundException {
+        log.info("changePassword method called..");
+
+        Optional<User> user = userRepository.findById(changePasswordDTO.getUserId());
+        if (user.isPresent()) {
+            if (BCrypt.checkpw(changePasswordDTO.getCurrentPassword(), user.get().getPassword())) {
+                if (!BCrypt.checkpw(changePasswordDTO.getNewPassword(), user.get().getPassword())) {
+                    User u = user.get();
+                    u.setPassword(new BCryptPasswordEncoder().encode(changePasswordDTO.getNewPassword()));
+                    u.setForcePasswordChange(false);
+                    u.setPasswordExpired(false);
+                    u.setLastPassUpdatedOn(ZonedDateTime.now());
+                    String content = NotificationUtility.buildChangePasswordContent(u);
+                    if(!AppUtility.isEmpty(content)){
+                        EmailInstance emailInstance = new EmailInstance();
+                        emailInstance.setToEmail(u.getEmail());
+                        emailInstance.setType(EmailTypeEnum.CHANGE_PASSWORD.getValue());
+                        emailInstance.setSubject(AppConstants.EmailSubjectConstants.CHANGE_PASSWORD);
+                        emailInstance.setStatus(EmailStatusEnum.SENT.getValue());
+                        emailInstance.setCreatedOn(ZonedDateTime.now());
+                        emailInstance.setUpdatedOn(ZonedDateTime.now());
+                        emailInstance.setCreatedBy(1L);
+                        emailInstance.setUpdatedBy(1L);
+                        emailInstanceRepository.save(emailInstance);
+                        notificationService.sendEmail(emailInstance);
+                    }
+                    userRepository.save(u);
+
+                } else {
+                    throw new DataValidationException(AppUtility.getResourceMessage("user.same.password"));
+                }
+            } else {
+                throw new DataValidationException(AppUtility.getResourceMessage("user.wrong.current.password"));
+            }
+        } else {
+            throw new NoDataFoundException(AppUtility.getResourceMessage("user.not.found"));
+        }
+        return user.get();
     }
 
     @Transactional(rollbackFor = {Throwable.class})
