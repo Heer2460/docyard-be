@@ -48,6 +48,8 @@ public class AdvSearchRepository {
         CriteriaQuery<User> cq = cb.createQuery(User.class);
         Root<User> userRoot = cq.from(User.class);
 
+        Join<Object, Object> group = userRoot.join("group", JoinType.LEFT);
+
         List<Predicate> predicates = new ArrayList<>();
         if (!AppUtility.isEmpty(username)) {
             predicates.add(cb.like(userRoot.get("username"), "%" + username + "%"));
@@ -56,12 +58,13 @@ public class AdvSearchRepository {
             predicates.add(cb.like(userRoot.get("name"), "%" + name + "%"));
         }
         if (!AppUtility.isEmpty(groupId)) {
-            predicates.add(cb.equal(userRoot.get("groupId"), groupId));
+            predicates.add(cb.equal(group.get("id"), groupId));
         }
+
         // need to implement
-        /*if (!AppUtility.isEmpty(departmentId)) {
-            predicates.add(cb.like(dptRoot.get("departmentId"), "%" + name + "%"));
-        }*/
+        if (!AppUtility.isEmpty(departmentId)) {
+            predicates.add(cb.like(userRoot.get("departmentIds"), "%" + departmentId.toString() + "%"));
+        }
         if (!AppUtility.isEmpty(status)) {
             predicates.add(cb.equal(userRoot.get("status"), status));
         }

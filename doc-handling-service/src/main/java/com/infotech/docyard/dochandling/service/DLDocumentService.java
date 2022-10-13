@@ -364,6 +364,13 @@ public class DLDocumentService {
                 doc.setParentId(request.getFolderId());
             }
             doc.setFolder(false);
+            if (DocumentUtil.isOCRType(doc)) {
+                doc.setOcrSupported(true);
+                doc.setOcrDone(false);
+            } else {
+                doc.setOcrSupported(false);
+                doc.setOcrDone(true);
+            }
             doc = dlDocumentRepository.save(doc);
             doc.setArchived(false);
             DLDocument folder = dlDocumentRepository.findByIdAndArchivedFalseAndFolderTrue(request.getFolderId());
@@ -456,6 +463,8 @@ public class DLDocumentService {
         folder.setCreatedOn(ZonedDateTime.now());
         folder.setUpdatedBy(folderRequestDTO.getUpdatedBy());
         folder.setUpdatedOn(ZonedDateTime.now());
+        folder.setOcrSupported(false);
+        folder.setOcrDone(false);
         folder = dlDocumentRepository.save(folder);
 
         DLDocumentActivity activity = new DLDocumentActivity(folder.getCreatedBy(), DLActivityTypeEnum.CREATED.getValue(),

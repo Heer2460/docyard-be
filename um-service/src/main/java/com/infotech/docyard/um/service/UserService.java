@@ -337,6 +337,9 @@ public class UserService {
                     || user.getStatus().equalsIgnoreCase(AppConstants.Status.TERMINATE)) {
                 throw new DataValidationException("User is suspended / terminated please contact administration. ");
             }
+            if (user.getStatus().equalsIgnoreCase(AppConstants.Status.LOCKED)) {
+                throw new DataValidationException("User is locked please contact administration. ");
+            }
             List<GroupRole> groupRoleList = groupRoleRepository.findAllByGroup_id(user.getGroup().getId());
             Set<Long> roleIds = groupRoleList.stream().map(GroupRole::getRole).map(Role::getId).collect(Collectors.toSet());
             List<RolePermission> rolePermissionList = rolePermissionRepository.findAllRole_idIn(roleIds);
@@ -367,6 +370,8 @@ public class UserService {
             if (!AppUtility.isEmpty(response)) {
                 userDTO.setSpaceUsed(((LinkedHashMap<?, ?>) response).get("data").toString());
             }
+            user.setUnsuccessfulLoginAttempt(0);
+            userRepository.save(user);
         } else {
             throw new NoDataFoundException("User not found.");
         }
@@ -467,7 +472,6 @@ public class UserService {
         return user.get();
     }
 
-    @Transactional
     public void unsuccessfulLoginAttempt(String username) {
         log.info("unsuccessfulLoginAttempt method called...");
         User user = userRepository.findByUsername(username);
@@ -477,7 +481,11 @@ public class UserService {
             if (user.getUnsuccessfulLoginAttempt() >= 3) {
                 user.setStatus(AppConstants.Status.LOCKED);
             }
-            userRepository.save(user);
+           User user1 = userRepository.save(user);
+            if(user1.getUnsuccessfulLoginAttempt() >= 3){
+                    throw new DataValidationException("User is locked please contact administration. ");
+            }
+
         }
 
     }
