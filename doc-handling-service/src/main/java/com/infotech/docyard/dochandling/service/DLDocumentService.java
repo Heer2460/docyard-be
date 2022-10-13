@@ -456,6 +456,8 @@ public class DLDocumentService {
         folder.setCreatedOn(ZonedDateTime.now());
         folder.setUpdatedBy(folderRequestDTO.getUpdatedBy());
         folder.setUpdatedOn(ZonedDateTime.now());
+        folder.setOcrSupported(false);
+        folder.setOcrDone(false);
         folder = dlDocumentRepository.save(folder);
 
         DLDocumentActivity activity = new DLDocumentActivity(folder.getCreatedBy(), DLActivityTypeEnum.CREATED.getValue(),
