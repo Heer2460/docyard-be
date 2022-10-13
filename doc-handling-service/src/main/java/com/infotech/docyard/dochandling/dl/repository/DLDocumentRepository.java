@@ -63,11 +63,12 @@ public interface DLDocumentRepository extends JpaRepository<DLDocument, Long> {
 
     @Query("SELECT DISTINCT d FROM DLDocument d LEFT JOIN d.documentComments c " +
             "WHERE d.archived = false " +
+            "AND d.createdBy = :userId " +
             "AND (d.name LIKE %:searchKey% " +
             "OR d.title LIKE %:searchKey% " +
             "OR d.versionGUId LIKE %:searchKey% " +
             "OR d.content LIKE %:searchKey% " +
             "OR c.message LIKE %:searchKey%) " +
             "order by d.updatedOn desc")
-    List<DLDocument> findDLDocumentBySearchKey(@Param("searchKey") String searchKey);
+    List<DLDocument> findDLDocumentBySearchKey(@Param("searchKey") String searchKey, @Param("userId") Long userId);
 }

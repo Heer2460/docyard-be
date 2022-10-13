@@ -46,8 +46,10 @@ public class DLShareService {
             status = this.shareOffSpecific(shareRequest, dlDocument);
         } else if (shareRequest.getShareType().equalsIgnoreCase(ShareTypeEnum.INVITED_EXTERNAL_PEOPLE_ONLY.getValue())) {
             //status = this.shareInvitedExternalPeopleOnly(tenantId, shareRequest, user, deviceType, document, folder, accountSettings);
-        } else {
+        } else if (shareRequest.getShareType().equalsIgnoreCase(ShareTypeEnum.INVITED_PEOPLE_ONLY.getValue())) {
             //status = this.shareInvitedInternalMemberOnly(tenantId, shareRequest, user, deviceType, document, folder, accountSettings);
+        } else if (shareRequest.getShareType().equalsIgnoreCase(ShareTypeEnum.NO_SHARING.getValue())) {
+            //status = this.terminateShare(tenantId, shareRequest, user, deviceType, document, folder, accountSettings);
         }
         return status;
     }

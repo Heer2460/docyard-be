@@ -31,14 +31,15 @@ public class DLDocumentAPI {
     @Autowired
     private DLDocumentService dlDocumentService;
 
-    @RequestMapping(value = "/search", method = RequestMethod.GET)
+    @RequestMapping(value = "/search/{userId}", method = RequestMethod.GET)
     public CustomResponse searchDLDocuments(HttpServletRequest request,
-                                            @RequestParam(value = "searchKey") String searchKey) throws CustomException {
+                                            @RequestParam(value = "searchKey") String searchKey,
+                                            @PathVariable(value = "userId") Long userId) throws CustomException {
         log.info("searchDLDocuments API initiated...");
 
         List<DLDocument> dlDocumentList = null;
         try {
-            dlDocumentList = dlDocumentService.searchDLDocuments(searchKey);
+            dlDocumentList = dlDocumentService.searchDLDocuments(searchKey, userId);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
