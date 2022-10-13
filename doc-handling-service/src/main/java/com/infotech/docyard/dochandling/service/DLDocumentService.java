@@ -364,6 +364,10 @@ public class DLDocumentService {
                 doc.setParentId(request.getFolderId());
             }
             doc.setFolder(false);
+            if (DocumentUtil.isOCRType(doc)) {
+                doc.setOcrSupported(true);
+                doc.setOcrDone(false);
+            }
             doc = dlDocumentRepository.save(doc);
             doc.setArchived(false);
             DLDocument folder = dlDocumentRepository.findByIdAndArchivedFalseAndFolderTrue(request.getFolderId());
