@@ -450,6 +450,8 @@ public class DLDocumentService {
         folder.setCreatedOn(ZonedDateTime.now());
         folder.setUpdatedBy(folderRequestDTO.getUpdatedBy());
         folder.setUpdatedOn(ZonedDateTime.now());
+        folder.setOcrSupported(false);
+        folder.setOcrDone(false);
         folder = dlDocumentRepository.save(folder);
 
         DLDocumentActivity activity = new DLDocumentActivity(folder.getCreatedBy(), DLActivityTypeEnum.CREATED.getValue(),
@@ -531,14 +533,14 @@ public class DLDocumentService {
             deleted = ftpService.deleteFile(dldocument.getLocation(), dldocument.getVersionGUId());
         }
         if (deleted || dldocument.getFolder()) {
-            try{
-                if (dlDocumentVersionRepository.existsByDlDocument_Id(docId)){
+            try {
+                if (dlDocumentVersionRepository.existsByDlDocument_Id(docId)) {
                     dlDocumentVersionRepository.deleteAllByDlDocument_Id(docId);
                 }
-                if (dlDocumentActivityRepository.existsByDocId(docId)){
+                if (dlDocumentActivityRepository.existsByDocId(docId)) {
                     dlDocumentActivityRepository.deleteAllByDocId(docId);
                 }
-                if (dlDocumentCommentRepository.existsByDlDocument_Id(docId)){
+                if (dlDocumentCommentRepository.existsByDlDocument_Id(docId)) {
                     dlDocumentCommentRepository.deleteAllByDlDocument_Id(docId);
                 }
                 dlDocumentRepository.deleteById(docId);
@@ -726,7 +728,7 @@ public class DLDocumentService {
 
     @Transactional(rollbackFor = {Throwable.class})
     public void restoreArchivedDlDocument(DLDocumentListDTO docRestoreDTO) throws CustomException {
-        if (AppUtility.isEmpty(docRestoreDTO)){
+        if (AppUtility.isEmpty(docRestoreDTO)) {
             throw new DataValidationException(AppUtility.getResourceMessage("document.ids.not.found"));
         }
         List dlDocumentIds = docRestoreDTO.getDlDocumentIds();
