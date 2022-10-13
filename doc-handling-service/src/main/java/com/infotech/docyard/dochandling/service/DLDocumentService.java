@@ -367,6 +367,9 @@ public class DLDocumentService {
             if (DocumentUtil.isOCRType(doc)) {
                 doc.setOcrSupported(true);
                 doc.setOcrDone(false);
+            } else {
+                doc.setOcrSupported(false);
+                doc.setOcrDone(true);
             }
             doc = dlDocumentRepository.save(doc);
             doc.setArchived(false);
