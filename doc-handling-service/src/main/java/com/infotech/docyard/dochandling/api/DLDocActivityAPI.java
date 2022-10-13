@@ -1,6 +1,5 @@
 package com.infotech.docyard.dochandling.api;
 
-import com.infotech.docyard.dochandling.dto.DLDocumentActivityDTO;
 import com.infotech.docyard.dochandling.dto.DLDocumentActivityResponseDTO;
 import com.infotech.docyard.dochandling.exceptions.CustomException;
 import com.infotech.docyard.dochandling.service.DLDocActivityService;

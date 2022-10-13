@@ -31,17 +31,19 @@ public class DLDocumentAPI {
     @Autowired
     private DLDocumentService dlDocumentService;
 
-    /*@RequestMapping(value = "/", method = RequestMethod.GET)
-    public CustomResponse getAllDLDocumentsByFolderAndArchive(HttpServletRequest request,
-                                                              @RequestParam(value = "name", required = false) String name,
-                                                              @RequestParam(value = "title", required = false) String title,
-                                                              @RequestParam(value = "ocrDone", required = false) boolean ocrDone,
-                                                              @RequestParam(value = "ocrSupported", required = false) boolean ocrSupported,
-                                                              @RequestParam(value = "extension", required = false) String extension,
-                                                              @RequestParam(value = "folderId", required = false) Long folderId,
-                                                              ) {
+    @RequestMapping(value = "/search", method = RequestMethod.GET)
+    public CustomResponse searchDLDocuments(HttpServletRequest request,
+                                            @RequestParam(value = "searchKey") String searchKey) throws CustomException {
+        log.info("searchDLDocuments API initiated...");
 
-    }*/
+        List<DLDocument> dlDocumentList = null;
+        try {
+            dlDocumentList = dlDocumentService.searchDLDocuments(searchKey);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.buildResponseList(dlDocumentList, new DLDocumentDTO(), true);
+    }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public CustomResponse getAllDLDocumentsByFolderAndArchive(HttpServletRequest request,

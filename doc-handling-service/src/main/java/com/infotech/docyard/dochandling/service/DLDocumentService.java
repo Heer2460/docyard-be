@@ -64,6 +64,12 @@ public class DLDocumentService {
     @Autowired
     private RestTemplate restTemplate;
 
+    public List<DLDocument> searchDLDocuments(String searchKey) {
+        log.info("DLDocumentService - searchDLDocuments method called...");
+
+        return dlDocumentRepository.findDLDocumentBySearchKey(searchKey);
+    }
+
     public List<DLDocumentDTO> getDLDocumentsByFolderIdAndArchive(Long folderId, Boolean archived) {
         log.info("DLDocumentService - getDlDocumentsByFolderIdAndArchive method called...");
 

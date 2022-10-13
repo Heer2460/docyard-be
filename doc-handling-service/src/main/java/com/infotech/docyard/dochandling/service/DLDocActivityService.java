@@ -3,7 +3,9 @@ package com.infotech.docyard.dochandling.service;
 
 import com.infotech.docyard.dochandling.dl.entity.DLDocument;
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentActivity;
+import com.infotech.docyard.dochandling.dl.entity.DLDocumentComment;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentActivityRepository;
+import com.infotech.docyard.dochandling.dl.repository.DLDocumentCommentRepository;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentRepository;
 import com.infotech.docyard.dochandling.dto.DLDocumentActivityDTO;
 import com.infotech.docyard.dochandling.dto.DLDocumentActivityResponseDTO;
@@ -26,6 +28,8 @@ public class DLDocActivityService {
     @Autowired
     private RestTemplate restTemplate;
     @Autowired
+    private DLDocumentCommentRepository dlDocumentCommentRepository;
+    @Autowired
     private DLDocumentRepository dlDocumentRepository;
 
 
@@ -33,7 +37,7 @@ public class DLDocActivityService {
         log.info("DLDocActivityService - getAllActivitiesByUserId method called...");
 
         List<DLDocumentActivityDTO> dlDocumentActivityDTOList = new ArrayList<>();
-        List<DLDocumentActivity> dlDocumentActivityList = dlDocumentActivityRepository.findAllByUserId(userId);
+        List<DLDocumentActivity> dlDocumentActivityList = dlDocumentActivityRepository.findAllByUserIdOrderByUpdatedOnDesc(userId);
         List<DLDocumentActivityResponseDTO> responseDTOList = new ArrayList<>();
         for (DLDocumentActivity docAct : dlDocumentActivityList) {
             DLDocumentActivityDTO dto = new DLDocumentActivityDTO();
@@ -44,8 +48,10 @@ public class DLDocActivityService {
             DLDocumentActivityResponseDTO activityResponseDTO = new DLDocumentActivityResponseDTO();
 
             switch (activityDTO.getActivityType()){
-                case "COMMENT":
+                case "COMMENT_POSTED":
                     activityResponseDTO.setAction(DLActivityTypeMessageEnum.COMMENT.getValue());
+                    Optional<DLDocumentComment> commentOP = dlDocumentCommentRepository.findById(activityDTO.getEntityId());
+                    commentOP.ifPresent(comm -> activityResponseDTO.setComment(comm.getMessage()));
                     break;
                 case "FILE_VIEWED":
                     activityResponseDTO.setAction(DLActivityTypeMessageEnum.FILE_VIEWED.getValue());

@@ -42,7 +42,7 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
     private List<ModuleAction> moduleActionList;
     private List<ModuleDTO> moduleDTOList;
     private String spaceUsed;
-    private Integer unsuccessfulLoginAttempt;
+    private Integer unsuccessfulLoginAttempt = 0;
 
     public UserDTO() {
 
