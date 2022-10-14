@@ -363,6 +363,7 @@ public class DLDocumentService {
             if (request.getFolderId() != 0) {
                 doc.setParentId(request.getFolderId());
             }
+            doc.setShared(false);
             doc.setFolder(false);
             if (DocumentUtil.isOCRType(doc)) {
                 doc.setOcrSupported(true);
