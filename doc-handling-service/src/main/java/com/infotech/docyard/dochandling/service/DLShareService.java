@@ -119,7 +119,7 @@ public class DLShareService {
         dlDocumentRepository.save(dlDocument);
         dlShare.setPermanentLink(shareRequest.getShareLink());
         dlShare.setAccessRight(shareRequest.getSharePermission());
-        dlShare.setShareType(ShareTypeEnum.OFF_SPECIFIC.getValue());
+        dlShare.setShareType(ShareTypeEnum.INVITED_PEOPLE_ONLY.getValue());
         dlShare.setStatus(ShareStatusEnum.SHARED.getValue());
         dlShare.setShareNotes(shareRequest.getMessage());
 
