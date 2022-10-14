@@ -1,6 +1,5 @@
 package com.infotech.docyard.dochandling.dl.repository;
 
-import com.infotech.docyard.dochandling.dl.entity.DLShare;
 import com.infotech.docyard.dochandling.dl.entity.DLShareCollaborator;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -10,5 +9,5 @@ import org.springframework.stereotype.Repository;
 public interface DLShareCollaboratorRepository extends JpaRepository<DLShareCollaborator, Long> {
 
     @Modifying
-    void deleteByDlShare(DLShare dlShare);
+    void deleteByDlShareId(Long dlShareId);
 }

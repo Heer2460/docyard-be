@@ -95,9 +95,8 @@ public class DLDocument extends BaseEntity implements Serializable {
     @NotNull
     private String title;
 
-    @OneToOne(mappedBy = "dlDocument")
-    private DLShare dlShare;
-
+    @Column(name = "DL_SHARE_ID")
+    private Long dlShareId;
 
     @OneToMany(mappedBy = "dlDocument", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DLDocumentComment> documentComments;
