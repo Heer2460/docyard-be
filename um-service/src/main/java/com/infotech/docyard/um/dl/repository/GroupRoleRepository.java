@@ -10,4 +10,6 @@ public interface GroupRoleRepository extends JpaRepository<GroupRole, Long> {
 
     boolean existsByGroup_IdAndRole_Status(Long groupId, String roleStatus);
 
+    boolean existsByRole_Id(Long roleId);
+
 }

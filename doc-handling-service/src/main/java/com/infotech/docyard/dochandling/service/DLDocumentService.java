@@ -245,11 +245,11 @@ public class DLDocumentService {
         if (optionalDLDocument.isPresent()) {
             dlDocument = optionalDLDocument.get();
             if (dlDocument.getFolder()) {
-                dlDocument.setName(dlDocumentDTO.getName());
-                dlDocument.setTitle(dlDocumentDTO.getName());
+                dlDocument.setName(dlDocumentDTO.getTitle());
+                dlDocument.setTitle(dlDocumentDTO.getTitle());
             } else {
-                dlDocument.setTitle(dlDocumentDTO.getName());
-                dlDocument.setName(dlDocumentDTO.getName());
+                dlDocument.setTitle(dlDocumentDTO.getTitle() + "." + dlDocument.getExtension());
+                dlDocument.setName(dlDocumentDTO.getTitle() + "." + dlDocument.getExtension());
             }
             dlDocument.setUpdatedBy(dlDocumentDTO.getUpdatedBy());
             dlDocument.setUpdatedOn(ZonedDateTime.now());
@@ -368,6 +368,9 @@ public class DLDocumentService {
             if (DocumentUtil.isOCRType(doc)) {
                 doc.setOcrSupported(true);
                 doc.setOcrDone(false);
+            } else {
+                doc.setOcrSupported(false);
+                doc.setOcrDone(true);
             }
             doc = dlDocumentRepository.save(doc);
             doc.setArchived(false);
