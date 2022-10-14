@@ -5,7 +5,9 @@ import com.infotech.docyard.dochandling.enums.AccessRightEnum;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serializable;
 
 @Data
@@ -17,13 +19,11 @@ public class DLShareCollaborator extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "DL_SHARE_ID", nullable = false)
-    private DLShare dlShare;
+    @Column(name = "DL_SHARE_ID", nullable = false)
+    private Long dlShareId;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "COLLABORATOR_ID", nullable = false)
-    private DLCollaborator dlCollaborator;
+    @Column(name = "DL_COLLABORATOR_ID", nullable = false)
+    private Long dlCollaboratorId;
 
     @Column(name = "ACCESS_RIGHT", nullable = false)
     private String accessRight = AccessRightEnum.getDefault().getValue();
@@ -31,9 +31,9 @@ public class DLShareCollaborator extends BaseEntity implements Serializable {
     public DLShareCollaborator() {
     }
 
-    public DLShareCollaborator(DLShare dlShare, DLCollaborator dlCollaborator, String accessRight) {
-        this.dlShare = dlShare;
-        this.dlCollaborator = dlCollaborator;
+    public DLShareCollaborator(Long dlShareId, Long dlCollaboratorId, String accessRight) {
+        this.dlShareId = dlShareId;
+        this.dlCollaboratorId = dlCollaboratorId;
         this.accessRight = accessRight;
     }
 

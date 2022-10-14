@@ -9,7 +9,7 @@ public class ShareRequestDTO {
     private boolean folder;
     private String shareType;
     private String shareLink;
-    private String[] collaborators;
+    private String[] dlCollaborators;
     private String sharePermission;
     private String message;
     private String appContextPath;

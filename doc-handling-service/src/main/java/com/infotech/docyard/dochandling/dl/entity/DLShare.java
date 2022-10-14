@@ -21,11 +21,10 @@ public class DLShare extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "DL_DOCUMENT_ID")
-    private DLDocument dlDocument;
+    @Column(name = "DL_DOCUMENT_ID")
+    private Long dlDocumentId;
 
-    @Column(name = "PERMANENT_LINK", unique = true)
+    @Column(name = "PERMANENT_LINK")
     private String permanentLink;
 
     @Column(name = "SHARE_TYPE", nullable = false)
@@ -40,7 +39,7 @@ public class DLShare extends BaseEntity implements Serializable {
     @Column(name = "STATUS")
     private String status;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "dlShare")
+    @OneToMany(mappedBy = "dlShareId", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DLShareCollaborator> dlShareCollaborators;
 
     public DLShare() {

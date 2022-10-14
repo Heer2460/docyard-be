@@ -18,7 +18,7 @@ public class DLCollaborator extends BaseEntity implements Serializable {
     @Column(name = "EMAIL", nullable = false, unique = true)
     private String email;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "dlCollaborator")
+    @OneToMany(mappedBy = "dlCollaboratorId", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DLShareCollaborator> dlShareCollaborators;
 
     public DLCollaborator() {
