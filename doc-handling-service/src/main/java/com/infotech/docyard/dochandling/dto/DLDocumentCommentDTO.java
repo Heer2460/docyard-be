@@ -26,6 +26,7 @@ public class DLDocumentCommentDTO extends BaseDTO<DLDocumentCommentDTO, DLDocume
         dlDocumentComment.setId(this.id);
         dlDocumentComment.setMessage(this.message);
         dlDocumentComment.setUserId(this.userId);
+        dlDocumentComment.setUserId(this.docId);
         dlDocumentComment.setCreatedOn(AppUtility.isEmpty(this.createdOn) ? ZonedDateTime.now() : this.createdOn);
         dlDocumentComment.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
         dlDocumentComment.setCreatedBy(this.getCreatedBy());

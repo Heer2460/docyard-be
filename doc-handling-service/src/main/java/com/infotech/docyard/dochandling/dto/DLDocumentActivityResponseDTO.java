@@ -47,4 +47,5 @@ public class DLDocumentActivityResponseDTO extends BaseDTO implements Serializab
     public String toString() {
         return userName + " " + action + " " + docName + " " + activityPerformedOn + ".";
     }
+
 }

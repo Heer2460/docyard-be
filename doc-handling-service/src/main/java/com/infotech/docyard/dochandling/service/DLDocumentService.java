@@ -772,4 +772,28 @@ public class DLDocumentService {
             }
         }
     }
+
+    @Transactional(rollbackFor = {Throwable.class})
+    public void deleteArchivedDocuments() throws CustomException {
+        List<DLDocument> archivedDLDocs = dlDocumentRepository.findAllByArchivedTrue();
+        if (!AppUtility.isEmpty(archivedDLDocs)) {
+            try {
+                for (DLDocument archivedDoc : archivedDLDocs) {
+                    if (dlDocumentActivityRepository.existsByDocId(archivedDoc.getId())) {
+                        dlDocumentActivityRepository.deleteAllByDocId(archivedDoc.getId());
+                    }
+                    if (dlDocumentCommentRepository.existsByDlDocument_Id(archivedDoc.getId())) {
+                        dlDocumentCommentRepository.deleteAllByDlDocument_Id(archivedDoc.getId());
+                    }
+                    if (dlDocumentVersionRepository.existsByDlDocument_Id(archivedDoc.getId())) {
+                        dlDocumentVersionRepository.deleteAllByDlDocument_Id(archivedDoc.getId());
+                    }
+                    dlDocumentRepository.deleteById(archivedDoc.getId());
+                }
+            } catch (Exception e) {
+                ResponseUtility.exceptionResponse(e);
+            }
+
+        }
+    }
 }

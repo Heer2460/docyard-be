@@ -6,4 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DLCollaboratorRepository extends JpaRepository<DLCollaborator, Long> {
+    boolean existsByEmail(String email);
+
+    DLCollaborator findByEmail(String email);
 }

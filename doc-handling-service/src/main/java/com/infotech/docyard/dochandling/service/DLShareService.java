@@ -34,6 +34,7 @@ public class DLShareService {
     @Autowired
     private DLDocumentActivityRepository dlDocumentActivityRepository;
 
+    @Transactional(rollbackFor = Throwable.class)
     public String shareDLDocument(ShareRequestDTO shareRequest) throws IOException {
         log.info("DLShareService - shareDLDocument method called...");
 
@@ -56,7 +57,8 @@ public class DLShareService {
         return status;
     }
 
-    private String shareOffSpecific(ShareRequestDTO shareRequest, DLDocument dlDocument) {
+    @Transactional(rollbackFor = Throwable.class)
+    public String shareOffSpecific(ShareRequestDTO shareRequest, DLDocument dlDocument) {
         log.info("DLShareService - shareOffSpecific method called...");
 
         DLShare dlShare = new DLShare();
@@ -129,12 +131,14 @@ public class DLShareService {
         List<DLCollaborator> dlCollList = new ArrayList<>();
         for (String collaboratorEmail : shareRequest.getDlCollaborators()) {
             DLCollaborator dlCollaborator = new DLCollaborator();
-            dlCollaborator.setEmail(collaboratorEmail);
-            dlCollaborator.setCreatedOn(ZonedDateTime.now());
-            dlCollaborator.setUpdatedOn(ZonedDateTime.now());
-            dlCollaborator.setDlShareCollaborators(new ArrayList<>());
-
-            dlCollList.add(dlCollaborator);
+            if (!dlCollaboratorRepository.existsByEmail(collaboratorEmail)) {
+                dlCollaborator.setEmail(collaboratorEmail);
+                dlCollaborator.setCreatedOn(ZonedDateTime.now());
+                dlCollaborator.setUpdatedOn(ZonedDateTime.now());
+                dlCollaborator.setDlShareCollaborators(new ArrayList<>());
+                
+                dlCollList.add(dlCollaborator);
+            }
         }
         dlCollList = dlCollaboratorRepository.saveAll(dlCollList);
 
