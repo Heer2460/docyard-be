@@ -4,13 +4,20 @@ import java.util.HashMap;
 import java.util.Objects;
 
 public enum DLActivityTypeMessageEnum {
-    COMMENT("has commented"),
+    COMMENT_POSTED("has posted a comment"),
+    COMMENT_DELETED("has deleted a comment"),
     FILE_VIEWED("has viewed"),
     UPLOADED("has uploaded"),
     DOWNLOADED("has downloaded"),
     CREATED("has created"),
     RENAMED("has renamed"),
-    ARCHIVED("has archived");
+    RESTORED_ARCHIVED("has restored from archived"),
+    STARRED("has starred"),
+    ARCHIVED("has archived"),
+    SHARING_DISABLED("has disabled shared"),
+    INVITED_PEOPLE_ONLY("has shared with invited people only"),
+    INVITED_EXTERNAL_PEOPLE_ONLY("has shared with external people"),
+    OPEN_LINK("has shared with an open link");
 
     private static final HashMap<String, DLActivityTypeMessageEnum> map = new HashMap<>();
 

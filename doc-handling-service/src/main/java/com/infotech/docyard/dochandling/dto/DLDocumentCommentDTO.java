@@ -1,5 +1,6 @@
 package com.infotech.docyard.dochandling.dto;
 
+import com.infotech.docyard.dochandling.dl.entity.DLDocument;
 import com.infotech.docyard.dochandling.dl.entity.DLDocumentComment;
 import com.infotech.docyard.dochandling.util.AppUtility;
 import com.infotech.docyard.dochandling.util.DateTimeUtil;
@@ -26,7 +27,7 @@ public class DLDocumentCommentDTO extends BaseDTO<DLDocumentCommentDTO, DLDocume
         dlDocumentComment.setId(this.id);
         dlDocumentComment.setMessage(this.message);
         dlDocumentComment.setUserId(this.userId);
-        dlDocumentComment.setUserId(this.docId);
+        dlDocumentComment.setDlDocument(new DLDocument(this.docId));
         dlDocumentComment.setCreatedOn(AppUtility.isEmpty(this.createdOn) ? ZonedDateTime.now() : this.createdOn);
         dlDocumentComment.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
         dlDocumentComment.setCreatedBy(this.getCreatedBy());

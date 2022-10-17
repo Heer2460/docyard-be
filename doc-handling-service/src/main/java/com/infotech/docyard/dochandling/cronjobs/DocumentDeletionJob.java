@@ -16,7 +16,7 @@ public class DocumentDeletionJob {
     @Autowired
     private DLDocumentService dlDocumentService;
 
-    @Scheduled(cron = "0 55 23 * * *") //Every day at 23:55
+    @Scheduled(cron = "0 40 17 * * *") //Every day at 23:55
     public void deleteArchivedDocumentsJob() {
         log.info("DocumentDeletionJob - deleteArchivedDocumentsJob Job started at: " + LocalDateTime.now());
         try {
@@ -37,7 +37,6 @@ public class DocumentDeletionJob {
         }
 
         @Override
-        @Transactional(rollbackFor = {Throwable.class})
         public void run() {
             System.out.println("DocumentDeletionThread Started:  " + Thread.currentThread().getName());
             try {

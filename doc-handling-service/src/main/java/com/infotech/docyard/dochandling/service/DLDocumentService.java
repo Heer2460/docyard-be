@@ -212,6 +212,31 @@ public class DLDocumentService {
         return documentDTOList;
     }
 
+    public List<DLDocumentDTO> getAllRecentDLDocumentByOwnerId(Long ownerId) {
+        log.info("DLDocumentService - getAllRecentDLDocumentByOwnerId method called...");
+
+        List<DLDocumentDTO> documentDTOList = new ArrayList<>();
+        ZonedDateTime fromDate = ZonedDateTime.now().minusDays(7), toDate = ZonedDateTime.now();
+        List<DLDocument> recentDocs = dlDocumentRepository.findTop8ByCreatedByAndArchivedFalseAndFolderFalseAndCreatedOnBetweenOrderByUpdatedOnDesc(ownerId, fromDate, toDate);
+        for (DLDocument doc : recentDocs) {
+            DLDocumentDTO dto = new DLDocumentDTO();
+            dto.convertToDTO(doc, false);
+
+            if (doc.getFolder()) {
+                int fileCount = dlDocumentRepository.countAllByArchivedFalseAndFolderFalseAndParentId(doc.getId());
+                dto.setSize(fileCount + " Files");
+            }
+            Object response = restTemplate.getForObject("http://um-service/um/user/" + ownerId, Object.class);
+            if (!AppUtility.isEmpty(response)) {
+                HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+                dto.setCreatedByName((String) map.get("name"));
+                dto.setUpdatedByName((String) map.get("name"));
+            }
+            documentDTOList.add(dto);
+        }
+        return documentDTOList;
+    }
+
     @Transactional(rollbackFor = {Throwable.class})
     public DLDocument updateFavourite(Long dlDocumentId, Boolean favourite) {
         log.info("DLDocumentService - updateFavourite method called...");
@@ -223,7 +248,7 @@ public class DLDocumentService {
             dlDocument.setFavourite(favourite);
 
             dlDocument = dlDocumentRepository.save(dlDocument);
-            DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.UPLOADED.getValue(),
+            DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.STARRED.getValue(),
                     dlDocument.getId(), dlDocument.getId());
             activity.setCreatedOn(ZonedDateTime.now());
             dlDocumentActivityRepository.save(activity);
@@ -262,31 +287,6 @@ public class DLDocumentService {
         return dlDocument;
     }
 
-    public List<DLDocumentDTO> getAllRecentDLDocumentByOwnerId(Long ownerId) {
-        log.info("DLDocumentService - getAllRecentDLDocumentByOwnerId method called...");
-
-        List<DLDocumentDTO> documentDTOList = new ArrayList<>();
-        ZonedDateTime fromDate = ZonedDateTime.now().minusDays(7), toDate = ZonedDateTime.now();
-        List<DLDocument> recentDocs = dlDocumentRepository.findTop8ByCreatedByAndArchivedFalseAndFolderFalseAndCreatedOnBetweenOrderByUpdatedOnDesc(ownerId, fromDate, toDate);
-        for (DLDocument doc : recentDocs) {
-            DLDocumentDTO dto = new DLDocumentDTO();
-            dto.convertToDTO(doc, false);
-
-            if (doc.getFolder()) {
-                int fileCount = dlDocumentRepository.countAllByArchivedFalseAndFolderFalseAndParentId(doc.getId());
-                dto.setSize(fileCount + " Files");
-            }
-            Object response = restTemplate.getForObject("http://um-service/um/user/" + ownerId, Object.class);
-            if (!AppUtility.isEmpty(response)) {
-                HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
-                dto.setCreatedByName((String) map.get("name"));
-                dto.setUpdatedByName((String) map.get("name"));
-            }
-            documentDTOList.add(dto);
-        }
-        return documentDTOList;
-    }
-
     @Transactional(rollbackFor = {Throwable.class})
     public DLDocument uploadDocuments(UploadDocumentDTO uploadDocumentDTO, MultipartFile[] files) throws Exception {
         log.info("DLDocumentService - uploadDocuments method called...");
@@ -322,7 +322,6 @@ public class DLDocumentService {
         }
         return dlDoc;
     }
-
 
     public DLDocumentVersion createNewDocumentVersion(DLDocument document, Long userId) {
         log.info("DLDocumentService - createNewDocumentVersion method called...");
@@ -486,6 +485,7 @@ public class DLDocumentService {
         DLDocument doc = null;
         if (opDoc.isPresent()) {
             doc = opDoc.get();
+            doc.setDaysArchved(0);
             doc.setArchived(archive);
             dlDocumentRepository.save(doc);
         }
@@ -551,12 +551,13 @@ public class DLDocumentService {
                 if (dlDocumentVersionRepository.existsByDlDocument_Id(docId)) {
                     dlDocumentVersionRepository.deleteAllByDlDocument_Id(docId);
                 }
-                if (dlDocumentActivityRepository.existsByDocId(docId)) {
-                    dlDocumentActivityRepository.deleteAllByDocId(docId);
-                }
                 if (dlDocumentCommentRepository.existsByDlDocument_Id(docId)) {
                     dlDocumentCommentRepository.deleteAllByDlDocument_Id(docId);
                 }
+                DLDocumentActivity activity = new DLDocumentActivity(dldocument.getCreatedBy(), DLActivityTypeEnum.FILE_DELETED.getValue(),
+                        dldocument.getId(), dldocument.getId());
+                activity.setCreatedOn(ZonedDateTime.now());
+                dlDocumentActivityRepository.save(activity);
                 dlDocumentRepository.deleteById(docId);
             } catch (Exception e) {
                 throw new DataValidationException(AppUtility.getResourceMessage("document.deleted.failure"));
@@ -766,6 +767,10 @@ public class DLDocumentService {
                     }
                     doc.setArchived(false);
                     dlDocumentRepository.save(doc);
+                    DLDocumentActivity activity = new DLDocumentActivity(doc.getCreatedBy(), DLActivityTypeEnum.RESTORED_ARCHIVED.getValue(),
+                            doc.getId(), doc.getId());
+                    activity.setCreatedOn(ZonedDateTime.now());
+                    dlDocumentActivityRepository.save(activity);
                 } catch (Exception e) {
                     ResponseUtility.exceptionResponse(e);
                 }
@@ -779,16 +784,12 @@ public class DLDocumentService {
         if (!AppUtility.isEmpty(archivedDLDocs)) {
             try {
                 for (DLDocument archivedDoc : archivedDLDocs) {
-                    if (dlDocumentActivityRepository.existsByDocId(archivedDoc.getId())) {
-                        dlDocumentActivityRepository.deleteAllByDocId(archivedDoc.getId());
+                    archivedDoc.setDaysArchved(archivedDoc.getDaysArchved() + 1);
+                    if (archivedDoc.getDaysArchved() == 30){
+                        deleteDLDocument(archivedDoc.getId());
+                    } else {
+                        dlDocumentRepository.save(archivedDoc);
                     }
-                    if (dlDocumentCommentRepository.existsByDlDocument_Id(archivedDoc.getId())) {
-                        dlDocumentCommentRepository.deleteAllByDlDocument_Id(archivedDoc.getId());
-                    }
-                    if (dlDocumentVersionRepository.existsByDlDocument_Id(archivedDoc.getId())) {
-                        dlDocumentVersionRepository.deleteAllByDlDocument_Id(archivedDoc.getId());
-                    }
-                    dlDocumentRepository.deleteById(archivedDoc.getId());
                 }
             } catch (Exception e) {
                 ResponseUtility.exceptionResponse(e);

@@ -14,6 +14,8 @@ public class ShareRequestDTO {
     private String message;
     private String appContextPath;
     private String externalUserShareLink;
+    private Long userId;
+    private Long departmentId;
 
     public ShareRequestDTO() {
     }

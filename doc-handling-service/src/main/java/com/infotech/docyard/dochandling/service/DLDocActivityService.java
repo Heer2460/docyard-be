@@ -49,9 +49,12 @@ public class DLDocActivityService {
 
             switch (activityDTO.getActivityType()){
                 case "COMMENT_POSTED":
-                    activityResponseDTO.setAction(DLActivityTypeMessageEnum.COMMENT.getValue());
+                    activityResponseDTO.setAction(DLActivityTypeMessageEnum.COMMENT_POSTED.getValue());
                     Optional<DLDocumentComment> commentOP = dlDocumentCommentRepository.findById(activityDTO.getEntityId());
                     commentOP.ifPresent(comm -> activityResponseDTO.setComment(comm.getMessage()));
+                    break;
+                case "COMMENT_DELETED":
+                    activityResponseDTO.setAction(DLActivityTypeMessageEnum.COMMENT_DELETED.getValue());
                     break;
                 case "FILE_VIEWED":
                     activityResponseDTO.setAction(DLActivityTypeMessageEnum.FILE_VIEWED.getValue());
@@ -70,6 +73,24 @@ public class DLDocActivityService {
                     break;
                 case "ARCHIVED":
                     activityResponseDTO.setAction(DLActivityTypeMessageEnum.ARCHIVED.getValue());
+                    break;
+                case "RESTORED_ARCHIVED":
+                    activityResponseDTO.setAction(DLActivityTypeMessageEnum.RESTORED_ARCHIVED.getValue());
+                    break;
+                case "STARRED":
+                    activityResponseDTO.setAction(DLActivityTypeMessageEnum.STARRED.getValue());
+                    break;
+                case "OPEN_LINK":
+                    activityResponseDTO.setAction(DLActivityTypeMessageEnum.OPEN_LINK.getValue());
+                    break;
+                case "INVITED_PEOPLE_ONLY":
+                    activityResponseDTO.setAction(DLActivityTypeMessageEnum.INVITED_PEOPLE_ONLY.getValue());
+                    break;
+                case "INVITED_EXTERNAL_PEOPLE_ONLY":
+                    activityResponseDTO.setAction(DLActivityTypeMessageEnum.INVITED_EXTERNAL_PEOPLE_ONLY.getValue());
+                    break;
+                case "SHARING_DISABLED":
+                    activityResponseDTO.setAction(DLActivityTypeMessageEnum.SHARING_DISABLED.getValue());
                     break;
                 default:
                     break;

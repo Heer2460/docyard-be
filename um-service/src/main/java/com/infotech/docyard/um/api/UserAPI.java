@@ -60,6 +60,20 @@ public class UserAPI {
         return user;
     }
 
+//    @RequestMapping(value = "/users/{departmentId}", method = RequestMethod.GET)
+//    public User searchByUserName(HttpServletRequest request,
+//                                 @PathVariable(name = "departmentId") Long departmentId) throws CustomException {
+//        log.info("searchByUserName API initiated...");
+//
+//        User user = null;
+//        try {
+//            user = userService.findByDepartmentId(departmentId);
+//        } catch (Exception e) {
+//            ResponseUtility.exceptionResponse(e);
+//        }
+//        return user;
+//    }
+
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public CustomResponse getAllUsers(HttpServletRequest request)
             throws CustomException, NoDataFoundException {

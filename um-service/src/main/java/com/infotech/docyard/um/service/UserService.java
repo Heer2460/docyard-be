@@ -178,6 +178,7 @@ public class UserService {
         Optional<User> user = userRepository.findById(resetPasswordDTO.getUserId());
         if (user.isPresent()) {
             User u = user.get();
+            u.setPasswordResetToken("");
             u.setForcePasswordChange(false);
             u.setPasswordExpired(false);
             u.setPassword(new BCryptPasswordEncoder().encode(resetPasswordDTO.getNewPassword()));

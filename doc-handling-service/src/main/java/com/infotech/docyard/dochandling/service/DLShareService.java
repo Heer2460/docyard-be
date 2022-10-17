@@ -12,12 +12,11 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Log4j2
@@ -33,6 +32,8 @@ public class DLShareService {
     private DLShareRepository dlShareRepository;
     @Autowired
     private DLDocumentActivityRepository dlDocumentActivityRepository;
+    @Autowired
+    private RestTemplate restTemplate;
 
     @Transactional(rollbackFor = Throwable.class)
     public String shareDLDocument(ShareRequestDTO shareRequest) throws IOException {
@@ -49,9 +50,9 @@ public class DLShareService {
         } else if (shareRequest.getShareType().equalsIgnoreCase(ShareTypeEnum.INVITED_EXTERNAL_PEOPLE_ONLY.getValue())) {
             //status = this.shareInvitedExternalPeopleOnly(tenantId, shareRequest, user, deviceType, document, folder, accountSettings);
         } else if (shareRequest.getShareType().equalsIgnoreCase(ShareTypeEnum.INVITED_PEOPLE_ONLY.getValue())) {
-//            status = this.shareInvitedInternalMemberOnly(tenantId, shareRequest, user, deviceType, document, folder, accountSettings);
             status = shareInvitedInternalMemberOnly(shareRequest, dlDocument);
         } else if (shareRequest.getShareType().equalsIgnoreCase(ShareTypeEnum.NO_SHARING.getValue())) {
+            status = shareInvitedExternalMemberOnly(shareRequest, dlDocument);
             //status = this.terminateShare(tenantId, shareRequest, user, deviceType, document, folder, accountSettings);
         }
         return status;
@@ -85,17 +86,35 @@ public class DLShareService {
         dlShare.setShareType(ShareTypeEnum.OFF_SPECIFIC.getValue());
         dlShare.setStatus(ShareStatusEnum.SHARED.getValue());
         dlShare.setShareNotes(shareRequest.getMessage());
+        dlShare.setCreatedOn(ZonedDateTime.now());
+        dlShare.setUpdatedOn(ZonedDateTime.now());
 
-        dlShareRepository.save(dlShare);
+        dlShare = dlShareRepository.save(dlShare);
 
         DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.OPEN_LINK.getValue(),
                 dlShare.getId(), dlDocument.getId());
         activity.setCreatedOn(ZonedDateTime.now());
-
         dlDocumentActivityRepository.save(activity);
+        dlDocument.setDlShareId(dlShare.getId());
+        dlDocumentRepository.save(dlDocument);
 
         // send FCM to specific user
         status = "SUCCESS";
+        return status;
+    }
+
+    @Transactional(rollbackFor = Throwable.class)
+    public String shareInvitedExternalMemberOnly (ShareRequestDTO shareRequest, DLDocument dlDocument) {
+        log.info("DLShareService - shareInvitedExternalMemberOnly method called...");
+
+        DLShare dlShare = new DLShare();
+        String status = "NOT_FOUND";
+        if (dlDocument.getShared()) {
+            Optional<DLShare> dsOp = dlShareRepository.findById(dlDocument.getDlShareId());
+            if (dsOp.isPresent()) {
+                dlShare = dsOp.get();
+            }
+        }
         return status;
     }
 
@@ -117,6 +136,7 @@ public class DLShareService {
         int shareLinkCount = dlDocument.getShareLinkCount();
         shareLinkCount++;
         dlDocument.setShareLinkCount(shareLinkCount);
+        dlDocument.setUpdatedBy(shareRequest.getUserId());
         dlDocumentRepository.save(dlDocument);
         dlShare.setPermanentLink(shareRequest.getShareLink());
         dlShare.setAccessRight(shareRequest.getSharePermission());
@@ -125,8 +145,18 @@ public class DLShareService {
         dlShare.setShareNotes(shareRequest.getMessage());
         dlShare.setCreatedOn(ZonedDateTime.now());
         dlShare.setUpdatedOn(ZonedDateTime.now());
+        dlShare.setUpdatedBy(shareRequest.getUserId());
 
         dlShare = dlShareRepository.save(dlShare);
+        /*if (shareRequest.departmentId) {
+            if (!AppUtility.isEmpty(shareRequest.departmentId)) {
+                Object response = restTemplate.getForObject("http://um-service/um/user/search?" + shareRequest.departmentId, Object.class);
+                if (!AppUtility.isEmpty(response)) {
+                    HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+                    activityResponseDTO.setUserName((String) map.get("name"));
+                }
+            }
+        }*/
 
         List<DLCollaborator> dlCollList = new ArrayList<>();
         for (String collaboratorEmail : shareRequest.getDlCollaborators()) {
@@ -135,8 +165,10 @@ public class DLShareService {
                 dlCollaborator.setEmail(collaboratorEmail);
                 dlCollaborator.setCreatedOn(ZonedDateTime.now());
                 dlCollaborator.setUpdatedOn(ZonedDateTime.now());
+                dlCollaborator.setCreatedBy(shareRequest.getUserId());
+                dlCollaborator.setUpdatedBy(shareRequest.getUserId());
                 dlCollaborator.setDlShareCollaborators(new ArrayList<>());
-                
+
                 dlCollList.add(dlCollaborator);
             }
         }
@@ -150,18 +182,23 @@ public class DLShareService {
             sc.setDlCollaboratorId(col.getId());
             sc.setCreatedOn(ZonedDateTime.now());
             sc.setUpdatedOn(ZonedDateTime.now());
+            sc.setCreatedBy(shareRequest.getUserId());
+            sc.setUpdatedBy(shareRequest.getUserId());
 
             scList.add(sc);
         }
         dlShareCollaboratorRepository.saveAll(scList);
 
         dlShare.setDlShareCollaborators(scList);
+        dlShare.setUpdatedBy(shareRequest.getUserId());
         dlShare = dlShareRepository.save(dlShare);
 
-        DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.OPEN_LINK.getValue(),
+        DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.INVITED_PEOPLE_ONLY.getValue(),
                 dlShare.getId(), dlDocument.getId());
         activity.setCreatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
+        dlDocument.setDlShareId(dlShare.getId());
+        dlDocumentRepository.save(dlDocument);
         // send FCM to specific user
         status = "SUCCESS";
         return status;
