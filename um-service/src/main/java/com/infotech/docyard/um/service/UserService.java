@@ -217,7 +217,8 @@ public class UserService {
                         emailInstance.setToEmail(u.getEmail());
                         emailInstance.setType(EmailTypeEnum.CHANGE_PASSWORD.getValue());
                         emailInstance.setSubject(AppConstants.EmailSubjectConstants.CHANGE_PASSWORD);
-                        emailInstance.setStatus(EmailStatusEnum.SENT.getValue());
+                        emailInstance.setContent(content);
+                        emailInstance.setStatus(EmailStatusEnum.NOT_SENT.getValue());
                         emailInstance.setCreatedOn(ZonedDateTime.now());
                         emailInstance.setUpdatedOn(ZonedDateTime.now());
                         emailInstance.setCreatedBy(1L);

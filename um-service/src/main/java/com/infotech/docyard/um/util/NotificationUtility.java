@@ -27,7 +27,7 @@ public class NotificationUtility {
         log.info("buildChangePasswordContent API initiated...");
 
         StringBuilder content = new StringBuilder("Dear " + user.getName() + ", </br>");
-        content.append("Dear user your password has been changed ");
+        content.append(" Your password has been changed ");
         content.append("</br> ");
         content.append("</br> ");
         content.append("</br> ");
