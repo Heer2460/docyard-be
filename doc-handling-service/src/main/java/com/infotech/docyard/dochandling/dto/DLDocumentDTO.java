@@ -36,7 +36,7 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
     private Boolean favourite;
     private String description;
 
-    private int daysArchived;
+    private Integer daysArchived;
     private ZonedDateTime archivedOn;
     private Boolean archived;
     private Boolean folder;
