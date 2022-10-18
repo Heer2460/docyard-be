@@ -98,8 +98,8 @@ public class DLDocument extends BaseEntity implements Serializable {
     @Column(name = "DL_SHARE_ID")
     private Long dlShareId;
 
-    @Column(name = "DAYS_ARCHIVED")
-    private int daysArchved;
+    @Column(name = "DAYS_ARCHIVED", columnDefinition = "int default 0")
+    private Integer daysArchived;
 
     @OneToMany(mappedBy = "dlDocument", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DLDocumentComment> documentComments;
@@ -108,7 +108,7 @@ public class DLDocument extends BaseEntity implements Serializable {
     private List<DLDocumentVersion> documentVersions;
 
     @Column(name = "SHARE_LINK_COUNT", columnDefinition = "int default 0")
-    private int shareLinkCount;
+    private Integer shareLinkCount;
 
     public DLDocument() {
     }
