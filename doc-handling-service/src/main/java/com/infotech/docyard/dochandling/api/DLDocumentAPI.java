@@ -249,7 +249,7 @@ public class DLDocumentAPI {
             throws CustomException, DataValidationException, NoDataFoundException {
         log.info("renameDLDocument API initiated...");
 
-        if (AppUtility.isEmpty(dlDocumentDTO) || AppUtility.isEmpty(dlDocumentDTO.getId()) || AppUtility.isEmpty(dlDocumentDTO.getTitle())) {
+        if (AppUtility.isEmpty(dlDocumentDTO) || AppUtility.isEmpty(dlDocumentDTO.getId()) || AppUtility.isEmpty(dlDocumentDTO.getName())) {
             throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
         }
         DLDocument dlDocument = null;
