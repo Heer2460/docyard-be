@@ -261,30 +261,32 @@ public class DLDocumentService {
     public DLDocument renameDLDocument(DLDocumentDTO dlDocumentDTO) {
         log.info("DLDocumentService - renameDLDocument method called...");
 
-        Boolean alreadyExist = dlDocumentRepository.existsByName(dlDocumentDTO.getName());
+        Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentDTO.getId());
+        DLDocument doc = null;
+        if (!opDoc.isPresent()) {
+            throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+        } else {
+            doc = opDoc.get();
+        }
+        Boolean alreadyExist = dlDocumentRepository.existsByName(dlDocumentDTO.getName() + '.' + doc.getExtension());
         if (alreadyExist) {
             throw new DataValidationException(AppUtility.getResourceMessage("name.already.exist"));
         }
-        Optional<DLDocument> optionalDLDocument = dlDocumentRepository.findById(dlDocumentDTO.getId());
-        DLDocument dlDocument = null;
-        if (optionalDLDocument.isPresent()) {
-            dlDocument = optionalDLDocument.get();
-            if (dlDocument.getFolder()) {
-                dlDocument.setName(dlDocumentDTO.getTitle());
-                dlDocument.setTitle(dlDocumentDTO.getTitle());
-            } else {
-                dlDocument.setTitle(dlDocumentDTO.getTitle() + "." + dlDocument.getExtension());
-                dlDocument.setName(dlDocumentDTO.getTitle() + "." + dlDocument.getExtension());
-            }
-            dlDocument.setUpdatedBy(dlDocumentDTO.getUpdatedBy());
-            dlDocument.setUpdatedOn(ZonedDateTime.now());
-            dlDocument = dlDocumentRepository.save(dlDocument);
-            DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getUpdatedBy(), DLActivityTypeEnum.RENAMED.getValue(),
-                    dlDocument.getId(), dlDocument.getId());
-            activity.setCreatedOn(ZonedDateTime.now());
-            dlDocumentActivityRepository.save(activity);
+        if (doc.getFolder()) {
+            doc.setName(dlDocumentDTO.getName());
+            doc.setTitle(dlDocumentDTO.getName());
+        } else {
+            doc.setTitle(dlDocumentDTO.getName());
+            doc.setName(dlDocumentDTO.getName() + "." + doc.getExtension());
         }
-        return dlDocument;
+        doc.setUpdatedBy(dlDocumentDTO.getUpdatedBy());
+        doc.setUpdatedOn(ZonedDateTime.now());
+        doc = dlDocumentRepository.save(doc);
+        DLDocumentActivity activity = new DLDocumentActivity(doc.getUpdatedBy(), DLActivityTypeEnum.RENAMED.getValue(),
+                doc.getId(), doc.getId());
+        activity.setCreatedOn(ZonedDateTime.now());
+        dlDocumentActivityRepository.save(activity);
+        return doc;
     }
 
     @Transactional(rollbackFor = {Throwable.class})
@@ -785,7 +787,7 @@ public class DLDocumentService {
             try {
                 for (DLDocument archivedDoc : archivedDLDocs) {
                     archivedDoc.setDaysArchved(archivedDoc.getDaysArchved() + 1);
-                    if (archivedDoc.getDaysArchved() == 30){
+                    if (archivedDoc.getDaysArchved() == 30) {
                         deleteDLDocument(archivedDoc.getId());
                     } else {
                         dlDocumentRepository.save(archivedDoc);

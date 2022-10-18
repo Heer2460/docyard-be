@@ -3,9 +3,8 @@ package com.infotech.docyard.dochandling.enums;
 public enum ShareTypeEnum {
 
     NO_SHARING("NO_SHARING"),
-    OFF_SPECIFIC("OFF_SPECIFIC"),
-    INVITED_PEOPLE_ONLY("INVITED_PEOPLE_ONLY"),
-    INVITED_EXTERNAL_PEOPLE_ONLY("INVITED_EXTERNAL_PEOPLE_ONLY");
+    ANYONE("ANYONE"),
+    RESTRICTED("RESTRICTED");
 
     private String value;
 

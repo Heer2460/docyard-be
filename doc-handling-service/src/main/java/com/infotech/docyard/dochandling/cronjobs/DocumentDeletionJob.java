@@ -5,7 +5,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -38,14 +37,14 @@ public class DocumentDeletionJob {
 
         @Override
         public void run() {
-            System.out.println("DocumentDeletionThread Started:  " + Thread.currentThread().getName());
+            log.info("DocumentDeletionThread Started:  " + Thread.currentThread().getName());
             try {
                 dlDocumentService.deleteArchivedDocuments();
             } catch (Exception exception) {
-                System.out.println("deleteArchivedDocuments failed due to exception:  ");
+                log.info("deleteArchivedDocuments failed due to exception:  ");
                 exception.printStackTrace();
             }
-            System.out.println("DocumentDeletionThread End: " + Thread.currentThread().getName());
+            log.info("DocumentDeletionThread End: " + Thread.currentThread().getName());
         }
     }
 }
