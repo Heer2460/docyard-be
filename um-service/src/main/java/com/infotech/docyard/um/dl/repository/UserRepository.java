@@ -21,6 +21,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByGroup_IdAndStatus(Long groupId, String status);
 
     boolean existsByDepartmentIdsAndStatus(String departmentIds, String status);
+    List<User> findByDepartmentIdsAndStatus(String departmentIds, String status);
 
 //    @Query("select user from User user where user.departmentIds like %:departmentIds% and user.status like %:status%")
 //    List<User> findUserByDepartmentIdsAnAndStatus(@Param("departmentIds") List<String> departmentIds, @Param("status") String status);
