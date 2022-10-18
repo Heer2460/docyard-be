@@ -91,8 +91,8 @@ public class DLShareService {
 
         DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.ANYONE.getValue(),
                 dlShare.getId(), dlDocument.getId());
-        activity.setCreatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
+
         dlDocument.setDlShareId(dlShare.getId());
         dlDocumentRepository.save(dlDocument);
 
@@ -191,8 +191,8 @@ public class DLShareService {
 
         DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.RESTRICTED.getValue(),
                 dlShare.getId(), dlDocument.getId());
-        activity.setCreatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
+
         dlDocument.setDlShareId(dlShare.getId());
         dlDocumentRepository.save(dlDocument);
         // send FCM to specific user

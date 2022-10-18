@@ -25,7 +25,7 @@ public class DLDocActivityAPI {
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public CustomResponse getAllActivitiesByUserId(HttpServletRequest request,
-                                                     @RequestParam(value = "userId", required = false) Long userId) throws CustomException {
+                                                   @RequestParam(value = "userId", required = false) Long userId) throws CustomException {
         log.info("getAllActivitiesByUserId API initiated...");
 
         List<DLDocumentActivityResponseDTO> dlActivityResponseDTOList = null;

@@ -36,7 +36,7 @@ public class DLDocCommentService {
         log.info("DLDocCommentService - getAllCommentsByDocumentId method called...");
 
         List<DLDocumentCommentDTO> dlDocumentCommentDTOList = new ArrayList<>();
-        List<DLDocumentComment> dlDocumentCommentList = dlDocumentCommentRepository.findAllByDlDocument_Id(documentId);
+        List<DLDocumentComment> dlDocumentCommentList = dlDocumentCommentRepository.findAllByDlDocument_IdOrderByUpdatedOnDesc(documentId);
         for (DLDocumentComment docComm : dlDocumentCommentList) {
             DLDocumentCommentDTO dto = new DLDocumentCommentDTO();
             dto.convertToDTO(docComm, false);
@@ -64,7 +64,6 @@ public class DLDocCommentService {
 
             DLDocumentActivity activity = new DLDocumentActivity(dlDocumentComment.getCreatedBy(), DLActivityTypeEnum.COMMENT_POSTED.getValue(),
                     dlDocumentComment.getId(), dlDocumentComment.getDlDocument().getId());
-            activity.setCreatedOn(ZonedDateTime.now());
             dlDocumentActivityRepository.save(activity);
         }
         return dlDocumentComment;
@@ -79,7 +78,6 @@ public class DLDocCommentService {
 
             DLDocumentActivity activity = new DLDocumentActivity(dlDocumentComment.get().getCreatedBy(), DLActivityTypeEnum.COMMENT_DELETED.getValue(),
                     dlDocumentComment.get().getId(), dlDocumentComment.get().getId());
-            activity.setCreatedOn(ZonedDateTime.now());
             dlDocumentActivityRepository.save(activity);
         } else {
             throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));

@@ -250,7 +250,6 @@ public class DLDocumentService {
             dlDocument = dlDocumentRepository.save(dlDocument);
             DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.STARRED.getValue(),
                     dlDocument.getId(), dlDocument.getId());
-            activity.setCreatedOn(ZonedDateTime.now());
             dlDocumentActivityRepository.save(activity);
         } else {
             throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
@@ -284,7 +283,6 @@ public class DLDocumentService {
         doc = dlDocumentRepository.save(doc);
         DLDocumentActivity activity = new DLDocumentActivity(doc.getUpdatedBy(), DLActivityTypeEnum.RENAMED.getValue(),
                 doc.getId(), doc.getId());
-        activity.setCreatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
         return doc;
     }
@@ -317,7 +315,6 @@ public class DLDocumentService {
                     dlDoc = dlDocumentRepository.save(dlDoc);
                     DLDocumentActivity activity = new DLDocumentActivity(dlDoc.getCreatedBy(), DLActivityTypeEnum.UPLOADED.getValue(),
                             dlDoc.getId(), dlDoc.getId());
-                    activity.setCreatedOn(ZonedDateTime.now());
                     dlDocumentActivityRepository.save(activity);
                 }
             }
@@ -472,9 +469,7 @@ public class DLDocumentService {
         DLDocumentActivity activity = new DLDocumentActivity(folder.getCreatedBy(), DLActivityTypeEnum.CREATED.getValue(),
                 folder.getId(), folder.getId());
         activity.setCreatedBy(folderRequestDTO.getCreatedBy());
-        activity.setCreatedOn(ZonedDateTime.now());
         activity.setUpdatedBy(folderRequestDTO.getUpdatedBy());
-        activity.setUpdatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
 
         return folder;
@@ -493,7 +488,6 @@ public class DLDocumentService {
         }
         DLDocumentActivity activity = new DLDocumentActivity(doc.getCreatedBy(), DLActivityTypeEnum.ARCHIVED.getValue(),
                 doc.getId(), doc.getId());
-        activity.setCreatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
         return doc;
     }
@@ -558,7 +552,6 @@ public class DLDocumentService {
                 }
                 DLDocumentActivity activity = new DLDocumentActivity(dldocument.getCreatedBy(), DLActivityTypeEnum.FILE_DELETED.getValue(),
                         dldocument.getId(), dldocument.getId());
-                activity.setCreatedOn(ZonedDateTime.now());
                 dlDocumentActivityRepository.save(activity);
                 dlDocumentRepository.deleteById(docId);
             } catch (Exception e) {
@@ -646,7 +639,6 @@ public class DLDocumentService {
 
                 DLDocumentActivity activity = new DLDocumentActivity(doc.getCreatedBy(), DLActivityTypeEnum.DOWNLOADED.getValue(),
                         doc.getId(), doc.getId());
-                activity.setCreatedOn(ZonedDateTime.now());
                 dlDocumentActivityRepository.save(activity);
             }
         } else {
@@ -771,7 +763,6 @@ public class DLDocumentService {
                     dlDocumentRepository.save(doc);
                     DLDocumentActivity activity = new DLDocumentActivity(doc.getCreatedBy(), DLActivityTypeEnum.RESTORED_ARCHIVED.getValue(),
                             doc.getId(), doc.getId());
-                    activity.setCreatedOn(ZonedDateTime.now());
                     dlDocumentActivityRepository.save(activity);
                 } catch (Exception e) {
                     ResponseUtility.exceptionResponse(e);
