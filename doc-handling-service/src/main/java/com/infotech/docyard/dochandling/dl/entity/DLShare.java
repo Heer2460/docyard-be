@@ -5,8 +5,6 @@ import com.infotech.docyard.dochandling.enums.AccessRightEnum;
 import com.infotech.docyard.dochandling.enums.ShareTypeEnum;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import java.io.Serializable;
