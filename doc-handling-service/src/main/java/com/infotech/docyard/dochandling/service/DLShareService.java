@@ -8,7 +8,6 @@ import com.infotech.docyard.dochandling.enums.ShareStatusEnum;
 import com.infotech.docyard.dochandling.enums.ShareTypeEnum;
 import com.infotech.docyard.dochandling.exceptions.DataValidationException;
 import com.infotech.docyard.dochandling.util.AppUtility;
-import com.infotech.docyard.um.dl.entity.User;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -147,7 +146,7 @@ public class DLShareService {
         dlShare.setUpdatedBy(shareRequest.getUserId());
 
         dlShare = dlShareRepository.save(dlShare);
-        List<User> usersList = null;
+        //List<User> usersList = null;
         if (shareRequest.getDepartmentId() != null) {
             if (!AppUtility.isEmpty(shareRequest.getDepartmentId())) {
                 Object response = restTemplate.getForObject("http://um-service/um/user/users/" + shareRequest.getDepartmentId().toString(), Object.class);

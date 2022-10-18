@@ -487,7 +487,7 @@ public class DLDocumentService {
         DLDocument doc = null;
         if (opDoc.isPresent()) {
             doc = opDoc.get();
-            doc.setDaysArchved(0);
+            doc.setDaysArchived(0);
             doc.setArchived(archive);
             dlDocumentRepository.save(doc);
         }
@@ -786,8 +786,8 @@ public class DLDocumentService {
         if (!AppUtility.isEmpty(archivedDLDocs)) {
             try {
                 for (DLDocument archivedDoc : archivedDLDocs) {
-                    archivedDoc.setDaysArchved(archivedDoc.getDaysArchved() + 1);
-                    if (archivedDoc.getDaysArchved() == 30) {
+                    archivedDoc.setDaysArchived(archivedDoc.getDaysArchived() + 1);
+                    if (archivedDoc.getDaysArchived() == 30) {
                         deleteDLDocument(archivedDoc.getId());
                     } else {
                         dlDocumentRepository.save(archivedDoc);

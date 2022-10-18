@@ -78,7 +78,7 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         dlDocument.setExtension(this.extension);
         dlDocument.setLocation(this.location);
         dlDocument.setMimeType(this.mimeType);
-        dlDocument.setDaysArchved((this.daysArchived));
+        dlDocument.setDaysArchived((this.daysArchived));
         dlDocument.setSize(this.size);
         dlDocument.setSizeBytes(this.sizeBytes);
         dlDocument.setTitle(this.title);
@@ -113,7 +113,7 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         this.extension = entity.getExtension();
         this.location = entity.getLocation();
         this.mimeType = entity.getMimeType();
-        this.daysArchived = entity.getDaysArchved();
+        this.daysArchived = entity.getDaysArchived();
         this.size = entity.getSize();
         this.sizeBytes = entity.getSizeBytes();
         this.title = entity.getTitle();
