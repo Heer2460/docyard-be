@@ -491,4 +491,18 @@ public class UserService {
         }
 
     }
+
+    public void expireForgotPasswordLinks() {
+        List<ForgotPasswordLink> forgotPasswordLinkList = forgotPasswordLinkRepository.findAllByTokenIsNotNull();
+
+        for(ForgotPasswordLink forgotPasswordLink: forgotPasswordLinkList){
+
+            if(forgotPasswordLink.getCreatedOn().plusMinutes(30).isAfter(ZonedDateTime.now())){
+                forgotPasswordLink.setToken(null);
+                forgotPasswordLink.setExpired(true);
+                forgotPasswordLink.setExpiredOn(ZonedDateTime.now());
+                forgotPasswordLinkRepository.save(forgotPasswordLink);
+            }
+        }
+    }
 }
