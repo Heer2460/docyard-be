@@ -79,6 +79,13 @@ public class UserService {
         return user.orElse(null);
     }
 
+    public List<User> searchUsersByDepartmentId(String departmentIds) {
+        log.info("searchUsersByDepartmentId method called..");
+
+        List<User> users = userRepository.findByDepartmentIdsAndStatus(departmentIds, "active");
+        return users;
+    }
+
     @Transactional
     public User saveUser(UserDTO userDTO, MultipartFile profileImg) throws Exception {
         log.info("saveUser method called..");

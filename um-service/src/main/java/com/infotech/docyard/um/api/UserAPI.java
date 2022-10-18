@@ -60,19 +60,19 @@ public class UserAPI {
         return user;
     }
 
-//    @RequestMapping(value = "/users/{departmentId}", method = RequestMethod.GET)
-//    public User searchByUserName(HttpServletRequest request,
-//                                 @PathVariable(name = "departmentId") Long departmentId) throws CustomException {
-//        log.info("searchByUserName API initiated...");
-//
-//        User user = null;
-//        try {
-//            user = userService.findByDepartmentId(departmentId);
-//        } catch (Exception e) {
-//            ResponseUtility.exceptionResponse(e);
-//        }
-//        return user;
-//    }
+    @RequestMapping(value = "/users/{departmentId}", method = RequestMethod.GET)
+    public List<User> searchUsersByDepartmentId(HttpServletRequest request,
+                                                @PathVariable(name = "departmentId") String departmentId) throws CustomException {
+        log.info("searchUsersByDepartmentId API initiated...");
+
+        List<User> users = null;
+        try {
+            users = userService.searchUsersByDepartmentId(departmentId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return users;
+    }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public CustomResponse getAllUsers(HttpServletRequest request)

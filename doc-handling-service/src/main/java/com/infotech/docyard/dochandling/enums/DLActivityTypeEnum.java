@@ -19,6 +19,8 @@ public enum DLActivityTypeEnum {
     INVITED_PEOPLE_ONLY("INVITED_PEOPLE_ONLY"),
     INVITED_EXTERNAL_PEOPLE_ONLY("INVITED_EXTERNAL_PEOPLE_ONLY"),
     OPEN_LINK("OPEN_LINK"),
+    RESTRICTED("RESTRICTED"),
+    ANYONE("ANYONE"),
     SHARING_DISABLED("SHARING_DISABLED");
 
     private static final HashMap<String, DLActivityTypeEnum> map = new HashMap<>();
