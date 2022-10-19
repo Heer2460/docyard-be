@@ -79,7 +79,6 @@
                     <executable>true</executable>
                 </configuration>
             </plugin>
-        </plugins>    
-             <finalName>docyard-be</finalName>
-    </build>
+        </plugins>
+               </build>
 </project>
