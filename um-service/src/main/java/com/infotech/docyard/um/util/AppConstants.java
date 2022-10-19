@@ -26,7 +26,7 @@ public class AppConstants {
     public static class EmailSubjectConstants {
         public final static String PASSWORD_EXPIRED = "Password Expired";
         public final static String FORGOT_PASSWORD = "Forgot Password";
-        public final static String CHANGE_PASSWORD = "Forgot Password";
+        public final static String CHANGE_PASSWORD = "Change Password";
         public final static String USER_CREATED = "User Created";
         public final static String GD_ASSIGNED_EXAMINER = "Goods Declaration Assigned";
     }
