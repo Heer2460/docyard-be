@@ -79,7 +79,7 @@
                     <executable>true</executable>
                 </configuration>
             </plugin>
-        </plugins>
-             <finalName>docker-dockyard</finalName>
+        </plugins>    
+             <finalName>docyard-be</finalName>
     </build>
 </project>

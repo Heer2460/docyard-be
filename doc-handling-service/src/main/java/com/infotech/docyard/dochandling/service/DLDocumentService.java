@@ -257,6 +257,7 @@ public class DLDocumentService {
         return dlDocument;
     }
 
+    @Transactional(rollbackFor = {Throwable.class})
     public DLDocument renameDLDocument(DLDocumentDTO dlDocumentDTO) {
         log.info("DLDocumentService - renameDLDocument method called...");
 
@@ -322,8 +323,9 @@ public class DLDocumentService {
         return dlDoc;
     }
 
-    public DLDocumentVersion createNewDocumentVersion(DLDocument document, Long userId) {
-        log.info("DLDocumentService - createNewDocumentVersion method called...");
+    @Transactional(rollbackFor = {Throwable.class})
+    public DLDocumentVersion createFirstDocumentVersion(DLDocument document, Long userId) {
+        log.info("DLDocumentService - createFirstDocumentVersion method called...");
 
         DLDocumentVersion dv = new DLDocumentVersion();
         dv.setGuId(UUID.randomUUID().toString());
@@ -379,47 +381,55 @@ public class DLDocumentService {
             doc.setVersion(AppConstants.FIRST_VERSION);
             doc.setCreatedOn(ZonedDateTime.now());
             doc.setDocumentVersions(new ArrayList<>());
-            DLDocumentVersion documentVersion = createNewDocumentVersion(doc, request.getCreatedBy());
+            DLDocumentVersion documentVersion = createFirstDocumentVersion(doc, request.getCreatedBy());
             documentVersion = dlDocumentVersionRepository.save(documentVersion);
 
             doc.getDocumentVersions().add(documentVersion);
 
             if (!isDocUpload) {
-                if (AppConstants.FileType.EXT_HTML.equals(extension)) {
-                    doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
-                            + AppConstants.FileType.EXT_HTML);
-                    doc.setExtension(AppConstants.FileType.EXT_HTML);
-                    doc.setMimeType(AppConstants.MimeType.MIME_HTML);
-                } else if (AppConstants.FileType.EXT_DOC.equals(extension)) {
-                    doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
-                            + AppConstants.FileType.EXT_DOC);
-                    doc.setExtension(AppConstants.FileType.EXT_DOC);
-                    doc.setMimeType(AppConstants.MimeType.MIME_DOC);
-                } else if (AppConstants.FileType.EXT_DOCX.equals(extension)) {
-                    doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
-                            + AppConstants.FileType.EXT_DOCX);
-                    doc.setExtension(AppConstants.FileType.EXT_DOCX);
-                    doc.setMimeType(AppConstants.MimeType.MIME_DOCX);
-                } else if (AppConstants.FileType.EXT_XLS.equals(extension)) {
-                    doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
-                            + AppConstants.FileType.EXT_XLS);
-                    doc.setExtension(AppConstants.FileType.EXT_XLS);
-                    doc.setMimeType(AppConstants.MimeType.MIME_XLS);
-                } else if (AppConstants.FileType.EXT_XLSX.equals(extension)) {
-                    doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
-                            + AppConstants.FileType.EXT_XLSX);
-                    doc.setExtension(AppConstants.FileType.EXT_XLSX);
-                    doc.setMimeType(AppConstants.MimeType.MIME_XLSX);
-                } else if (AppConstants.FileType.EXT_PPT.equals(extension)) {
-                    doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
-                            + AppConstants.FileType.EXT_PPT);
-                    doc.setExtension(AppConstants.FileType.EXT_PPT);
-                    doc.setMimeType(AppConstants.MimeType.MIME_PPT);
-                } else if (AppConstants.FileType.EXT_PPTX.equals(extension)) {
-                    doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
-                            + AppConstants.FileType.EXT_PPTX);
-                    doc.setExtension(AppConstants.FileType.EXT_PPTX);
-                    doc.setMimeType(AppConstants.MimeType.MIME_PPTX);
+                switch (extension) {
+                    case AppConstants.FileType.EXT_HTML:
+                        doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
+                                + AppConstants.FileType.EXT_HTML);
+                        doc.setExtension(AppConstants.FileType.EXT_HTML);
+                        doc.setMimeType(AppConstants.MimeType.MIME_HTML);
+                        break;
+                    case AppConstants.FileType.EXT_DOC:
+                        doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
+                                + AppConstants.FileType.EXT_DOC);
+                        doc.setExtension(AppConstants.FileType.EXT_DOC);
+                        doc.setMimeType(AppConstants.MimeType.MIME_DOC);
+                        break;
+                    case AppConstants.FileType.EXT_DOCX:
+                        doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
+                                + AppConstants.FileType.EXT_DOCX);
+                        doc.setExtension(AppConstants.FileType.EXT_DOCX);
+                        doc.setMimeType(AppConstants.MimeType.MIME_DOCX);
+                        break;
+                    case AppConstants.FileType.EXT_XLS:
+                        doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
+                                + AppConstants.FileType.EXT_XLS);
+                        doc.setExtension(AppConstants.FileType.EXT_XLS);
+                        doc.setMimeType(AppConstants.MimeType.MIME_XLS);
+                        break;
+                    case AppConstants.FileType.EXT_XLSX:
+                        doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
+                                + AppConstants.FileType.EXT_XLSX);
+                        doc.setExtension(AppConstants.FileType.EXT_XLSX);
+                        doc.setMimeType(AppConstants.MimeType.MIME_XLSX);
+                        break;
+                    case AppConstants.FileType.EXT_PPT:
+                        doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
+                                + AppConstants.FileType.EXT_PPT);
+                        doc.setExtension(AppConstants.FileType.EXT_PPT);
+                        doc.setMimeType(AppConstants.MimeType.MIME_PPT);
+                        break;
+                    case AppConstants.FileType.EXT_PPTX:
+                        doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
+                                + AppConstants.FileType.EXT_PPTX);
+                        doc.setExtension(AppConstants.FileType.EXT_PPTX);
+                        doc.setMimeType(AppConstants.MimeType.MIME_PPTX);
+                        break;
                 }
             } else {
                 doc.setExtension(extension.toLowerCase());

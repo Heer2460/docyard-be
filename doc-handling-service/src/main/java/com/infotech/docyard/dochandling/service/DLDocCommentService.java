@@ -13,6 +13,7 @@ import com.infotech.docyard.dochandling.util.AppUtility;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -51,7 +52,8 @@ public class DLDocCommentService {
         return dlDocumentCommentDTOList;
     }
 
-    public DLDocumentComment postAndUpdateDocumentComment(DLDocumentCommentDTO commentDTO) throws IOException {
+    @Transactional(rollbackFor = {Throwable.class})
+    public DLDocumentComment postAndUpdateDocumentComment(DLDocumentCommentDTO commentDTO) {
         log.info("DLDocCommentService - postAndUpdateDocumentComment method called...");
 
         DLDocumentComment dlDocumentComment;
@@ -69,6 +71,7 @@ public class DLDocCommentService {
         return dlDocumentComment;
     }
 
+    @Transactional(rollbackFor = {Throwable.class})
     public void deleteDocumentComment(Long documentId) {
         log.info("DLDocCommentService - deleteDocumentComment method called...");
 
