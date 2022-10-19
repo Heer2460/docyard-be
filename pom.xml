@@ -80,5 +80,6 @@
                 </configuration>
             </plugin>
         </plugins>
+             <finalName>docker-dockyard</finalName>
     </build>
 </project>
