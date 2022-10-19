@@ -1,5 +1,7 @@
 FROM openjdk:8
-COPY target/*.jar app.jar
-ENV JAVA_OPTS=""
+
 EXPOSE 8080
-ENTRYPOINT ["sh", "-c" "java $jAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /app.jar" ]
+
+ADD target/docker-dockyard.jar docker-dockyard.jar
+
+ENTRYPOINT ["java","-jar", "docker-dockyard.jar"]
