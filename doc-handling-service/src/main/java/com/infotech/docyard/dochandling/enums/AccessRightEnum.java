@@ -2,9 +2,10 @@ package com.infotech.docyard.dochandling.enums;
 
 public enum AccessRightEnum {
 
-    VIEWER("VIEW"),
+    OWNER("OWNER"),
+    VIEWER("VIEWER"),
     COMMENT("COMMENT"),
-    EDIT("EDIT");
+    EDITOR("EDITOR");
     private String value;
 
     AccessRightEnum(String value) {

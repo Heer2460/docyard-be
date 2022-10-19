@@ -47,22 +47,36 @@ public class UserAPI {
     }
 
     @RequestMapping(value = "/username/{username}", method = RequestMethod.GET)
-    public User searchByUserName(HttpServletRequest request,
-                                 @PathVariable(name = "username") String username) throws CustomException {
-        log.info("searchByUserName API initiated...");
+    public User getByUserName(HttpServletRequest request,
+                              @PathVariable(name = "username") String username) throws CustomException {
+        log.info("getByUserName API initiated...");
 
         User user = null;
         try {
-            user = userService.searchUserByUserName(username);
+            user = userService.getUserByUserName(username);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
         return user;
     }
 
+    @RequestMapping(value = "/email/{email}", method = RequestMethod.GET)
+    public CustomResponse getByUserEmail(HttpServletRequest request,
+                                         @PathVariable(name = "email") String email) throws CustomException {
+        log.info("getByUserEmail API initiated...");
+
+        User user = null;
+        try {
+            user = userService.getUserByUserEmail(email);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.buildResponseObject(user, new UserDTO(), false);
+    }
+
     @RequestMapping(value = "/department/{dptId}", method = RequestMethod.GET)
     public List<String> searchUsersByDepartmentId(HttpServletRequest request,
-                                                @PathVariable(name = "dptId") long dptId) throws CustomException {
+                                                  @PathVariable(name = "dptId") long dptId) throws CustomException {
         log.info("searchUsersByDepartmentId API initiated...");
 
         if (AppUtility.isEmpty(dptId)) {

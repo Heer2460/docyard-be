@@ -2,7 +2,9 @@ package com.infotech.docyard.dochandling.service;
 
 import com.infotech.docyard.dochandling.dl.entity.*;
 import com.infotech.docyard.dochandling.dl.repository.*;
+import com.infotech.docyard.dochandling.dto.DLDocumentShareDTO;
 import com.infotech.docyard.dochandling.dto.ShareRequestDTO;
+import com.infotech.docyard.dochandling.enums.AccessRightEnum;
 import com.infotech.docyard.dochandling.enums.DLActivityTypeEnum;
 import com.infotech.docyard.dochandling.enums.ShareStatusEnum;
 import com.infotech.docyard.dochandling.enums.ShareTypeEnum;
@@ -33,6 +35,51 @@ public class DLShareService {
     private DLDocumentActivityRepository dlDocumentActivityRepository;
     @Autowired
     private RestTemplate restTemplate;
+
+    public List<DLDocumentShareDTO> getAllSharingDetailsByDLDocId(Long dlDocId) {
+        log.info("DLShareService - getAllSharingDetailsByDLDocId method called...");
+
+        DLDocument dlDocument = dlDocumentRepository.findByIdAndArchivedFalse(dlDocId);
+        if (AppUtility.isEmpty(dlDocument)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+        }
+        List<DLDocumentShareDTO> dlDocumentShareDTOList = new ArrayList<>();
+        DLShare dlShare = dlShareRepository.findByDlDocumentId(dlDocId);
+        if (AppUtility.isEmpty(dlShare)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("share.not.found"));
+        }
+        Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDocument.getCreatedBy(), Object.class);
+        if (!AppUtility.isEmpty(response)) {
+            HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+            DLDocumentShareDTO owner = new DLDocumentShareDTO();
+            owner.setAccessRight(AccessRightEnum.OWNER.getValue());
+            owner.setDlCollName((String) map.get("name"));
+            owner.setDlCollEmail((String) map.get("email"));
+
+            if (!AppUtility.isEmpty(map.get("profilePhoto"))) {
+                owner.setDlCollPic(map.get("profilePhoto").toString());
+            }
+            dlDocumentShareDTOList.add(owner);
+        }
+        for (DLShareCollaborator dsc : dlShare.getDlShareCollaborators()) {
+            Optional<DLCollaborator> dc = dlCollaboratorRepository.findById(dsc.getDlCollaboratorId());
+            if (dc.isPresent()) {
+                DLDocumentShareDTO dto = new DLDocumentShareDTO(dsc);
+                dto.setDlCollEmail(dc.get().getEmail());
+                Object coll = restTemplate.getForObject("http://um-service/um/user/email/" + dc.get().getEmail(), Object.class);
+                if (!AppUtility.isEmpty(coll)) {
+                    HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) coll).get("data");
+                    dto.setDlCollName((String) map.get("name"));
+                    dto.setDlCollEmail((String) map.get("email"));
+                    if (!AppUtility.isEmpty(map.get("profilePhoto"))) {
+                        dto.setDlCollPic(map.get("profilePhoto").toString());
+                    }
+                }
+                dlDocumentShareDTOList.add(dto);
+            }
+        }
+        return dlDocumentShareDTOList;
+    }
 
     @Transactional(rollbackFor = Throwable.class)
     public String shareDLDocument(ShareRequestDTO shareRequest) {
@@ -119,7 +166,7 @@ public class DLShareService {
 
         DLShare dlShare = new DLShare();
         String status = "NOT_FOUND";
-        ArrayList<String> emails = null;
+        ArrayList<String> emails = new ArrayList<>();
         if (!AppUtility.isEmpty(dlDocument.getShared()) && dlDocument.getShared()) {
             Optional<DLShare> dsOp = dlShareRepository.findById(dlDocument.getDlShareId());
             if (dsOp.isPresent()) {
