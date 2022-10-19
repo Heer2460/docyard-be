@@ -46,9 +46,9 @@ public class DLShareService {
 
         }
         if (shareRequest.getShareType().equalsIgnoreCase(ShareTypeEnum.ANYONE.getValue())) {
-            status = this.shareOffSpecific(shareRequest, dlDocument);
+            status = this.shareAnyone(shareRequest, dlDocument);
         } else if (shareRequest.getShareType().equalsIgnoreCase(ShareTypeEnum.RESTRICTED.getValue())) {
-            status = shareInvitedInternalMemberOnly(shareRequest, dlDocument);
+            status = shareRestricted(shareRequest, dlDocument);
         } else if (shareRequest.getShareType().equalsIgnoreCase(ShareTypeEnum.NO_SHARING.getValue())) {
             status = shareInvitedExternalMemberOnly(shareRequest, dlDocument);
             //status = this.terminateShare(tenantId, shareRequest, user, deviceType, document, folder, accountSettings);
@@ -57,8 +57,8 @@ public class DLShareService {
     }
 
     @Transactional(rollbackFor = Throwable.class)
-    public String shareOffSpecific(ShareRequestDTO shareRequest, DLDocument dlDocument) {
-        log.info("DLShareService - shareOffSpecific method called...");
+    public String shareAnyone(ShareRequestDTO shareRequest, DLDocument dlDocument) {
+        log.info("DLShareService - shareAnyone method called...");
 
         DLShare dlShare = new DLShare();
         String status = "NOT_FOUND";
@@ -91,7 +91,6 @@ public class DLShareService {
 
         DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.ANYONE.getValue(),
                 dlShare.getId(), dlDocument.getId());
-        activity.setCreatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
         dlDocument.setDlShareId(dlShare.getId());
         dlDocumentRepository.save(dlDocument);
@@ -102,7 +101,7 @@ public class DLShareService {
     }
 
     @Transactional(rollbackFor = Throwable.class)
-    public String shareInvitedExternalMemberOnly (ShareRequestDTO shareRequest, DLDocument dlDocument) {
+    public String shareInvitedExternalMemberOnly(ShareRequestDTO shareRequest, DLDocument dlDocument) {
         log.info("DLShareService - shareInvitedExternalMemberOnly method called...");
 
         DLShare dlShare = new DLShare();
@@ -113,15 +112,17 @@ public class DLShareService {
                 dlShare = dsOp.get();
             }
         }
+
         return status;
     }
 
     @Transactional(rollbackFor = Throwable.class)
-    public String shareInvitedInternalMemberOnly(ShareRequestDTO shareRequest, DLDocument dlDocument) {
+    public String shareRestricted(ShareRequestDTO shareRequest, DLDocument dlDocument) {
         log.info("DLShareService - shareInvitedInternalMemberOnly method called...");
 
         DLShare dlShare = new DLShare();
         String status = "NOT_FOUND";
+        ArrayList<String> emails = null;
         if (dlDocument.getShared()) {
             Optional<DLShare> dsOp = dlShareRepository.findById(dlDocument.getDlShareId());
             if (dsOp.isPresent()) {
@@ -135,7 +136,6 @@ public class DLShareService {
         shareLinkCount++;
         dlDocument.setShareLinkCount(shareLinkCount);
         dlDocument.setUpdatedBy(shareRequest.getUserId());
-        dlDocumentRepository.save(dlDocument);
         dlShare.setPermanentLink(shareRequest.getShareLink());
         dlShare.setAccessRight(shareRequest.getSharePermission());
         dlShare.setShareType(ShareTypeEnum.RESTRICTED.getValue());
@@ -146,31 +146,35 @@ public class DLShareService {
         dlShare.setUpdatedBy(shareRequest.getUserId());
 
         dlShare = dlShareRepository.save(dlShare);
-        //List<User> usersList = null;
-        if (shareRequest.getDepartmentId() != null) {
-            if (!AppUtility.isEmpty(shareRequest.getDepartmentId())) {
-                Object response = restTemplate.getForObject("http://um-service/um/user/users/" + shareRequest.getDepartmentId().toString(), Object.class);
-                if (!AppUtility.isEmpty(response)) {
-                    HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
-                }
+        dlDocument.setDlShareId(dlShare.getId());
+        dlDocumentRepository.save(dlDocument);
+
+        if (!AppUtility.isEmpty(shareRequest.getDepartmentId())) {
+            Object response = restTemplate.getForObject("http://um-service/um/user/department/" + shareRequest.getDepartmentId(), Object.class);
+            if (!AppUtility.isEmpty(response)) {
+                emails = (ArrayList<String>) ((LinkedHashMap<?, ?>) response).get("item");
             }
         }
-
+        if (!AppUtility.isEmpty(shareRequest.getDlCollaborators())) {
+            Collections.addAll(emails, shareRequest.getDlCollaborators());
+        }
         List<DLCollaborator> dlCollList = new ArrayList<>();
-        for (String collaboratorEmail : shareRequest.getDlCollaborators()) {
-            DLCollaborator dlCollaborator = new DLCollaborator();
-            if (!dlCollaboratorRepository.existsByEmail(collaboratorEmail)) {
-                dlCollaborator.setEmail(collaboratorEmail);
+        for (String colEmail : emails) {
+            DLCollaborator dc = dlCollaboratorRepository.findByEmail(colEmail);
+            if (AppUtility.isEmpty(dc)) {
+                DLCollaborator dlCollaborator = new DLCollaborator();
+                dlCollaborator.setEmail(colEmail);
                 dlCollaborator.setCreatedOn(ZonedDateTime.now());
                 dlCollaborator.setUpdatedOn(ZonedDateTime.now());
                 dlCollaborator.setCreatedBy(shareRequest.getUserId());
                 dlCollaborator.setUpdatedBy(shareRequest.getUserId());
                 dlCollaborator.setDlShareCollaborators(new ArrayList<>());
+                dlCollaborator = dlCollaboratorRepository.save(dlCollaborator);
                 dlCollList.add(dlCollaborator);
+            } else {
+                dlCollList.add(dc);
             }
         }
-        dlCollList = dlCollaboratorRepository.saveAll(dlCollList);
-
         List<DLShareCollaborator> scList = new ArrayList<>();
         for (DLCollaborator col : dlCollList) {
             DLShareCollaborator sc = new DLShareCollaborator();
@@ -185,16 +189,10 @@ public class DLShareService {
         }
         dlShareCollaboratorRepository.saveAll(scList);
 
-        dlShare.setDlShareCollaborators(scList);
-        dlShare.setUpdatedBy(shareRequest.getUserId());
-        dlShare = dlShareRepository.save(dlShare);
-
         DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.RESTRICTED.getValue(),
                 dlShare.getId(), dlDocument.getId());
-        activity.setCreatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
-        dlDocument.setDlShareId(dlShare.getId());
-        dlDocumentRepository.save(dlDocument);
+
         // send FCM to specific user
         status = "SUCCESS";
         return status;

@@ -88,7 +88,7 @@ public class DLDocumentService {
                 int fileCount = dlDocumentRepository.countAllByArchivedFalseAndFolderFalseAndParentId(dlDoc.getId());
                 dto.setSize(fileCount + " Files");
             }
-            Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDoc.getCreatedBy(), Object.class);
+            Object response = restTemplate.getForObject("http://um-service/um/user/department/" + dlDoc.getCreatedBy(), Object.class);
             if (!AppUtility.isEmpty(response)) {
                 HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
                 dto.setCreatedByName((String) map.get("name"));
@@ -117,7 +117,7 @@ public class DLDocumentService {
                 int fileCount = dlDocumentRepository.countAllByArchivedFalseAndFolderFalseAndParentId(dlDoc.getId());
                 dto.setSize(fileCount + " Files");
             }
-            Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDoc.getCreatedBy(), Object.class);
+            Object response = restTemplate.getForObject("http://um-service/um/user/department/" + dlDoc.getCreatedBy(), Object.class);
             if (!AppUtility.isEmpty(response)) {
                 HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
                 dto.setCreatedByName((String) map.get("name"));

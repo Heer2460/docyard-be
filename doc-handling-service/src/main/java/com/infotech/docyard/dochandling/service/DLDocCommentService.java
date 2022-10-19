@@ -60,11 +60,13 @@ public class DLDocCommentService {
             throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
         } else {
             dlDocumentComment = commentDTO.convertToEntity();
+            dlDocumentComment.setUpdatedOn(ZonedDateTime.now());
             dlDocumentCommentRepository.save(dlDocumentComment);
 
             DLDocumentActivity activity = new DLDocumentActivity(dlDocumentComment.getCreatedBy(), DLActivityTypeEnum.COMMENT_POSTED.getValue(),
                     dlDocumentComment.getId(), dlDocumentComment.getDlDocument().getId());
             activity.setCreatedOn(ZonedDateTime.now());
+            activity.setUpdatedOn(ZonedDateTime.now());
             dlDocumentActivityRepository.save(activity);
         }
         return dlDocumentComment;
