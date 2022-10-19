@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.*;
 
@@ -36,7 +35,7 @@ public class DLShareService {
     private RestTemplate restTemplate;
 
     @Transactional(rollbackFor = Throwable.class)
-    public String shareDLDocument(ShareRequestDTO shareRequest) throws IOException {
+    public String shareDLDocument(ShareRequestDTO shareRequest) {
         log.info("DLShareService - shareDLDocument method called...");
 
         String status = null;
@@ -50,8 +49,7 @@ public class DLShareService {
         } else if (shareRequest.getShareType().equalsIgnoreCase(ShareTypeEnum.RESTRICTED.getValue())) {
             status = shareRestricted(shareRequest, dlDocument);
         } else if (shareRequest.getShareType().equalsIgnoreCase(ShareTypeEnum.NO_SHARING.getValue())) {
-            status = shareInvitedExternalMemberOnly(shareRequest, dlDocument);
-            //status = this.terminateShare(tenantId, shareRequest, user, deviceType, document, folder, accountSettings);
+            status = removeSharing(shareRequest, dlDocument);
         }
         return status;
     }
@@ -62,7 +60,7 @@ public class DLShareService {
 
         DLShare dlShare = new DLShare();
         String status = "NOT_FOUND";
-        if (dlDocument.getShared()) {
+        if (!AppUtility.isEmpty(dlDocument.getShared()) && dlDocument.getShared()) {
             Optional<DLShare> dsOp = dlShareRepository.findById(dlDocument.getDlShareId());
             if (dsOp.isPresent()) {
                 dlShare = dsOp.get();
@@ -89,8 +87,7 @@ public class DLShareService {
 
         dlShare = dlShareRepository.save(dlShare);
 
-        DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.ANYONE.getValue(),
-                dlShare.getId(), dlDocument.getId());
+        DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.ANYONE.getValue(), dlShare.getId(), dlDocument.getId());
         dlDocumentActivityRepository.save(activity);
 
         dlDocument.setDlShareId(dlShare.getId());
@@ -102,7 +99,7 @@ public class DLShareService {
     }
 
     @Transactional(rollbackFor = Throwable.class)
-    public String shareInvitedExternalMemberOnly(ShareRequestDTO shareRequest, DLDocument dlDocument) {
+    public String removeSharing(ShareRequestDTO shareRequest, DLDocument dlDocument) {
         log.info("DLShareService - shareInvitedExternalMemberOnly method called...");
 
         DLShare dlShare = new DLShare();
@@ -113,7 +110,6 @@ public class DLShareService {
                 dlShare = dsOp.get();
             }
         }
-
         return status;
     }
 
@@ -124,7 +120,7 @@ public class DLShareService {
         DLShare dlShare = new DLShare();
         String status = "NOT_FOUND";
         ArrayList<String> emails = null;
-        if (dlDocument.getShared()) {
+        if (!AppUtility.isEmpty(dlDocument.getShared()) && dlDocument.getShared()) {
             Optional<DLShare> dsOp = dlShareRepository.findById(dlDocument.getDlShareId());
             if (dsOp.isPresent()) {
                 dlShare = dsOp.get();
@@ -190,8 +186,7 @@ public class DLShareService {
         }
         dlShareCollaboratorRepository.saveAll(scList);
 
-        DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.RESTRICTED.getValue(),
-                dlShare.getId(), dlDocument.getId());
+        DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.RESTRICTED.getValue(), dlShare.getId(), dlDocument.getId());
         dlDocumentActivityRepository.save(activity);
 
         dlDocument.setDlShareId(dlShare.getId());
