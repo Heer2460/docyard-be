@@ -62,6 +62,7 @@ public class DLDocCommentService {
             throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
         } else {
             dlDocumentComment = commentDTO.convertToEntity();
+            dlDocumentComment.setUpdatedOn(ZonedDateTime.now());
             dlDocumentCommentRepository.save(dlDocumentComment);
 
             DLDocumentActivity activity = new DLDocumentActivity(dlDocumentComment.getCreatedBy(), DLActivityTypeEnum.COMMENT_POSTED.getValue(),

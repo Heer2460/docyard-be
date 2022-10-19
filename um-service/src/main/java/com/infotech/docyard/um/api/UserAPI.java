@@ -60,18 +60,21 @@ public class UserAPI {
         return user;
     }
 
-    @RequestMapping(value = "/users/{departmentId}", method = RequestMethod.GET)
-    public List<User> searchUsersByDepartmentId(HttpServletRequest request,
-                                                @PathVariable(name = "departmentId") String departmentId) throws CustomException {
+    @RequestMapping(value = "/department/{dptId}", method = RequestMethod.GET)
+    public List<String> searchUsersByDepartmentId(HttpServletRequest request,
+                                                @PathVariable(name = "dptId") long dptId) throws CustomException {
         log.info("searchUsersByDepartmentId API initiated...");
 
-        List<User> users = null;
+        if (AppUtility.isEmpty(dptId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
+        }
+        List<String> emails = null;
         try {
-            users = userService.searchUsersByDepartmentId(departmentId);
+            emails = userService.searchUsersByDepartmentId(dptId);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return users;
+        return emails;
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
