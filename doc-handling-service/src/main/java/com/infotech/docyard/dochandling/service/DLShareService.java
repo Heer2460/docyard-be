@@ -100,15 +100,18 @@ public class DLShareService {
 
     @Transactional(rollbackFor = Throwable.class)
     public String removeSharing(ShareRequestDTO shareRequest, DLDocument dlDocument) {
-        log.info("DLShareService - shareInvitedExternalMemberOnly method called...");
+        log.info("DLShareService - removeSharing method called...");
 
-        DLShare dlShare = new DLShare();
-        String status = "NOT_FOUND";
-        if (dlDocument.getShared()) {
-            Optional<DLShare> dsOp = dlShareRepository.findById(dlDocument.getDlShareId());
-            if (dsOp.isPresent()) {
-                dlShare = dsOp.get();
-            }
+        String status = "SHARING_NOT_REMOVED";
+        if (!AppUtility.isEmpty(dlDocument.getShared()) && dlDocument.getShared()) {
+            dlShareCollaboratorRepository.deleteByDlShareId(dlDocument.getDlShareId());
+            dlShareRepository.deleteById(dlDocument.getDlShareId());
+            dlDocument.setDlShareId(null);
+            dlDocument.setShareType(null);
+            dlDocument.setShared(null);
+
+            dlDocumentRepository.save(dlDocument);
+            status = "SHARING_REMOVED";
         }
         return status;
     }
