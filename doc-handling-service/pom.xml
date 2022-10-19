@@ -64,11 +64,5 @@
             <artifactId>tess4j</artifactId>
             <version>4.2.1</version>
         </dependency>
-        <dependency>
-            <groupId>com.infotech</groupId>
-            <artifactId>um-service</artifactId>
-            <version>1.0</version>
-            <scope>compile</scope>
-        </dependency>
     </dependencies>
 </project>
