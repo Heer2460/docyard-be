@@ -13,6 +13,7 @@ import com.infotech.docyard.dochandling.util.AppUtility;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -36,7 +37,7 @@ public class DLDocCommentService {
         log.info("DLDocCommentService - getAllCommentsByDocumentId method called...");
 
         List<DLDocumentCommentDTO> dlDocumentCommentDTOList = new ArrayList<>();
-        List<DLDocumentComment> dlDocumentCommentList = dlDocumentCommentRepository.findAllByDlDocument_Id(documentId);
+        List<DLDocumentComment> dlDocumentCommentList = dlDocumentCommentRepository.findAllByDlDocument_IdOrderByUpdatedOnDesc(documentId);
         for (DLDocumentComment docComm : dlDocumentCommentList) {
             DLDocumentCommentDTO dto = new DLDocumentCommentDTO();
             dto.convertToDTO(docComm, false);
@@ -51,7 +52,8 @@ public class DLDocCommentService {
         return dlDocumentCommentDTOList;
     }
 
-    public DLDocumentComment postAndUpdateDocumentComment(DLDocumentCommentDTO commentDTO) throws IOException {
+    @Transactional(rollbackFor = {Throwable.class})
+    public DLDocumentComment postAndUpdateDocumentComment(DLDocumentCommentDTO commentDTO) {
         log.info("DLDocCommentService - postAndUpdateDocumentComment method called...");
 
         DLDocumentComment dlDocumentComment;
@@ -65,13 +67,12 @@ public class DLDocCommentService {
 
             DLDocumentActivity activity = new DLDocumentActivity(dlDocumentComment.getCreatedBy(), DLActivityTypeEnum.COMMENT_POSTED.getValue(),
                     dlDocumentComment.getId(), dlDocumentComment.getDlDocument().getId());
-            activity.setCreatedOn(ZonedDateTime.now());
-            activity.setUpdatedOn(ZonedDateTime.now());
             dlDocumentActivityRepository.save(activity);
         }
         return dlDocumentComment;
     }
 
+    @Transactional(rollbackFor = {Throwable.class})
     public void deleteDocumentComment(Long documentId) {
         log.info("DLDocCommentService - deleteDocumentComment method called...");
 
@@ -81,7 +82,6 @@ public class DLDocCommentService {
 
             DLDocumentActivity activity = new DLDocumentActivity(dlDocumentComment.get().getCreatedBy(), DLActivityTypeEnum.COMMENT_DELETED.getValue(),
                     dlDocumentComment.get().getId(), dlDocumentComment.get().getId());
-            activity.setCreatedOn(ZonedDateTime.now());
             dlDocumentActivityRepository.save(activity);
         } else {
             throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));

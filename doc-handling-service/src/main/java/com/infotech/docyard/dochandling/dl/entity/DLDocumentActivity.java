@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 
 @Data
 @Entity
@@ -37,7 +38,7 @@ public class DLDocumentActivity extends BaseEntity implements Serializable {
         this.activityType = activityType;
         this.entityId = entityId;
         this.docId = docId;
+        this.setCreatedOn(ZonedDateTime.now());
+        this.setUpdatedOn(ZonedDateTime.now());
     }
-
-
 }
