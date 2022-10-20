@@ -24,6 +24,9 @@ import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import org.apache.commons.io.FileUtils;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -681,9 +684,24 @@ public class DLDocumentService {
                     instance.setOcrEngineMode(1);
                     Path dataDirectory = Paths.get(ClassLoader.getSystemResource("tesseractdata").toURI());
                     instance.setDatapath(dataDirectory.toString());
+                    String result = null;
 
-                    BufferedImage bufferedImage = ImageIO.read(inputStream);
-                    String result = instance.doOCR(bufferedImage);
+                    if (doc.getExtension().equalsIgnoreCase("pdf")) {
+                        //TODO will do it later
+//                        PDDocument document = PDDocument.load(inputStream);
+//                        PDFRenderer pdfRenderer = new PDFRenderer(document);
+//                        StringBuffer stringBuffer = new StringBuffer();
+//                        for (int page = 0; page < document.getNumberOfPages(); page++) {
+//                            BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, 300, ImageType.RGB);
+//                            stringBuffer.append(instance.doOCR(bufferedImage));
+//                        }
+//                        result = stringBuffer.toString();
+//                        document.close();
+                    } else {
+                        BufferedImage bufferedImage = ImageIO.read(inputStream);
+                        result = instance.doOCR(bufferedImage);
+                    }
+
                     doc.setContent(result);
                     doc.setOcrDone(true);
                     doc.setOcrSupported(true);
@@ -787,7 +805,7 @@ public class DLDocumentService {
             try {
                 for (DLDocument archivedDoc : archivedDLDocs) {
                     archivedDoc.setDaysArchved(archivedDoc.getDaysArchved() + 1);
-                    if (archivedDoc.getDaysArchved() == 30) {
+                    if (archivedDoc.getDaysArchved() >= 30) {
                         deleteDLDocument(archivedDoc.getId());
                     } else {
                         dlDocumentRepository.save(archivedDoc);

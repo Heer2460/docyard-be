@@ -15,7 +15,7 @@ public class DocumentDeletionJob {
     @Autowired
     private DLDocumentService dlDocumentService;
 
-    @Scheduled(cron = "0 40 17 * * *") //Every day at 23:55
+    @Scheduled(cron = "0 55 23 * * *") //Every day at 23:55
     public void deleteArchivedDocumentsJob() {
         log.info("DocumentDeletionJob - deleteArchivedDocumentsJob Job started at: " + LocalDateTime.now());
         try {

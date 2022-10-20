@@ -193,6 +193,13 @@ public class UserService {
             u.setLastPassUpdatedOn(ZonedDateTime.now());
 
             userRepository.save(u);
+
+            ForgotPasswordLink forgotPasswordLink = forgotPasswordLinkRepository.findByToken(resetPasswordDTO.getToken());
+            if (!AppUtility.isEmpty(forgotPasswordLink)) {
+                forgotPasswordLink.setToken(null);
+                forgotPasswordLink.setExpired(true);
+                forgotPasswordLink.setExpiredOn(ZonedDateTime.now());
+            }
         } else {
             throw new NoDataFoundException(AppUtility.getResourceMessage("user.not.found"));
         }
@@ -219,7 +226,7 @@ public class UserService {
                     u.setPasswordExpired(false);
                     u.setLastPassUpdatedOn(ZonedDateTime.now());
                     String content = NotificationUtility.buildChangePasswordContent(u);
-                    if(!AppUtility.isEmpty(content)){
+                    if (!AppUtility.isEmpty(content)) {
                         EmailInstance emailInstance = new EmailInstance();
                         emailInstance.setToEmail(u.getEmail());
                         emailInstance.setType(EmailTypeEnum.CHANGE_PASSWORD.getValue());
@@ -490,9 +497,9 @@ public class UserService {
             if (user.getUnsuccessfulLoginAttempt() >= 3) {
                 user.setStatus(AppConstants.Status.LOCKED);
             }
-           User user1 = userRepository.save(user);
-            if(user1.getUnsuccessfulLoginAttempt() >= 3){
-                    throw new DataValidationException("User is locked please contact administration. ");
+            User user1 = userRepository.save(user);
+            if (user1.getUnsuccessfulLoginAttempt() >= 3) {
+                throw new DataValidationException("User is locked please contact administration. ");
             }
 
         }
@@ -502,9 +509,9 @@ public class UserService {
     public void expireForgotPasswordLinks() {
         List<ForgotPasswordLink> forgotPasswordLinkList = forgotPasswordLinkRepository.findAllByTokenIsNotNull();
 
-        for(ForgotPasswordLink forgotPasswordLink: forgotPasswordLinkList){
+        for (ForgotPasswordLink forgotPasswordLink : forgotPasswordLinkList) {
 
-            if(forgotPasswordLink.getCreatedOn().plusMinutes(30).isAfter(ZonedDateTime.now())){
+            if (forgotPasswordLink.getCreatedOn().plusMinutes(30).isBefore(ZonedDateTime.now())) {
                 forgotPasswordLink.setToken(null);
                 forgotPasswordLink.setExpired(true);
                 forgotPasswordLink.setExpiredOn(ZonedDateTime.now());
