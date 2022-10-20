@@ -116,7 +116,7 @@ public class DLShareService {
         dlShare.setDlDocumentId(dlDocument.getId());
         dlDocument.setShared(true);
         dlDocument.setShareType(ShareTypeEnum.ANYONE.getValue());
-        int shareLinkCount = dlDocument.getShareLinkCount();
+        Integer shareLinkCount = dlDocument.getShareLinkCount();
         shareLinkCount++;
         dlDocument.setShareLinkCount(shareLinkCount);
         dlDocumentRepository.save(dlDocument);
@@ -182,7 +182,7 @@ public class DLShareService {
         dlShare.setDlDocumentId(dlDocument.getId());
         dlDocument.setShared(true);
         dlDocument.setShareType(ShareTypeEnum.RESTRICTED.getValue());
-        int shareLinkCount = dlDocument.getShareLinkCount();
+        Integer shareLinkCount = dlDocument.getShareLinkCount();
         shareLinkCount++;
         dlDocument.setShareLinkCount(shareLinkCount);
         dlDocument.setUpdatedBy(shareRequest.getUserId());

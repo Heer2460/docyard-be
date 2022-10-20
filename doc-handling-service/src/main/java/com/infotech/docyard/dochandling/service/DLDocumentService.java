@@ -245,7 +245,7 @@ public class DLDocumentService {
     public List<DLDocumentDTO> getDLDocumentsSharedByMe (Long ownerId) {
         log.info("DLDocumentService - getAllRecentDLDocumentByOwnerId method called...");
 
-        List<DLDocumentDTO> documentDTOList = new ArrayList<>();
+        List<DLDocumentDTO> documentDTOList = null;
 
         return documentDTOList;
     }
