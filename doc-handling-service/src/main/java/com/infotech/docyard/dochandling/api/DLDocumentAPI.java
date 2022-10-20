@@ -184,7 +184,7 @@ public class DLDocumentAPI {
         return ResponseUtility.successResponseForPut(dlDocumentDTO, "Document Meta");
     }
 
-    @RequestMapping(value = "/shared-by-me/{userId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/shared-by-me/user/{userId}", method = RequestMethod.GET)
     public CustomResponse getSharedByMeDLDocuments(HttpServletRequest request,
                                             @PathVariable(value = "userId") Long userId) throws CustomException {
         log.info("getDLDocumentsSharedByMe API initiated...");
