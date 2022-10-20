@@ -37,7 +37,6 @@ public class DashboardAPI {
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-
         return new ResponseUtility.APIResponse(dashboardDTO, AppUtility.getResourceMessage("dashboard.stats.found"));
     }
 
