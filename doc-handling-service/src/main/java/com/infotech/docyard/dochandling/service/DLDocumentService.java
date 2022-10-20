@@ -295,13 +295,12 @@ public class DLDocumentService {
         return dlDocumentDTOList;
     }
 
-    public List<DLDocumentDTO> getSharedWithMeDLDocuments(Long userId) {
+    public List<DLDocumentDTO> getSharedWithMeDLDocuments(Long userId, Long folderId) {
         log.info("DLDocumentService - getSharedWithMeDLDocuments method called...");
 
-        List<DLDocument> documentList = new ArrayList<>();
+        List<DLDocument> dlDocumentList = null;
         List<DLDocumentDTO> documentDTOList = new ArrayList<>();
         String email = null;
-        String name = null;
         if (!AppUtility.isEmpty(userId)) {
             Object responseEmails = restTemplate.getForObject("http://um-service/um/user/" + userId, Object.class);
             if (!AppUtility.isEmpty(responseEmails)) {
@@ -315,24 +314,46 @@ public class DLDocumentService {
                     Optional<DLShare> shareOp = dlShareRepository.findById(shareCol.getDlShareId());
                     if (shareOp.isPresent()) {
                         if (!AppUtility.isEmpty(shareOp.get().getDlDocumentId())) {
-                            Optional<DLDocument> opDoc = dlDocumentRepository.findById(shareOp.get().getDlDocumentId());
-                            if (opDoc.isPresent()) {
-                                DLDocumentDTO dto = new DLDocumentDTO();
-                                dto.convertToNewDTO(opDoc.get(), true);
-                                Object responseNames = restTemplate.getForObject("http://um-service/um/user/" + dto.getCreatedBy(), Object.class);
-                                if (!AppUtility.isEmpty(responseNames)) {
-                                    HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) responseNames).get("data");
-                                    dto.setCreatedByName((String) map.get("name"));
-                                    dto.setUpdatedByName((String) map.get("name"));
+                            if (AppUtility.isEmpty(folderId) || folderId == 0L) {
+                                Optional<DLDocument> opDoc = dlDocumentRepository.findById(shareOp.get().getDlDocumentId());
+                                if (opDoc.isPresent()) {
+                                    DLDocumentDTO dto = new DLDocumentDTO();
+                                    dto.convertToDTO(opDoc.get(), true);
+                                    Object responseNames = restTemplate.getForObject("http://um-service/um/user/" + dto.getCreatedBy(), Object.class);
+                                    if (!AppUtility.isEmpty(responseNames)) {
+                                        HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) responseNames).get("data");
+                                        dto.setCreatedByName((String) map.get("name"));
+                                        dto.setUpdatedByName((String) map.get("name"));
+                                    }
+                                    documentDTOList.add(dto);
+                                }
+                            } else {
+                                Optional<DLDocument> optionalDLDocument = dlDocumentRepository.findById(folderId);
+                                if (optionalDLDocument.isPresent()){
+                                    if (optionalDLDocument.get().getFolder()) {
+                                        if (Objects.equals(shareOp.get().getDlDocumentId(), folderId)) {
+                                            dlDocumentList = dlDocumentRepository.findByCreatedByAndParentIdAndArchivedFalseOrderByUpdatedOnDesc(
+                                                    optionalDLDocument.get().getCreatedBy(), folderId);
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                 }
-                for (DLDocument doc : documentList) {
-                    DLDocumentDTO docDTO = new DLDocumentDTO();
-                    docDTO.convertToDTO(doc, true);
-                    documentDTOList.add(docDTO);
+                if (!AppUtility.isEmpty(dlDocumentList)){
+                    for (DLDocument doc : dlDocumentList) {
+                        DLDocumentDTO docDTO = new DLDocumentDTO();
+                        docDTO.convertToDTO(doc, true);
+                        Object responseNames = restTemplate.getForObject("http://um-service/um/user/" + docDTO.getCreatedBy(), Object.class);
+                        if (!AppUtility.isEmpty(responseNames)) {
+                            HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) responseNames).get("data");
+                            docDTO.setCreatedByName((String) map.get("name"));
+                            docDTO.setUpdatedByName((String) map.get("name"));
+                        }
+                        documentDTOList.add(docDTO);
+                    }
                 }
             }
         }
