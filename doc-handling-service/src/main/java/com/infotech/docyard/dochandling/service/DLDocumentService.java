@@ -1,12 +1,7 @@
 package com.infotech.docyard.dochandling.service;
 
-import com.infotech.docyard.dochandling.dl.entity.DLDocument;
-import com.infotech.docyard.dochandling.dl.entity.DLDocumentActivity;
-import com.infotech.docyard.dochandling.dl.entity.DLDocumentVersion;
-import com.infotech.docyard.dochandling.dl.repository.DLDocumentActivityRepository;
-import com.infotech.docyard.dochandling.dl.repository.DLDocumentCommentRepository;
-import com.infotech.docyard.dochandling.dl.repository.DLDocumentRepository;
-import com.infotech.docyard.dochandling.dl.repository.DLDocumentVersionRepository;
+import com.infotech.docyard.dochandling.dl.entity.*;
+import com.infotech.docyard.dochandling.dl.repository.*;
 import com.infotech.docyard.dochandling.dto.DLDocumentDTO;
 import com.infotech.docyard.dochandling.dto.DLDocumentListDTO;
 import com.infotech.docyard.dochandling.dto.DashboardDTO;
@@ -59,6 +54,12 @@ public class DLDocumentService {
     private DLDocumentVersionRepository dlDocumentVersionRepository;
     @Autowired
     private DLDocumentCommentRepository dlDocumentCommentRepository;
+    @Autowired
+    private DLCollaboratorRepository dlCollaboratorRepository;
+    @Autowired
+    private DLShareCollaboratorRepository dlShareCollaboratorRepository;
+    @Autowired
+    private DLShareRepository dlShareRepository;
     @Autowired
     private FTPService ftpService;
     @Autowired
@@ -263,12 +264,42 @@ public class DLDocumentService {
         return documentDTOList;
     }
 
-    public List<DLDocumentDTO> getDLDocumentsSharedByMe(Long ownerId) {
+    public List<DLDocument> getDLDocumentsSharedByMe (Long ownerId) {
+        log.info("DLDocumentService - getDLDocumentsSharedByMe method called...");
+
+        List<DLDocument> documentList = null;
+        if (!AppUtility.isEmpty(ownerId)) {
+            documentList = dlDocumentRepository.findAllByCreatedByAndSharedTrueAndArchivedFalse(ownerId);
+        }
+        return documentList;
+    }
+
+    public List<DLDocument> getDLDocumentsSharedWithMe (Long userId) {
         log.info("DLDocumentService - getAllRecentDLDocumentByOwnerId method called...");
 
-        List<DLDocumentDTO> documentDTOList = null;
-
-        return documentDTOList;
+        List<DLDocument> documentList = new ArrayList<>();
+        String email = null;
+        if (!AppUtility.isEmpty(userId)) {
+            Object response = restTemplate.getForObject("http://um-service/um/user/" + userId, Object.class);
+            if (!AppUtility.isEmpty(response)) {
+                HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+                email = (String) map.get("email");
+            }
+            DLCollaborator collaborator = dlCollaboratorRepository.findByEmail(email);
+            if (!AppUtility.isEmpty(collaborator)) {
+                List<DLShareCollaborator> shareColList = dlShareCollaboratorRepository.findAllByDlCollaboratorId(collaborator.getId());
+                for (DLShareCollaborator shareCol : shareColList) {
+                    Optional<DLShare> shareOp = dlShareRepository.findById(shareCol.getDlShareId());
+                    if (shareOp.isPresent()) {
+                        if (!AppUtility.isEmpty(shareOp.get().getDlDocumentId())) {
+                            Optional<DLDocument> opDoc = dlDocumentRepository.findById(shareOp.get().getDlDocumentId());
+                            opDoc.ifPresent(documentList::add);
+                        }
+                    }
+                }
+            }
+        }
+        return documentList;
     }
 
     public DashboardDTO getDashboardStats(Long userId) {
@@ -277,10 +308,10 @@ public class DLDocumentService {
         DashboardDTO dashboardDTO = null;
         if (!AppUtility.isEmpty(userId)) {
             List<DLDocument> docList = dlDocumentRepository.findAllByCreatedByAndArchivedFalse(userId);
-            List<DLDocument> images = null;
-            List<DLDocument> docs = null;
-            List<DLDocument> videos = null;
-            List<DLDocument> others = null;
+            List<DLDocument> images;
+            List<DLDocument> docs;
+            List<DLDocument> videos;
+            List<DLDocument> others;
             double size = 0D;
             Integer count = 0;
             if (!AppUtility.isEmpty(docList)) {
@@ -290,29 +321,32 @@ public class DLDocumentService {
                 ).collect(Collectors.toList());
                 videos = docList.stream().filter(this::isVideo
                 ).collect(Collectors.toList());
-                List<DLDocument> finalDocs = docs;
-                List<DLDocument> finalVideos = videos;
-                List<DLDocument> finalImages = images;
-                others = docList.stream().filter(doc -> (!isImage(doc) && !isDoc(doc) && !isVideo(doc))).collect(Collectors.toList());
+                others = docList.stream().filter(doc -> (!isFolder(doc) && !isImage(doc) && !isDoc(doc) && !isVideo(doc))).collect(Collectors.toList());
                 for (DLDocument vid : videos) {
                     size = +Double.parseDouble(vid.getSize().substring(0, vid.getSize().indexOf(" ")));
                     count++;
                 }
+                DashboardDTO.VideosProps videosProps = new DashboardDTO.VideosProps(count, size, null);
+                size = 0;
+                count = 0;
                 for (DLDocument doc : docs) {
                     size = +Double.parseDouble(doc.getSize().substring(0, doc.getSize().indexOf(" ")));
                     count++;
                 }
+                DashboardDTO.DocsProps docsProps = new DashboardDTO.DocsProps(count, size, null);
+                size = 0;
+                count = 0;
                 for (DLDocument img : images) {
                     size = +Double.parseDouble(img.getSize().substring(0, img.getSize().indexOf(" ")));
                     count++;
                 }
+                DashboardDTO.ImageProps imageProps = new DashboardDTO.ImageProps(count, size, null);
+                size = 0;
+                count = 0;
                 for (DLDocument other : others) {
                     size = +Double.parseDouble(other.getSize().substring(0, other.getSize().indexOf(" ")));
                     count++;
                 }
-                DashboardDTO.ImageProps imageProps = new DashboardDTO.ImageProps(count, size, null);
-                DashboardDTO.VideosProps videosProps = new DashboardDTO.VideosProps(count, size, null);
-                DashboardDTO.DocsProps docsProps = new DashboardDTO.DocsProps(count, size, null);
                 DashboardDTO.OthersProps othersProps = new DashboardDTO.OthersProps(count, size, null);
                 dashboardDTO = new DashboardDTO(imageProps, videosProps, docsProps, othersProps);
             }
@@ -935,6 +969,13 @@ public class DLDocumentService {
         if ((!doc.getFolder()) && (!AppUtility.isEmpty(doc.getExtension())) && ((doc.getExtension().contains("mp4")) ||
                 (doc.getExtension().contains("mov")) || (doc.getExtension().contains("wmv")) || (doc.getExtension().contains("avi")) ||
                 (doc.getExtension().contains("flv")) || (doc.getExtension().contains("mkv")) || (doc.getExtension().contains("webm")))) {
+            return true;
+        }
+        return false;
+    }
+
+    public Boolean isFolder (DLDocument doc) {
+        if (doc.getFolder()) {
             return true;
         }
         return false;

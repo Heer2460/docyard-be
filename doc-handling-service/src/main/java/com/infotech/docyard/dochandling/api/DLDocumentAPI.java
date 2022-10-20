@@ -184,27 +184,45 @@ public class DLDocumentAPI {
         return ResponseUtility.successResponseForPut(dlDocumentDTO, "Document Meta");
     }
 
-    @RequestMapping(value = "/shared/documents/{userId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/sharedby/documents/{userId}", method = RequestMethod.GET)
     public CustomResponse getDLDocumentsSharedByMe(HttpServletRequest request,
                                             @PathVariable(value = "userId") Long userId) throws CustomException {
-        log.info("getDLDocumentById API initiated...");
+        log.info("getDLDocumentsSharedByMe API initiated...");
 
         if (AppUtility.isEmpty(userId)) {
             throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
         }
-        List<DLDocumentDTO> documentDTOList = null;
+        List<DLDocument> documentList = null;
         try {
-            documentDTOList = dlDocumentService.getDLDocumentsSharedByMe(userId);
+            documentList = dlDocumentService.getDLDocumentsSharedByMe(userId);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
 
-        return ResponseUtility.buildResponseList(documentDTOList);
+        return ResponseUtility.buildResponseList(documentList);
+    }
+
+    @RequestMapping(value = "/sharedwith/documents/{userId}", method = RequestMethod.GET)
+    public CustomResponse getDLDocumentsSharedWithMe(HttpServletRequest request,
+                                                   @PathVariable(value = "userId") Long userId) throws CustomException {
+        log.info("getDLDocumentsSharedWithMe API initiated...");
+
+        if (AppUtility.isEmpty(userId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
+        List<DLDocument> documentList = null;
+        try {
+            documentList = dlDocumentService.getDLDocumentsSharedWithMe(userId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+
+        return ResponseUtility.buildResponseList(documentList);
     }
 
     @RequestMapping(value = "/dashboard/{userId}", method = RequestMethod.GET)
-    public CustomResponse getDashboardStats (HttpServletRequest request,
-                                           @PathVariable(value = "userId") Long userId) throws CustomException {
+    public ResponseUtility.APIResponse getDashboardStats (HttpServletRequest request,
+                                                          @PathVariable(value = "userId") Long userId) throws CustomException {
         log.info("getDashboardStats API initiated...");
 
         if (AppUtility.isEmpty(userId)) {
@@ -217,7 +235,7 @@ public class DLDocumentAPI {
             ResponseUtility.exceptionResponse(e);
         }
 
-        return ResponseUtility.buildResponseObject(dashboardDTO);
+        return new ResponseUtility.APIResponse(dashboardDTO, "");
     }
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     public CustomResponse uploadDocuments(HttpServletRequest request,

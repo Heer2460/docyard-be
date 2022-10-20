@@ -176,7 +176,7 @@ public class DLShareService {
 
         DLShare dlShare = new DLShare();
         String status = "NOT_FOUND";
-        ArrayList<String> emails = new ArrayList<>();
+        List<String> emails = new ArrayList<>();
         if (!AppUtility.isEmpty(dlDocument.getShared()) && dlDocument.getShared()) {
             Optional<DLShare> dsOp = dlShareRepository.findById(dlDocument.getDlShareId());
             if (dsOp.isPresent()) {
@@ -210,7 +210,8 @@ public class DLShareService {
         if (!AppUtility.isEmpty(shareRequest.getDepartmentId())) {
             Object response = restTemplate.getForObject("http://um-service/um/user/department/" + shareRequest.getDepartmentId(), Object.class);
             if (!AppUtility.isEmpty(response)) {
-                emails = (ArrayList<String>) ((LinkedHashMap<?, ?>) response).get("item");
+                /*emails = (ArrayList<String>) ((LinkedHashMap<?, ?>) response).get("item");*/
+                emails = (ArrayList<String>) response;
             }
         }
         if (!AppUtility.isEmpty(shareRequest.getDlCollaborators())) {
