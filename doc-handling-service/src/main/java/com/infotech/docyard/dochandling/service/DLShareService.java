@@ -102,15 +102,18 @@ public class DLShareService {
     public String removeSharing(ShareRequestDTO shareRequest, DLDocument dlDocument) {
         log.info("DLShareService - removeSharing method called...");
 
-        String status = "SHARING_NOT_REMOVED";
+        String status = "NOT_SHARING";
         if (!AppUtility.isEmpty(dlDocument.getShared()) && dlDocument.getShared()) {
             dlShareCollaboratorRepository.deleteByDlShareId(dlDocument.getDlShareId());
             dlShareRepository.deleteById(dlDocument.getDlShareId());
             dlDocument.setDlShareId(null);
             dlDocument.setShareType(null);
             dlDocument.setShared(null);
-
+            dlDocument.setUpdatedOn(ZonedDateTime.now());
             dlDocumentRepository.save(dlDocument);
+
+            DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.SHARING_REMOVED.getValue(),null, dlDocument.getId());
+            dlDocumentActivityRepository.save(activity);
             status = "SHARING_REMOVED";
         }
         return status;

@@ -21,7 +21,7 @@ public enum DLActivityTypeEnum {
     OPEN_LINK("OPEN_LINK"),
     RESTRICTED("RESTRICTED"),
     ANYONE("ANYONE"),
-    SHARING_DISABLED("SHARING_DISABLED");
+    SHARING_REMOVED("SHARING_REMOVED");
 
     private static final HashMap<String, DLActivityTypeEnum> map = new HashMap<>();
 

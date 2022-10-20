@@ -3,6 +3,7 @@ package com.infotech.docyard.dochandling.api;
 import com.infotech.docyard.dochandling.dl.entity.DLDocument;
 import com.infotech.docyard.dochandling.dto.DLDocumentDTO;
 import com.infotech.docyard.dochandling.dto.DLDocumentListDTO;
+import com.infotech.docyard.dochandling.dto.DashboardDTO;
 import com.infotech.docyard.dochandling.dto.UploadDocumentDTO;
 import com.infotech.docyard.dochandling.exceptions.CustomException;
 import com.infotech.docyard.dochandling.exceptions.DataValidationException;
@@ -175,9 +176,6 @@ public class DLDocumentAPI {
             throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
         }
         DLDocumentDTO dlDocumentDTO = null;
-        if (AppUtility.isEmpty(dlDocumentId)) {
-            throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
-        }
         try {
             dlDocumentDTO = dlDocumentService.getDLDocumentById(dlDocumentId);
         } catch (Exception e) {
@@ -187,6 +185,41 @@ public class DLDocumentAPI {
         return ResponseUtility.successResponseForPut(dlDocumentDTO, "Document Meta");
     }
 
+    @RequestMapping(value = "/shared/documents/{userId}", method = RequestMethod.GET)
+    public CustomResponse getDLDocumentsSharedByMe(HttpServletRequest request,
+                                            @PathVariable(value = "userId") Long userId) throws CustomException {
+        log.info("getDLDocumentById API initiated...");
+
+        if (AppUtility.isEmpty(userId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
+        List<DLDocumentDTO> documentDTOList = null;
+        try {
+            documentDTOList = dlDocumentService.getDLDocumentsSharedByMe(userId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+
+        return ResponseUtility.buildResponseList(documentDTOList);
+    }
+
+    @RequestMapping(value = "/dashboard/{userId}", method = RequestMethod.GET)
+    public CustomResponse getDashboardStats (HttpServletRequest request,
+                                           @PathVariable(value = "userId") Long userId) throws CustomException {
+        log.info("getDashboardStats API initiated...");
+
+        if (AppUtility.isEmpty(userId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
+        DashboardDTO dashboardDTO = null;
+        try {
+            dashboardDTO = dlDocumentService.getDashboardStats(userId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+
+        return ResponseUtility.buildResponseObject(dashboardDTO);
+    }
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     public CustomResponse uploadDocuments(HttpServletRequest request,
                                           @RequestPart(name = "reqObj") UploadDocumentDTO uploadDocumentDTO,

@@ -43,7 +43,7 @@ public class DLShareAPI {
         return ResponseUtility.buildResponseObject(status);
     }
 
-    @RequestMapping(value = "/remove", method = RequestMethod.POST)
+    @RequestMapping(value = "/remove", method = RequestMethod.DELETE)
     public CustomResponse removeDLDocumentSharing(HttpServletRequest request,
                                                   @RequestBody ShareRequestDTO shareRequestDTO)
             throws CustomException, DataValidationException, NoDataFoundException {

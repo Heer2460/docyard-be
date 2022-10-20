@@ -33,7 +33,7 @@ public class DLDocumentActivity extends BaseEntity implements Serializable {
     public DLDocumentActivity() {
     }
 
-    public DLDocumentActivity(Long actorId, String activityType, long entityId, long docId) {
+    public DLDocumentActivity(Long actorId, String activityType, Long entityId, Long docId) {
         this.userId = actorId;
         this.activityType = activityType;
         this.entityId = entityId;

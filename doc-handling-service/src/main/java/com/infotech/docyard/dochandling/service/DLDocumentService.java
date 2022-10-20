@@ -9,6 +9,7 @@ import com.infotech.docyard.dochandling.dl.repository.DLDocumentRepository;
 import com.infotech.docyard.dochandling.dl.repository.DLDocumentVersionRepository;
 import com.infotech.docyard.dochandling.dto.DLDocumentDTO;
 import com.infotech.docyard.dochandling.dto.DLDocumentListDTO;
+import com.infotech.docyard.dochandling.dto.DashboardDTO;
 import com.infotech.docyard.dochandling.dto.UploadDocumentDTO;
 import com.infotech.docyard.dochandling.enums.DLActivityTypeEnum;
 import com.infotech.docyard.dochandling.enums.FileTypeEnum;
@@ -46,6 +47,7 @@ import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -235,6 +237,63 @@ public class DLDocumentService {
             documentDTOList.add(dto);
         }
         return documentDTOList;
+    }
+
+    public List<DLDocumentDTO> getDLDocumentsSharedByMe (Long ownerId) {
+        log.info("DLDocumentService - getAllRecentDLDocumentByOwnerId method called...");
+
+        List<DLDocumentDTO> documentDTOList = new ArrayList<>();
+
+        return documentDTOList;
+    }
+
+    public DashboardDTO getDashboardStats(Long userId) {
+        log.info("DLDocumentService - getDashboardStats method called...");
+
+        DashboardDTO dashboardDTO = null;
+        if (!AppUtility.isEmpty(userId)) {
+            List<DLDocument> docList = dlDocumentRepository.findAllByCreatedByAndArchivedFalse(userId);
+            List<DLDocument> images = null;
+            List<DLDocument> docs = null;
+            List<DLDocument> videos = null;
+            List<DLDocument> others = null;
+            double size = 0D;
+            Integer count = 0;
+            if (!AppUtility.isEmpty(docList)) {
+                images = docList.stream().filter(this::isImage
+                        ).collect(Collectors.toList());
+                docs = docList.stream().filter(this::isDoc
+                ).collect(Collectors.toList());
+                videos = docList.stream().filter(this::isVideo
+                ).collect(Collectors.toList());
+                List<DLDocument> finalDocs = docs;
+                List<DLDocument> finalVideos = videos;
+                List<DLDocument> finalImages = images;
+                others = docList.stream().filter(doc -> (!isImage(doc) && !isDoc(doc) && !isVideo(doc))).collect(Collectors.toList());
+                for (DLDocument vid : videos) {
+                    size =+ Double.parseDouble(vid.getSize().substring(0, vid.getSize().indexOf(" ")));
+                    count++;
+                }
+                for (DLDocument doc : docs) {
+                    size =+ Double.parseDouble(doc.getSize().substring(0, doc.getSize().indexOf(" ")));
+                    count++;
+                }
+                for (DLDocument img : images) {
+                    size =+ Double.parseDouble(img.getSize().substring(0, img.getSize().indexOf(" ")));
+                    count++;
+                }
+                for (DLDocument other : others) {
+                    size =+ Double.parseDouble(other.getSize().substring(0, other.getSize().indexOf(" ")));
+                    count++;
+                }
+                DashboardDTO.ImageProps imageProps = new DashboardDTO.ImageProps(count, size, null);
+                DashboardDTO.VideosProps videosProps = new DashboardDTO.VideosProps(count, size, null);
+                DashboardDTO.DocsProps docsProps = new DashboardDTO.DocsProps(count, size, null);
+                DashboardDTO.OthersProps othersProps = new DashboardDTO.OthersProps(count, size, null);
+                dashboardDTO = new DashboardDTO(imageProps, videosProps, docsProps, othersProps);
+            }
+        }
+        return dashboardDTO;
     }
 
     @Transactional(rollbackFor = {Throwable.class})
@@ -799,5 +858,33 @@ public class DLDocumentService {
             }
 
         }
+    }
+
+    public Boolean isImage (DLDocument doc) {
+        if ((!doc.getFolder()) && (!AppUtility.isEmpty(doc.getExtension())) && ((doc.getExtension().contains("gif")) ||
+                (doc.getExtension().contains("png")) || (doc.getExtension().contains("jpeg")) || (doc.getExtension().contains("jpg")))) {
+            return true;
+        }
+        return false;
+    }
+
+    public Boolean isDoc (DLDocument doc) {
+        if ((!doc.getFolder()) && (!AppUtility.isEmpty(doc.getExtension())) && ((doc.getExtension().contains("doc")) ||
+                (doc.getExtension().contains("docx")) || (doc.getExtension().contains("html")) || (doc.getExtension().contains("odt")) ||
+                (doc.getExtension().contains("xls")) || (doc.getExtension().contains("pdf")) || (doc.getExtension().contains("xlsx")) ||
+                (doc.getExtension().contains("ods")) || (doc.getExtension().contains("pptx")) || (doc.getExtension().contains("ppt")) ||
+                (doc.getExtension().contains("txt")))) {
+            return true;
+        }
+        return false;
+    }
+
+    public Boolean isVideo (DLDocument doc) {
+        if ((!doc.getFolder()) && (!AppUtility.isEmpty(doc.getExtension())) && ((doc.getExtension().contains("mp4")) ||
+                (doc.getExtension().contains("mov")) || (doc.getExtension().contains("wmv")) || (doc.getExtension().contains("avi")) ||
+                (doc.getExtension().contains("flv")) || (doc.getExtension().contains("mkv")) || (doc.getExtension().contains("webm")))) {
+            return true;
+        }
+        return false;
     }
 }
