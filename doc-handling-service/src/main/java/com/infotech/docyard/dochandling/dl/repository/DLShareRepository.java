@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DLShareRepository extends JpaRepository<DLShare, Long> {
+
+    DLShare findByDlDocumentId(Long dlDocumentId);
 }

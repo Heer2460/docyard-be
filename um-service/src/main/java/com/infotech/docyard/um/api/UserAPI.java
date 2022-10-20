@@ -47,31 +47,48 @@ public class UserAPI {
     }
 
     @RequestMapping(value = "/username/{username}", method = RequestMethod.GET)
-    public User searchByUserName(HttpServletRequest request,
-                                 @PathVariable(name = "username") String username) throws CustomException {
-        log.info("searchByUserName API initiated...");
+    public User getByUserName(HttpServletRequest request,
+                              @PathVariable(name = "username") String username) throws CustomException {
+        log.info("getByUserName API initiated...");
 
         User user = null;
         try {
-            user = userService.searchUserByUserName(username);
+            user = userService.getUserByUserName(username);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
         return user;
     }
 
-    @RequestMapping(value = "/users/{departmentId}", method = RequestMethod.GET)
-    public List<User> searchUsersByDepartmentId(HttpServletRequest request,
-                                                @PathVariable(name = "departmentId") String departmentId) throws CustomException {
-        log.info("searchUsersByDepartmentId API initiated...");
+    @RequestMapping(value = "/email/{email}", method = RequestMethod.GET)
+    public CustomResponse getByUserEmail(HttpServletRequest request,
+                                         @PathVariable(name = "email") String email) throws CustomException {
+        log.info("getByUserEmail API initiated...");
 
-        List<User> users = null;
+        User user = null;
         try {
-            users = userService.searchUsersByDepartmentId(departmentId);
+            user = userService.getUserByUserEmail(email);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return users;
+        return ResponseUtility.buildResponseObject(user, new UserDTO(), false);
+    }
+
+    @RequestMapping(value = "/department/{dptId}", method = RequestMethod.GET)
+    public List<String> searchUsersByDepartmentId(HttpServletRequest request,
+                                                  @PathVariable(name = "dptId") long dptId) throws CustomException {
+        log.info("searchUsersByDepartmentId API initiated...");
+
+        if (AppUtility.isEmpty(dptId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
+        }
+        List<String> emails = null;
+        try {
+            emails = userService.searchUsersByDepartmentId(dptId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return emails;
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)

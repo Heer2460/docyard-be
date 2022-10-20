@@ -91,7 +91,7 @@ public class DLDocumentService {
                 int fileCount = dlDocumentRepository.countAllByArchivedFalseAndFolderFalseAndParentId(dlDoc.getId());
                 dto.setSize(fileCount + " Files");
             }
-            Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDoc.getCreatedBy(), Object.class);
+            Object response = restTemplate.getForObject("http://um-service/um/user/department/" + dlDoc.getCreatedBy(), Object.class);
             if (!AppUtility.isEmpty(response)) {
                 HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
                 dto.setCreatedByName((String) map.get("name"));
@@ -120,7 +120,7 @@ public class DLDocumentService {
                 int fileCount = dlDocumentRepository.countAllByArchivedFalseAndFolderFalseAndParentId(dlDoc.getId());
                 dto.setSize(fileCount + " Files");
             }
-            Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDoc.getCreatedBy(), Object.class);
+            Object response = restTemplate.getForObject("http://um-service/um/user/department/" + dlDoc.getCreatedBy(), Object.class);
             if (!AppUtility.isEmpty(response)) {
                 HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
                 dto.setCreatedByName((String) map.get("name"));
@@ -253,7 +253,6 @@ public class DLDocumentService {
             dlDocument = dlDocumentRepository.save(dlDocument);
             DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.STARRED.getValue(),
                     dlDocument.getId(), dlDocument.getId());
-            activity.setCreatedOn(ZonedDateTime.now());
             dlDocumentActivityRepository.save(activity);
         } else {
             throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
@@ -261,6 +260,7 @@ public class DLDocumentService {
         return dlDocument;
     }
 
+    @Transactional(rollbackFor = {Throwable.class})
     public DLDocument renameDLDocument(DLDocumentDTO dlDocumentDTO) {
         log.info("DLDocumentService - renameDLDocument method called...");
 
@@ -287,7 +287,6 @@ public class DLDocumentService {
         doc = dlDocumentRepository.save(doc);
         DLDocumentActivity activity = new DLDocumentActivity(doc.getUpdatedBy(), DLActivityTypeEnum.RENAMED.getValue(),
                 doc.getId(), doc.getId());
-        activity.setCreatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
         return doc;
     }
@@ -320,7 +319,6 @@ public class DLDocumentService {
                     dlDoc = dlDocumentRepository.save(dlDoc);
                     DLDocumentActivity activity = new DLDocumentActivity(dlDoc.getCreatedBy(), DLActivityTypeEnum.UPLOADED.getValue(),
                             dlDoc.getId(), dlDoc.getId());
-                    activity.setCreatedOn(ZonedDateTime.now());
                     dlDocumentActivityRepository.save(activity);
                 }
             }
@@ -328,8 +326,9 @@ public class DLDocumentService {
         return dlDoc;
     }
 
-    public DLDocumentVersion createNewDocumentVersion(DLDocument document, Long userId) {
-        log.info("DLDocumentService - createNewDocumentVersion method called...");
+    @Transactional(rollbackFor = {Throwable.class})
+    public DLDocumentVersion createFirstDocumentVersion(DLDocument document, Long userId) {
+        log.info("DLDocumentService - createFirstDocumentVersion method called...");
 
         DLDocumentVersion dv = new DLDocumentVersion();
         dv.setGuId(UUID.randomUUID().toString());
@@ -385,47 +384,55 @@ public class DLDocumentService {
             doc.setVersion(AppConstants.FIRST_VERSION);
             doc.setCreatedOn(ZonedDateTime.now());
             doc.setDocumentVersions(new ArrayList<>());
-            DLDocumentVersion documentVersion = createNewDocumentVersion(doc, request.getCreatedBy());
+            DLDocumentVersion documentVersion = createFirstDocumentVersion(doc, request.getCreatedBy());
             documentVersion = dlDocumentVersionRepository.save(documentVersion);
 
             doc.getDocumentVersions().add(documentVersion);
 
             if (!isDocUpload) {
-                if (AppConstants.FileType.EXT_HTML.equals(extension)) {
-                    doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
-                            + AppConstants.FileType.EXT_HTML);
-                    doc.setExtension(AppConstants.FileType.EXT_HTML);
-                    doc.setMimeType(AppConstants.MimeType.MIME_HTML);
-                } else if (AppConstants.FileType.EXT_DOC.equals(extension)) {
-                    doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
-                            + AppConstants.FileType.EXT_DOC);
-                    doc.setExtension(AppConstants.FileType.EXT_DOC);
-                    doc.setMimeType(AppConstants.MimeType.MIME_DOC);
-                } else if (AppConstants.FileType.EXT_DOCX.equals(extension)) {
-                    doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
-                            + AppConstants.FileType.EXT_DOCX);
-                    doc.setExtension(AppConstants.FileType.EXT_DOCX);
-                    doc.setMimeType(AppConstants.MimeType.MIME_DOCX);
-                } else if (AppConstants.FileType.EXT_XLS.equals(extension)) {
-                    doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
-                            + AppConstants.FileType.EXT_XLS);
-                    doc.setExtension(AppConstants.FileType.EXT_XLS);
-                    doc.setMimeType(AppConstants.MimeType.MIME_XLS);
-                } else if (AppConstants.FileType.EXT_XLSX.equals(extension)) {
-                    doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
-                            + AppConstants.FileType.EXT_XLSX);
-                    doc.setExtension(AppConstants.FileType.EXT_XLSX);
-                    doc.setMimeType(AppConstants.MimeType.MIME_XLSX);
-                } else if (AppConstants.FileType.EXT_PPT.equals(extension)) {
-                    doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
-                            + AppConstants.FileType.EXT_PPT);
-                    doc.setExtension(AppConstants.FileType.EXT_PPT);
-                    doc.setMimeType(AppConstants.MimeType.MIME_PPT);
-                } else if (AppConstants.FileType.EXT_PPTX.equals(extension)) {
-                    doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
-                            + AppConstants.FileType.EXT_PPTX);
-                    doc.setExtension(AppConstants.FileType.EXT_PPTX);
-                    doc.setMimeType(AppConstants.MimeType.MIME_PPTX);
+                switch (extension) {
+                    case AppConstants.FileType.EXT_HTML:
+                        doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
+                                + AppConstants.FileType.EXT_HTML);
+                        doc.setExtension(AppConstants.FileType.EXT_HTML);
+                        doc.setMimeType(AppConstants.MimeType.MIME_HTML);
+                        break;
+                    case AppConstants.FileType.EXT_DOC:
+                        doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
+                                + AppConstants.FileType.EXT_DOC);
+                        doc.setExtension(AppConstants.FileType.EXT_DOC);
+                        doc.setMimeType(AppConstants.MimeType.MIME_DOC);
+                        break;
+                    case AppConstants.FileType.EXT_DOCX:
+                        doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
+                                + AppConstants.FileType.EXT_DOCX);
+                        doc.setExtension(AppConstants.FileType.EXT_DOCX);
+                        doc.setMimeType(AppConstants.MimeType.MIME_DOCX);
+                        break;
+                    case AppConstants.FileType.EXT_XLS:
+                        doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
+                                + AppConstants.FileType.EXT_XLS);
+                        doc.setExtension(AppConstants.FileType.EXT_XLS);
+                        doc.setMimeType(AppConstants.MimeType.MIME_XLS);
+                        break;
+                    case AppConstants.FileType.EXT_XLSX:
+                        doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
+                                + AppConstants.FileType.EXT_XLSX);
+                        doc.setExtension(AppConstants.FileType.EXT_XLSX);
+                        doc.setMimeType(AppConstants.MimeType.MIME_XLSX);
+                        break;
+                    case AppConstants.FileType.EXT_PPT:
+                        doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
+                                + AppConstants.FileType.EXT_PPT);
+                        doc.setExtension(AppConstants.FileType.EXT_PPT);
+                        doc.setMimeType(AppConstants.MimeType.MIME_PPT);
+                        break;
+                    case AppConstants.FileType.EXT_PPTX:
+                        doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
+                                + AppConstants.FileType.EXT_PPTX);
+                        doc.setExtension(AppConstants.FileType.EXT_PPTX);
+                        doc.setMimeType(AppConstants.MimeType.MIME_PPTX);
+                        break;
                 }
             } else {
                 doc.setExtension(extension.toLowerCase());
@@ -475,9 +482,7 @@ public class DLDocumentService {
         DLDocumentActivity activity = new DLDocumentActivity(folder.getCreatedBy(), DLActivityTypeEnum.CREATED.getValue(),
                 folder.getId(), folder.getId());
         activity.setCreatedBy(folderRequestDTO.getCreatedBy());
-        activity.setCreatedOn(ZonedDateTime.now());
         activity.setUpdatedBy(folderRequestDTO.getUpdatedBy());
-        activity.setUpdatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
 
         return folder;
@@ -490,13 +495,12 @@ public class DLDocumentService {
         DLDocument doc = null;
         if (opDoc.isPresent()) {
             doc = opDoc.get();
-            doc.setDaysArchved(0);
+            doc.setDaysArchived(0);
             doc.setArchived(archive);
             dlDocumentRepository.save(doc);
         }
         DLDocumentActivity activity = new DLDocumentActivity(doc.getCreatedBy(), DLActivityTypeEnum.ARCHIVED.getValue(),
                 doc.getId(), doc.getId());
-        activity.setCreatedOn(ZonedDateTime.now());
         dlDocumentActivityRepository.save(activity);
         return doc;
     }
@@ -561,7 +565,6 @@ public class DLDocumentService {
                 }
                 DLDocumentActivity activity = new DLDocumentActivity(dldocument.getCreatedBy(), DLActivityTypeEnum.FILE_DELETED.getValue(),
                         dldocument.getId(), dldocument.getId());
-                activity.setCreatedOn(ZonedDateTime.now());
                 dlDocumentActivityRepository.save(activity);
                 dlDocumentRepository.deleteById(docId);
             } catch (Exception e) {
@@ -649,7 +652,6 @@ public class DLDocumentService {
 
                 DLDocumentActivity activity = new DLDocumentActivity(doc.getCreatedBy(), DLActivityTypeEnum.DOWNLOADED.getValue(),
                         doc.getId(), doc.getId());
-                activity.setCreatedOn(ZonedDateTime.now());
                 dlDocumentActivityRepository.save(activity);
             }
         } else {
@@ -789,7 +791,6 @@ public class DLDocumentService {
                     dlDocumentRepository.save(doc);
                     DLDocumentActivity activity = new DLDocumentActivity(doc.getCreatedBy(), DLActivityTypeEnum.RESTORED_ARCHIVED.getValue(),
                             doc.getId(), doc.getId());
-                    activity.setCreatedOn(ZonedDateTime.now());
                     dlDocumentActivityRepository.save(activity);
                 } catch (Exception e) {
                     ResponseUtility.exceptionResponse(e);
@@ -804,8 +805,8 @@ public class DLDocumentService {
         if (!AppUtility.isEmpty(archivedDLDocs)) {
             try {
                 for (DLDocument archivedDoc : archivedDLDocs) {
-                    archivedDoc.setDaysArchved(archivedDoc.getDaysArchved() + 1);
-                    if (archivedDoc.getDaysArchved() >= 30) {
+                    archivedDoc.setDaysArchived(archivedDoc.getDaysArchived() + 1);
+                    if (archivedDoc.getDaysArchived() >= 30) {
                         deleteDLDocument(archivedDoc.getId());
                     } else {
                         dlDocumentRepository.save(archivedDoc);

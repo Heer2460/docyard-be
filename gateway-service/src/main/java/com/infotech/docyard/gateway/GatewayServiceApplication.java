@@ -21,7 +21,5 @@ public class GatewayServiceApplication {
     public HttpClient httpClient() {
         return HttpClient.create().resolver(DefaultAddressResolverGroup.INSTANCE);
     }
-
-
 }
 

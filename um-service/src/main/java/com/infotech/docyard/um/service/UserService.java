@@ -1,10 +1,8 @@
 package com.infotech.docyard.um.service;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.infotech.docyard.um.dl.entity.*;
 import com.infotech.docyard.um.dl.entity.Module;
+import com.infotech.docyard.um.dl.entity.*;
 import com.infotech.docyard.um.dl.repository.*;
 import com.infotech.docyard.um.dto.*;
 import com.infotech.docyard.um.enums.EmailStatusEnum;
@@ -30,6 +28,7 @@ import java.security.Principal;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Log4j2
 @Service
@@ -79,11 +78,34 @@ public class UserService {
         return user.orElse(null);
     }
 
-    public List<User> searchUsersByDepartmentId(String departmentIds) {
+    public User getUserByUserName(String username) {
+        log.info("getUserByUserName method called..");
+
+        return userRepository.findByUsername(username);
+    }
+
+    public User getUserByUserEmail(String email) {
+        log.info("getUserByUserEmail method called..");
+
+        return userRepository.findByEmail(email);
+    }
+
+    public List<String> searchUsersByDepartmentId(long deptId) {
         log.info("searchUsersByDepartmentId method called..");
 
-        List<User> users = userRepository.findByDepartmentIdsAndStatus(departmentIds, "active");
-        return users;
+        List<User> users = userRepository.findAllByStatus("active");
+        List<String> emails = new ArrayList<>();
+        for (User u : users) {
+            if (!AppUtility.isEmpty(u.getDepartmentIds())) {
+                List<Long> ids = Stream.of(u.getDepartmentIds().split(","))
+                        .map(Long::parseLong)
+                        .collect(Collectors.toList());
+                if (ids.stream().anyMatch(id -> deptId == id.longValue())) {
+                    emails.add(u.getEmail());
+                }
+            }
+        }
+        return emails;
     }
 
     @Transactional
@@ -206,12 +228,6 @@ public class UserService {
         return user.get();
     }
 
-    public User searchUserByUserName(String username) {
-        log.info("searchUserByUserName method called..");
-
-        return userRepository.findByUsername(username);
-    }
-
     @Transactional(rollbackFor = {Throwable.class})
     public User changePassword(ChangePasswordDTO changePasswordDTO) throws DataValidationException, NoDataFoundException {
         log.info("changePassword method called..");
@@ -259,13 +275,9 @@ public class UserService {
         log.info("forgotPassword method called..");
 
         HttpStatus status = HttpStatus.NOT_FOUND;
-        Optional<User> userOptional = userRepository.findByEmail(email);
-        if (AppUtility.isEmpty(userOptional)) {
+        User user = userRepository.findByEmail(email);
+        if (AppUtility.isEmpty(user)) {
             throw new NoDataFoundException(AppUtility.getResourceMessage("user.not.found"));
-        }
-        User user = null;
-        if (userOptional.isPresent()) {
-            user = userOptional.get();
         }
         if (!AppUtility.isEmpty(user)) {
             String token = UUID.randomUUID().toString();
