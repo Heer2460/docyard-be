@@ -264,17 +264,16 @@ public class DLDocumentService {
         return documentDTOList;
     }
 
-    public List<DLDocumentDTO> getSharedByMeDLDocuments(Long userId) {
+    public List<DLDocumentDTO> getSharedByMeDLDocumentsByFolder(Long userId, Long folderId) {
         log.info("DLDocumentService - getSharedByMeDLDocuments method called...");
 
         List<DLDocument> dlDocumentList = null;
         List<DLDocumentDTO> dlDocumentDTOList = new ArrayList<>();
         if (!AppUtility.isEmpty(userId)) {
-            dlDocumentList = dlDocumentRepository.findAllByCreatedByAndSharedTrueAndArchivedFalse(userId);
-            for (DLDocument doc : dlDocumentList) {
-                if (doc.getFolder()) {
-                    dlDocumentList.addAll(dlDocumentRepository.findByParentIdAndArchivedFalse(doc.getId()));
-                }
+            if (AppUtility.isEmpty(folderId) || folderId == 0L) {
+                dlDocumentList = dlDocumentRepository.findAllByCreatedByAndSharedTrueAndArchivedFalseOrderByUpdatedOnDesc(userId);
+            } else {
+                dlDocumentList = dlDocumentRepository.findByCreatedByAndParentIdAndArchivedFalseOrderByUpdatedOnDesc(userId, folderId);
             }
             for (DLDocument d : dlDocumentList) {
                 DLDocumentDTO docDTO = new DLDocumentDTO();

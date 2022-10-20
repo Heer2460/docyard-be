@@ -53,7 +53,10 @@ public interface DLDocumentRepository extends JpaRepository<DLDocument, Long> {
 
     List<DLDocument> findAllByCreatedByAndArchivedFalse(Long userId);
 
-    List<DLDocument> findAllByCreatedByAndSharedTrueAndArchivedFalse(Long userId);
+    List<DLDocument> findAllByCreatedByAndSharedTrueAndArchivedFalseOrderByUpdatedOnDesc(Long userId);
+
+    List<DLDocument> findByCreatedByAndParentIdAndArchivedFalseOrderByUpdatedOnDesc(Long userId, Long folderId);
+
 
     DLDocument findByName(String name);
 

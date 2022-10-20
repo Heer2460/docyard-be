@@ -185,8 +185,9 @@ public class DLDocumentAPI {
     }
 
     @RequestMapping(value = "/shared-by-me/user/{userId}", method = RequestMethod.GET)
-    public CustomResponse getSharedByMeDLDocuments(HttpServletRequest request,
-                                            @PathVariable(value = "userId") Long userId) throws CustomException {
+    public CustomResponse getSharedByMeDLDocumentsByFolder(HttpServletRequest request,
+                                                           @PathVariable(value = "userId") Long userId,
+                                                           @RequestParam(value = "folderId") Long folderId) throws CustomException {
         log.info("getSharedByMeDLDocuments API initiated...");
 
         if (AppUtility.isEmpty(userId)) {
@@ -194,17 +195,16 @@ public class DLDocumentAPI {
         }
         List<DLDocumentDTO> documentDTOList = null;
         try {
-            documentDTOList = dlDocumentService.getSharedByMeDLDocuments(userId);
+            documentDTOList = dlDocumentService.getSharedByMeDLDocumentsByFolder(userId, folderId);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-
         return ResponseUtility.buildResponseList(documentDTOList);
     }
 
     @RequestMapping(value = "/shared-with-me/user/{userId}", method = RequestMethod.GET)
     public CustomResponse getSharedWithMeDLDocuments(HttpServletRequest request,
-                                                   @PathVariable(value = "userId") Long userId) throws CustomException {
+                                                     @PathVariable(value = "userId") Long userId) throws CustomException {
         log.info("getSharedWithMeDLDocuments API initiated...");
 
         if (AppUtility.isEmpty(userId)) {
@@ -221,8 +221,8 @@ public class DLDocumentAPI {
     }
 
     @RequestMapping(value = "/dashboard/{userId}", method = RequestMethod.GET)
-    public ResponseUtility.APIResponse getDashboardStats (HttpServletRequest request,
-                                                          @PathVariable(value = "userId") Long userId) throws CustomException {
+    public ResponseUtility.APIResponse getDashboardStats(HttpServletRequest request,
+                                                         @PathVariable(value = "userId") Long userId) throws CustomException {
         log.info("getDashboardStats API initiated...");
 
         if (AppUtility.isEmpty(userId)) {
@@ -237,6 +237,7 @@ public class DLDocumentAPI {
 
         return new ResponseUtility.APIResponse(dashboardDTO, "");
     }
+
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     public CustomResponse uploadDocuments(HttpServletRequest request,
                                           @RequestPart(name = "reqObj") UploadDocumentDTO uploadDocumentDTO,
