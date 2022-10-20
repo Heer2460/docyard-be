@@ -755,7 +755,7 @@ public class DLDocumentService {
     public DLDocumentDTO getDocumentByGUID(String guid) {
         log.info("DLDocumentService - getDocumentByGUID method called...");
 
-        DLDocument document = dlDocumentRepository.findByVersionGUIdAndArchivedFalseAndFolderFalseAndSharedTrue(guid);
+        DLDocument document = dlDocumentRepository.findByVersionGUIdAndArchivedFalseAndFolderFalse(guid);
         if (!AppUtility.isEmpty(document)) {
             DLDocumentDTO dlDocumentDTO = new DLDocumentDTO();
             dlDocumentDTO.convertToDTO(document, false);
