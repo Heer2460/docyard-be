@@ -192,14 +192,14 @@ public class DLDocumentAPI {
         if (AppUtility.isEmpty(userId)) {
             throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
         }
-        List<DLDocument> documentList = null;
+        List<DLDocumentDTO> documentDTOList = null;
         try {
-            documentList = dlDocumentService.getSharedByMeDLDocuments(userId);
+            documentDTOList = dlDocumentService.getSharedByMeDLDocuments(userId);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
 
-        return ResponseUtility.buildResponseList(documentList);
+        return ResponseUtility.buildResponseList(documentDTOList);
     }
 
     @RequestMapping(value = "/shared-with-me/{userId}", method = RequestMethod.GET)
