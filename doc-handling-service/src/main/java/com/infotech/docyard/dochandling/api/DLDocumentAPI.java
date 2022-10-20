@@ -221,24 +221,6 @@ public class DLDocumentAPI {
         return ResponseUtility.buildResponseList(documentDTOList);
     }
 
-    @RequestMapping(value = "/dashboard/{userId}", method = RequestMethod.GET)
-    public ResponseUtility.APIResponse getDashboardStats(HttpServletRequest request,
-                                                         @PathVariable(value = "userId") Long userId) throws CustomException {
-        log.info("getDashboardStats API initiated...");
-
-        if (AppUtility.isEmpty(userId)) {
-            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
-        }
-        DashboardDTO dashboardDTO = null;
-        try {
-            dashboardDTO = dlDocumentService.getDashboardStats(userId);
-        } catch (Exception e) {
-            ResponseUtility.exceptionResponse(e);
-        }
-
-        return new ResponseUtility.APIResponse(dashboardDTO, "");
-    }
-
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     public CustomResponse uploadDocuments(HttpServletRequest request,
                                           @RequestPart(name = "reqObj") UploadDocumentDTO uploadDocumentDTO,
