@@ -3,8 +3,6 @@ package com.infotech.docyard.dochandling.dto;
 import com.infotech.docyard.dochandling.util.AppUtility;
 import lombok.Data;
 
-import java.io.Serializable;
-
 @Data
 public class DashboardDTO {
     private ImageProps imageProps;
@@ -16,70 +14,55 @@ public class DashboardDTO {
 
     }
 
-    private static class Properties implements Serializable {
+    @Data
+    public static class Properties {
         private Integer count;
         private Double occupiedSize;
         private Double totalSize = 1048576D;
         private Double occupiedPercentage;
 
-        /*public Integer getCount() {
-            return count;
+        public Properties() {
+
         }
-
-        public void setCount(Integer count) {
-            this.count = count;
-        }
-
-        public Double getOccupiedSize() {
-            return occupiedSize;
-        }
-
-        public void setOccupiedSize(Double occupiedSize) {
-            this.occupiedSize = occupiedSize;
-        }
-
-        public Double getTotalSize() {
-            return totalSize;
-        }
-
-        public void setTotalSize(Double totalSize) {
-            this.totalSize = totalSize;
-        }
-
-        public Double getOccupiedPercentage() {
-            return occupiedPercentage;
-        }
-
-        public void setOccupiedPercentage(Double occupiedPercentage) {
-            this.occupiedPercentage = occupiedPercentage;
-        }*/
-
-        private Properties(Integer count, Double occupiedSize, Double totalSize) {
+        public Properties(Integer count, Double occupiedSize, Double totalSize) {
             this.count = count;
             this.occupiedSize = occupiedSize;
             this.totalSize = !AppUtility.isEmpty(totalSize) ? totalSize : 1048576D;
-            this.occupiedPercentage = (occupiedSize/totalSize)*100;
+            this.occupiedPercentage = (this.occupiedSize/this.totalSize)*100;
         }
     }
-    public static class ImageProps extends Properties  implements Serializable {
+    @Data
+    public static class ImageProps extends Properties {
+        public ImageProps() {
+
+        }
         public ImageProps(Integer count, Double occupiedSize, Double totalSize) {
             super(count, occupiedSize, totalSize);
         }
     }
+    @Data
+    public static class VideosProps extends Properties {
+        public VideosProps() {
 
-    public static class VideosProps extends Properties  implements Serializable {
+        }
         public VideosProps(Integer count, Double occupiedSize, Double totalSize) {
             super(count, occupiedSize, totalSize);
         }
     }
+    @Data
+    public static class DocsProps extends Properties {
+        public DocsProps() {
 
-    public static class DocsProps extends Properties  implements Serializable {
+        }
         public DocsProps(Integer count, Double occupiedSize, Double totalSize) {
             super(count, occupiedSize, totalSize);
         }
     }
+    @Data
+    public static class OthersProps extends Properties {
+        public OthersProps() {
 
-    public static class OthersProps extends Properties  implements Serializable {
+        }
         public OthersProps(Integer count, Double occupiedSize, Double totalSize) {
             super(count, occupiedSize, totalSize);
         }
