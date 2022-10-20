@@ -181,7 +181,6 @@ public class DLDocumentAPI {
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-
         return ResponseUtility.successResponseForPut(dlDocumentDTO, "Document Meta");
     }
 

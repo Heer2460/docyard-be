@@ -29,7 +29,7 @@ public class DLDocument extends BaseEntity implements Serializable {
     @NotNull
     private Boolean archived;
 
-    @Column(name = "ARCCHIVED_ON")
+    @Column(name = "ARCHIVED_ON")
     private ZonedDateTime archivedOn;
 
     @Column(name = "DESCRIPTION")
@@ -43,9 +43,6 @@ public class DLDocument extends BaseEntity implements Serializable {
 
     @Column(name = "VERSION_GUID")
     private String versionGUId;
-
-    @Column(name = "GUID")
-    private String guId;
 
     @Column(name = "IS_LEAF_NODE")
     @NotNull
@@ -123,7 +120,7 @@ public class DLDocument extends BaseEntity implements Serializable {
         return "DLDocument[id=" + this.getId() + ", title=" + title + ", sizeBytes=" + sizeBytes + ", size=" + size +
                 ", mimeType=" + mimeType + ", location=" + location + ", extension=" + extension + ", currentVersion=" +
                 currentVersion + ", content=" + content + ", subject=" + subject + ", shared=" + shared + ", shareType=" +
-                shareType + ", name=" + name + ", leafNode=" + leafNode + ", guId=" + guId + ", versionGUId=" + versionGUId +
+                shareType + ", name=" + name + ", leafNode=" + leafNode + ", versionGUId=" + versionGUId +
                 ", version=" + version + ", favourite=" + favourite + ", description=" + description + ", archivedOn=" +
                 archivedOn + ", archived=" + archived + ", folder=" + folder + ", parentId=" + parentId + "]";
     }

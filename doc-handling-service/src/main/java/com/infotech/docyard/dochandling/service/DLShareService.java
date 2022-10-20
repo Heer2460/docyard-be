@@ -117,7 +117,11 @@ public class DLShareService {
         dlDocument.setShared(true);
         dlDocument.setShareType(ShareTypeEnum.ANYONE.getValue());
         Integer shareLinkCount = dlDocument.getShareLinkCount();
-        shareLinkCount++;
+        if (AppUtility.isEmpty(shareLinkCount)) {
+            shareLinkCount = 0;
+        } else {
+            shareLinkCount++;
+        }
         dlDocument.setShareLinkCount(shareLinkCount);
         dlDocumentRepository.save(dlDocument);
 
@@ -159,7 +163,7 @@ public class DLShareService {
             dlDocument.setUpdatedOn(ZonedDateTime.now());
             dlDocumentRepository.save(dlDocument);
 
-            DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.SHARING_REMOVED.getValue(),null, dlDocument.getId());
+            DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.SHARING_REMOVED.getValue(), null, dlDocument.getId());
             dlDocumentActivityRepository.save(activity);
             status = "SHARING_REMOVED";
         }
@@ -183,7 +187,11 @@ public class DLShareService {
         dlDocument.setShared(true);
         dlDocument.setShareType(ShareTypeEnum.RESTRICTED.getValue());
         Integer shareLinkCount = dlDocument.getShareLinkCount();
-        shareLinkCount++;
+        if (AppUtility.isEmpty(shareLinkCount)) {
+            shareLinkCount = 0;
+        } else {
+            shareLinkCount++;
+        }
         dlDocument.setShareLinkCount(shareLinkCount);
         dlDocument.setUpdatedBy(shareRequest.getUserId());
         dlShare.setPermanentLink(shareRequest.getShareLink());

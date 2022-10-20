@@ -64,7 +64,6 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         dlDocument.setDescription(this.description);
         dlDocument.setFavourite(this.favourite);
         dlDocument.setVersion(this.version);
-        dlDocument.setGuId(this.guId);
         dlDocument.setVersionGUId(this.versionGUId);
         dlDocument.setLeafNode(this.isLeafNode);
         dlDocument.setName(this.name);
@@ -99,7 +98,6 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         this.description = entity.getDescription();
         this.favourite = entity.getFavourite();
         this.version = entity.getVersion();
-        this.guId = entity.getGuId();
         this.versionGUId = entity.getVersionGUId();
         this.isLeafNode = entity.getLeafNode();
         this.name = entity.getName();

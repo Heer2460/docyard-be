@@ -6,6 +6,8 @@ import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.CoreSubscriber;
+import reactor.core.publisher.Mono;
 
 
 @Component
@@ -31,6 +33,11 @@ public class AuthFilter extends AbstractGatewayFilterFactory<AuthFilter.Config> 
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
+            if (exchange.getRequest().getURI().getRawPath().contains("/un-auth")) {
+                return chain.filter(exchange)
+                        .then(Mono.fromRunnable(() -> {
+                        }));
+            }
             if (!exchange.getRequest().getHeaders().containsKey(AUTHORIZATION_TOKEN)) {
                 throw new RuntimeException("Missing authorization information");
             }

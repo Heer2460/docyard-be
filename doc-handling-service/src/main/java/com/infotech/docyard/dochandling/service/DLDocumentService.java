@@ -25,9 +25,6 @@ import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import org.apache.commons.io.FileUtils;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.rendering.ImageType;
-import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,7 +90,7 @@ public class DLDocumentService {
                 int fileCount = dlDocumentRepository.countAllByArchivedFalseAndFolderFalseAndParentId(dlDoc.getId());
                 dto.setSize(fileCount + " Files");
             }
-            Object response = restTemplate.getForObject("http://um-service/um/user/department/" + dlDoc.getCreatedBy(), Object.class);
+            Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDoc.getCreatedBy(), Object.class);
             if (!AppUtility.isEmpty(response)) {
                 HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
                 dto.setCreatedByName((String) map.get("name"));
@@ -122,7 +119,31 @@ public class DLDocumentService {
                 int fileCount = dlDocumentRepository.countAllByArchivedFalseAndFolderFalseAndParentId(dlDoc.getId());
                 dto.setSize(fileCount + " Files");
             }
-            Object response = restTemplate.getForObject("http://um-service/um/user/department/" + dlDoc.getCreatedBy(), Object.class);
+            Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDoc.getCreatedBy(), Object.class);
+            if (!AppUtility.isEmpty(response)) {
+                HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+                dto.setCreatedByName((String) map.get("name"));
+                dto.setUpdatedByName((String) map.get("name"));
+            }
+            documentDTOList.add(dto);
+        }
+        return documentDTOList;
+    }
+
+    public List<DLDocumentDTO> getAllDlDocumentsByFolderId(Long folderId) {
+        log.info("DLDocumentService - getAllDlDocumentsByFolderId method called...");
+
+        List<DLDocumentDTO> documentDTOList = new ArrayList<>();
+        List<DLDocument> dlDocumentList = dlDocumentRepository.findByParentIdAndArchivedFalseOrderByUpdatedOnDesc(folderId);
+        for (DLDocument dlDoc : dlDocumentList) {
+            DLDocumentDTO dto = new DLDocumentDTO();
+            dto.convertToDTO(dlDoc, false);
+
+            if (dlDoc.getFolder()) {
+                int fileCount = dlDocumentRepository.countAllByArchivedFalseAndFolderFalseAndParentId(dlDoc.getId());
+                dto.setSize(fileCount + " Files");
+            }
+            Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDoc.getCreatedBy(), Object.class);
             if (!AppUtility.isEmpty(response)) {
                 HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
                 dto.setCreatedByName((String) map.get("name"));
@@ -242,7 +263,7 @@ public class DLDocumentService {
         return documentDTOList;
     }
 
-    public List<DLDocumentDTO> getDLDocumentsSharedByMe (Long ownerId) {
+    public List<DLDocumentDTO> getDLDocumentsSharedByMe(Long ownerId) {
         log.info("DLDocumentService - getAllRecentDLDocumentByOwnerId method called...");
 
         List<DLDocumentDTO> documentDTOList = null;
@@ -264,7 +285,7 @@ public class DLDocumentService {
             Integer count = 0;
             if (!AppUtility.isEmpty(docList)) {
                 images = docList.stream().filter(this::isImage
-                        ).collect(Collectors.toList());
+                ).collect(Collectors.toList());
                 docs = docList.stream().filter(this::isDoc
                 ).collect(Collectors.toList());
                 videos = docList.stream().filter(this::isVideo
@@ -274,19 +295,19 @@ public class DLDocumentService {
                 List<DLDocument> finalImages = images;
                 others = docList.stream().filter(doc -> (!isImage(doc) && !isDoc(doc) && !isVideo(doc))).collect(Collectors.toList());
                 for (DLDocument vid : videos) {
-                    size =+ Double.parseDouble(vid.getSize().substring(0, vid.getSize().indexOf(" ")));
+                    size = +Double.parseDouble(vid.getSize().substring(0, vid.getSize().indexOf(" ")));
                     count++;
                 }
                 for (DLDocument doc : docs) {
-                    size =+ Double.parseDouble(doc.getSize().substring(0, doc.getSize().indexOf(" ")));
+                    size = +Double.parseDouble(doc.getSize().substring(0, doc.getSize().indexOf(" ")));
                     count++;
                 }
                 for (DLDocument img : images) {
-                    size =+ Double.parseDouble(img.getSize().substring(0, img.getSize().indexOf(" ")));
+                    size = +Double.parseDouble(img.getSize().substring(0, img.getSize().indexOf(" ")));
                     count++;
                 }
                 for (DLDocument other : others) {
-                    size =+ Double.parseDouble(other.getSize().substring(0, other.getSize().indexOf(" ")));
+                    size = +Double.parseDouble(other.getSize().substring(0, other.getSize().indexOf(" ")));
                     count++;
                 }
                 DashboardDTO.ImageProps imageProps = new DashboardDTO.ImageProps(count, size, null);
@@ -697,6 +718,19 @@ public class DLDocumentService {
         return new DLDocumentDTO();
     }
 
+    public DLDocumentDTO getDocumentByGUID(String guid) {
+        log.info("DLDocumentService - getDocumentByGUID method called...");
+
+        DLDocument document = dlDocumentRepository.findByVersionGUIdAndArchivedFalseAndFolderFalseAndSharedTrue(guid);
+        if (!AppUtility.isEmpty(document)) {
+            DLDocumentDTO dlDocumentDTO = new DLDocumentDTO();
+            dlDocumentDTO.convertToDTO(document, false);
+
+            return dlDocumentDTO;
+        }
+        return null;
+    }
+
     public InputStreamResource downloadDLDocument(Long dlDocumentId) throws Exception {
         log.info("DLDocumentService - downloadDLDocument method called...");
 
@@ -878,7 +912,7 @@ public class DLDocumentService {
         }
     }
 
-    public Boolean isImage (DLDocument doc) {
+    public Boolean isImage(DLDocument doc) {
         if ((!doc.getFolder()) && (!AppUtility.isEmpty(doc.getExtension())) && ((doc.getExtension().contains("gif")) ||
                 (doc.getExtension().contains("png")) || (doc.getExtension().contains("jpeg")) || (doc.getExtension().contains("jpg")))) {
             return true;
@@ -886,7 +920,7 @@ public class DLDocumentService {
         return false;
     }
 
-    public Boolean isDoc (DLDocument doc) {
+    public Boolean isDoc(DLDocument doc) {
         if ((!doc.getFolder()) && (!AppUtility.isEmpty(doc.getExtension())) && ((doc.getExtension().contains("doc")) ||
                 (doc.getExtension().contains("docx")) || (doc.getExtension().contains("html")) || (doc.getExtension().contains("odt")) ||
                 (doc.getExtension().contains("xls")) || (doc.getExtension().contains("pdf")) || (doc.getExtension().contains("xlsx")) ||
@@ -897,7 +931,7 @@ public class DLDocumentService {
         return false;
     }
 
-    public Boolean isVideo (DLDocument doc) {
+    public Boolean isVideo(DLDocument doc) {
         if ((!doc.getFolder()) && (!AppUtility.isEmpty(doc.getExtension())) && ((doc.getExtension().contains("mp4")) ||
                 (doc.getExtension().contains("mov")) || (doc.getExtension().contains("wmv")) || (doc.getExtension().contains("avi")) ||
                 (doc.getExtension().contains("flv")) || (doc.getExtension().contains("mkv")) || (doc.getExtension().contains("webm")))) {
