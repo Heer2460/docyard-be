@@ -278,6 +278,17 @@ public class DLDocumentService {
             for (DLDocument d : dlDocumentList) {
                 DLDocumentDTO docDTO = new DLDocumentDTO();
                 docDTO.convertToDTO(d, true);
+
+                if (d.getFolder()) {
+                    int fileCount = dlDocumentRepository.countAllByArchivedFalseAndFolderFalseAndParentId(d.getId());
+                    docDTO.setSize(fileCount + " Files");
+                }
+                Object response = restTemplate.getForObject("http://um-service/um/user/" + d.getCreatedBy(), Object.class);
+                if (!AppUtility.isEmpty(response)) {
+                    HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+                    docDTO.setCreatedByName((String) map.get("name"));
+                    docDTO.setUpdatedByName((String) map.get("name"));
+                }
                 dlDocumentDTOList.add(docDTO);
             }
         }
