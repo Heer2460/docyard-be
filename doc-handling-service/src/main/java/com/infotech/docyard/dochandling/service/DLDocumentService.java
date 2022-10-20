@@ -301,10 +301,11 @@ public class DLDocumentService {
         List<DLDocument> documentList = new ArrayList<>();
         List<DLDocumentDTO> documentDTOList = new ArrayList<>();
         String email = null;
+        String name = null;
         if (!AppUtility.isEmpty(userId)) {
-            Object response = restTemplate.getForObject("http://um-service/um/user/" + userId, Object.class);
-            if (!AppUtility.isEmpty(response)) {
-                HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+            Object responseEmails = restTemplate.getForObject("http://um-service/um/user/" + userId, Object.class);
+            if (!AppUtility.isEmpty(responseEmails)) {
+                HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) responseEmails).get("data");
                 email = (String) map.get("email");
             }
             DLCollaborator collaborator = dlCollaboratorRepository.findByEmail(email);
@@ -315,7 +316,16 @@ public class DLDocumentService {
                     if (shareOp.isPresent()) {
                         if (!AppUtility.isEmpty(shareOp.get().getDlDocumentId())) {
                             Optional<DLDocument> opDoc = dlDocumentRepository.findById(shareOp.get().getDlDocumentId());
-                            opDoc.ifPresent(documentList::add);
+                            if (opDoc.isPresent()) {
+                                DLDocumentDTO dto = new DLDocumentDTO();
+                                dto.convertToNewDTO(opDoc.get(), true);
+                                Object responseNames = restTemplate.getForObject("http://um-service/um/user/" + dto.getCreatedBy(), Object.class);
+                                if (!AppUtility.isEmpty(responseNames)) {
+                                    HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) responseNames).get("data");
+                                    dto.setCreatedByName((String) map.get("name"));
+                                    dto.setUpdatedByName((String) map.get("name"));
+                                }
+                            }
                         }
                     }
                 }
