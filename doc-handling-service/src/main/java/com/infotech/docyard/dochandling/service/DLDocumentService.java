@@ -340,38 +340,35 @@ public class DLDocumentService {
             List<DLDocument> videos;
             List<DLDocument> others;
             double size = 0D;
-            Integer count = 0;
+            int count = 0;
             if (!AppUtility.isEmpty(docList)) {
-                images = docList.stream().filter(this::isImage
-                ).collect(Collectors.toList());
-                docs = docList.stream().filter(this::isDoc
-                ).collect(Collectors.toList());
-                videos = docList.stream().filter(this::isVideo
-                ).collect(Collectors.toList());
+                images = docList.stream().filter(this::isImage).collect(Collectors.toList());
+                docs = docList.stream().filter(this::isDoc).collect(Collectors.toList());
+                videos = docList.stream().filter(this::isVideo).collect(Collectors.toList());
                 others = docList.stream().filter(doc -> (!isFolder(doc) && !isImage(doc) && !isDoc(doc) && !isVideo(doc))).collect(Collectors.toList());
                 for (DLDocument vid : videos) {
-                    size = +Double.parseDouble(vid.getSize().substring(0, vid.getSize().indexOf(" ")));
+                    size += vid.getSizeBytes();
                     count++;
                 }
                 DashboardDTO.VideosProps videosProps = new DashboardDTO.VideosProps(count, size, null);
                 size = 0;
                 count = 0;
                 for (DLDocument doc : docs) {
-                    size = +Double.parseDouble(doc.getSize().substring(0, doc.getSize().indexOf(" ")));
+                    size += doc.getSizeBytes();
                     count++;
                 }
                 DashboardDTO.DocsProps docsProps = new DashboardDTO.DocsProps(count, size, null);
                 size = 0;
                 count = 0;
                 for (DLDocument img : images) {
-                    size = +Double.parseDouble(img.getSize().substring(0, img.getSize().indexOf(" ")));
+                    size += img.getSizeBytes();
                     count++;
                 }
                 DashboardDTO.ImageProps imageProps = new DashboardDTO.ImageProps(count, size, null);
                 size = 0;
                 count = 0;
                 for (DLDocument other : others) {
-                    size = +Double.parseDouble(other.getSize().substring(0, other.getSize().indexOf(" ")));
+                    size += other.getSizeBytes();
                     count++;
                 }
                 DashboardDTO.OthersProps othersProps = new DashboardDTO.OthersProps(count, size, null);
@@ -974,37 +971,25 @@ public class DLDocumentService {
     }
 
     public Boolean isImage(DLDocument doc) {
-        if ((!doc.getFolder()) && (!AppUtility.isEmpty(doc.getExtension())) && ((doc.getExtension().contains("gif")) ||
-                (doc.getExtension().contains("png")) || (doc.getExtension().contains("jpeg")) || (doc.getExtension().contains("jpg")))) {
-            return true;
-        }
-        return false;
+        return (!doc.getFolder()) && (!AppUtility.isEmpty(doc.getExtension())) && ((doc.getExtension().contains("gif")) ||
+                (doc.getExtension().contains("png")) || (doc.getExtension().contains("jpeg")) || (doc.getExtension().contains("jpg")));
     }
 
     public Boolean isDoc(DLDocument doc) {
-        if ((!doc.getFolder()) && (!AppUtility.isEmpty(doc.getExtension())) && ((doc.getExtension().contains("doc")) ||
+        return (!doc.getFolder()) && (!AppUtility.isEmpty(doc.getExtension())) && ((doc.getExtension().contains("doc")) ||
                 (doc.getExtension().contains("docx")) || (doc.getExtension().contains("html")) || (doc.getExtension().contains("odt")) ||
                 (doc.getExtension().contains("xls")) || (doc.getExtension().contains("pdf")) || (doc.getExtension().contains("xlsx")) ||
                 (doc.getExtension().contains("ods")) || (doc.getExtension().contains("pptx")) || (doc.getExtension().contains("ppt")) ||
-                (doc.getExtension().contains("txt")))) {
-            return true;
-        }
-        return false;
+                (doc.getExtension().contains("txt")));
     }
 
     public Boolean isVideo(DLDocument doc) {
-        if ((!doc.getFolder()) && (!AppUtility.isEmpty(doc.getExtension())) && ((doc.getExtension().contains("mp4")) ||
+        return (!doc.getFolder()) && (!AppUtility.isEmpty(doc.getExtension())) && ((doc.getExtension().contains("mp4")) ||
                 (doc.getExtension().contains("mov")) || (doc.getExtension().contains("wmv")) || (doc.getExtension().contains("avi")) ||
-                (doc.getExtension().contains("flv")) || (doc.getExtension().contains("mkv")) || (doc.getExtension().contains("webm")))) {
-            return true;
-        }
-        return false;
+                (doc.getExtension().contains("flv")) || (doc.getExtension().contains("mkv")) || (doc.getExtension().contains("webm")));
     }
 
     public Boolean isFolder(DLDocument doc) {
-        if (doc.getFolder()) {
-            return true;
-        }
-        return false;
+        return doc.getFolder();
     }
 }

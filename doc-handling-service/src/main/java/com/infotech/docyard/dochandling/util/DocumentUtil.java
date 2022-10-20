@@ -83,6 +83,31 @@ public class DocumentUtil {
         return finalResult + " " + howBig;
     }
 
+    public static String getFileSize(Double bytes) {
+        double fileSizeKB = 0;
+        String fileLength = String.valueOf(bytes);
+        int fileLengthDigitCount = fileLength.length();
+        double fileLengthLong = bytes;
+        String howBig = "";
+
+        if (bytes > 0) {
+            if (fileLengthDigitCount <= 6) {
+                fileSizeKB = Math.abs((fileLengthLong / 1024));
+                howBig = "KB";
+            } else if (fileLengthDigitCount <= 9) {
+                fileSizeKB = Math.abs(fileLengthLong / (1024 * 1024));
+                howBig = "MB";
+            } else {
+                fileSizeKB = Math.abs((fileLengthLong / (1024 * 1024 * 1024)));
+                howBig = "GB";
+            }
+        } else {
+            howBig = "KB";
+        }
+        String finalResult = getRoundedValue(fileSizeKB);
+        return finalResult + " " + howBig;
+    }
+
     private static String getRoundedValue(double decimalVal) {
         long beforeDecimalValue = decimalTokenize(decimalVal, 1);
         long afterDecimalValue = decimalTokenize(decimalVal, 2);
