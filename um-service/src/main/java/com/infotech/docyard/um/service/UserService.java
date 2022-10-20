@@ -78,6 +78,18 @@ public class UserService {
         return user.orElse(null);
     }
 
+    public User getUserByUserName(String username) {
+        log.info("getUserByUserName method called..");
+
+        return userRepository.findByUsername(username);
+    }
+
+    public User getUserByUserEmail(String email) {
+        log.info("getUserByUserEmail method called..");
+
+        return userRepository.findByEmail(email);
+    }
+
     public List<String> searchUsersByDepartmentId(long deptId) {
         log.info("searchUsersByDepartmentId method called..");
 
@@ -88,7 +100,7 @@ public class UserService {
                 List<Long> ids = Stream.of(u.getDepartmentIds().split(","))
                         .map(Long::parseLong)
                         .collect(Collectors.toList());
-                if (ids.stream().anyMatch(id -> deptId == id.longValue())){
+                if (ids.stream().anyMatch(id -> deptId == id.longValue())) {
                     emails.add(u.getEmail());
                 }
             }
@@ -203,16 +215,17 @@ public class UserService {
             u.setLastPassUpdatedOn(ZonedDateTime.now());
 
             userRepository.save(u);
+
+            ForgotPasswordLink forgotPasswordLink = forgotPasswordLinkRepository.findByToken(resetPasswordDTO.getToken());
+            if (!AppUtility.isEmpty(forgotPasswordLink)) {
+                forgotPasswordLink.setToken(null);
+                forgotPasswordLink.setExpired(true);
+                forgotPasswordLink.setExpiredOn(ZonedDateTime.now());
+            }
         } else {
             throw new NoDataFoundException(AppUtility.getResourceMessage("user.not.found"));
         }
         return user.get();
-    }
-
-    public User searchUserByUserName(String username) {
-        log.info("searchUserByUserName method called..");
-
-        return userRepository.findByUsername(username);
     }
 
     @Transactional(rollbackFor = {Throwable.class})
@@ -262,13 +275,9 @@ public class UserService {
         log.info("forgotPassword method called..");
 
         HttpStatus status = HttpStatus.NOT_FOUND;
-        Optional<User> userOptional = userRepository.findByEmail(email);
-        if (AppUtility.isEmpty(userOptional)) {
+        User user = userRepository.findByEmail(email);
+        if (AppUtility.isEmpty(user)) {
             throw new NoDataFoundException(AppUtility.getResourceMessage("user.not.found"));
-        }
-        User user = null;
-        if (userOptional.isPresent()) {
-            user = userOptional.get();
         }
         if (!AppUtility.isEmpty(user)) {
             String token = UUID.randomUUID().toString();
@@ -507,5 +516,19 @@ public class UserService {
 
         }
 
+    }
+
+    public void expireForgotPasswordLinks() {
+        List<ForgotPasswordLink> forgotPasswordLinkList = forgotPasswordLinkRepository.findAllByTokenIsNotNull();
+
+        for (ForgotPasswordLink forgotPasswordLink : forgotPasswordLinkList) {
+
+            if (forgotPasswordLink.getCreatedOn().plusMinutes(30).isBefore(ZonedDateTime.now())) {
+                forgotPasswordLink.setToken(null);
+                forgotPasswordLink.setExpired(true);
+                forgotPasswordLink.setExpiredOn(ZonedDateTime.now());
+                forgotPasswordLinkRepository.save(forgotPasswordLink);
+            }
+        }
     }
 }

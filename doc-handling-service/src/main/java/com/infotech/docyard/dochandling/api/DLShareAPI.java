@@ -1,5 +1,7 @@
 package com.infotech.docyard.dochandling.api;
 
+import com.infotech.docyard.dochandling.dto.DLDocumentCommentDTO;
+import com.infotech.docyard.dochandling.dto.DLDocumentShareDTO;
 import com.infotech.docyard.dochandling.dto.ShareRequestDTO;
 import com.infotech.docyard.dochandling.exceptions.CustomException;
 import com.infotech.docyard.dochandling.exceptions.DataValidationException;
@@ -10,12 +12,10 @@ import com.infotech.docyard.dochandling.util.CustomResponse;
 import com.infotech.docyard.dochandling.util.ResponseUtility;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @RestController
 @RequestMapping("/share")
@@ -24,6 +24,20 @@ public class DLShareAPI {
 
     @Autowired
     private DLShareService dlShareService;
+
+    @RequestMapping(value = "/dl-document/{dlDocId}", method = RequestMethod.GET)
+    public CustomResponse getAllSharingDetailsByDLDocId(HttpServletRequest request,
+                                                        @PathVariable(name = "dlDocId") Long dlDocId) throws CustomException {
+        log.info("getAllSharingDetailsByDLDocId API initiated...");
+
+        List<DLDocumentShareDTO> shareDTOS = null;
+        try {
+            shareDTOS = dlShareService.getAllSharingDetailsByDLDocId(dlDocId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.buildResponseList(shareDTOS);
+    }
 
     @RequestMapping(value = "/", method = RequestMethod.POST)
     public CustomResponse shareDLDocument(HttpServletRequest request,
