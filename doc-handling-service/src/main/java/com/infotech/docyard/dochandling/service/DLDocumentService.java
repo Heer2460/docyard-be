@@ -264,17 +264,17 @@ public class DLDocumentService {
         return documentDTOList;
     }
 
-    public List<DLDocument> getDLDocumentsSharedByMe (Long ownerId) {
-        log.info("DLDocumentService - getDLDocumentsSharedByMe method called...");
+    public List<DLDocument> getSharedByMeDLDocuments(Long userId) {
+        log.info("DLDocumentService - getSharedByMeDLDocuments method called...");
 
-        List<DLDocument> documentList = null;
-        if (!AppUtility.isEmpty(ownerId)) {
-            documentList = dlDocumentRepository.findAllByCreatedByAndSharedTrueAndArchivedFalse(ownerId);
+        List<DLDocument> dlDocumentList = null;
+        if (!AppUtility.isEmpty(userId)) {
+            dlDocumentList = dlDocumentRepository.findAllByCreatedByAndSharedTrueAndArchivedFalse(userId);
         }
-        return documentList;
+        return dlDocumentList;
     }
 
-    public List<DLDocument> getDLDocumentsSharedWithMe (Long userId) {
+    public List<DLDocument> getDLDocumentsSharedWithMe(Long userId) {
         log.info("DLDocumentService - getAllRecentDLDocumentByOwnerId method called...");
 
         List<DLDocument> documentList = new ArrayList<>();
@@ -974,7 +974,7 @@ public class DLDocumentService {
         return false;
     }
 
-    public Boolean isFolder (DLDocument doc) {
+    public Boolean isFolder(DLDocument doc) {
         if (doc.getFolder()) {
             return true;
         }
