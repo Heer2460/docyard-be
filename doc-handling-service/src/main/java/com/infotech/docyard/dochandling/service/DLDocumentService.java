@@ -274,8 +274,8 @@ public class DLDocumentService {
         return dlDocumentList;
     }
 
-    public List<DLDocument> getDLDocumentsSharedWithMe(Long userId) {
-        log.info("DLDocumentService - getAllRecentDLDocumentByOwnerId method called...");
+    public List<DLDocument> getSharedWithMeDLDocuments(Long userId) {
+        log.info("DLDocumentService - getSharedWithMeDLDocuments method called...");
 
         List<DLDocument> documentList = new ArrayList<>();
         String email = null;
