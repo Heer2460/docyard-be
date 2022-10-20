@@ -285,10 +285,11 @@ public class DLDocumentService {
         return dlDocumentDTOList;
     }
 
-    public List<DLDocument> getSharedWithMeDLDocuments(Long userId) {
+    public List<DLDocumentDTO> getSharedWithMeDLDocuments(Long userId) {
         log.info("DLDocumentService - getSharedWithMeDLDocuments method called...");
 
         List<DLDocument> documentList = new ArrayList<>();
+        List<DLDocumentDTO> documentDTOList = new ArrayList<>();
         String email = null;
         if (!AppUtility.isEmpty(userId)) {
             Object response = restTemplate.getForObject("http://um-service/um/user/" + userId, Object.class);
@@ -308,9 +309,14 @@ public class DLDocumentService {
                         }
                     }
                 }
+                for (DLDocument doc : documentList) {
+                    DLDocumentDTO docDTO = new DLDocumentDTO();
+                    docDTO.convertToDTO(doc, true);
+                    documentDTOList.add(docDTO);
+                }
             }
         }
-        return documentList;
+        return documentDTOList;
     }
 
     public DashboardDTO getDashboardStats(Long userId) {

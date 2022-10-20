@@ -202,7 +202,7 @@ public class DLDocumentAPI {
         return ResponseUtility.buildResponseList(documentDTOList);
     }
 
-    @RequestMapping(value = "/shared-with-me/{userId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/shared-with-me/user/{userId}", method = RequestMethod.GET)
     public CustomResponse getSharedWithMeDLDocuments(HttpServletRequest request,
                                                    @PathVariable(value = "userId") Long userId) throws CustomException {
         log.info("getSharedWithMeDLDocuments API initiated...");
@@ -210,14 +210,14 @@ public class DLDocumentAPI {
         if (AppUtility.isEmpty(userId)) {
             throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
         }
-        List<DLDocument> documentList = null;
+        List<DLDocumentDTO> documentDTOList = null;
         try {
-            documentList = dlDocumentService.getSharedWithMeDLDocuments(userId);
+            documentDTOList = dlDocumentService.getSharedWithMeDLDocuments(userId);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
 
-        return ResponseUtility.buildResponseList(documentList);
+        return ResponseUtility.buildResponseList(documentDTOList);
     }
 
     @RequestMapping(value = "/dashboard/{userId}", method = RequestMethod.GET)
