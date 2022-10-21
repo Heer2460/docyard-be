@@ -490,9 +490,14 @@ public class UserService {
                 ForgotPasswordLink fpl = forgotPasswordLinkRepository.findByToken(changePasswordDTO.getToken());
                 if (!AppUtility.isEmpty(fpl)) {
                     fpl.setExpired(true);
+                    fpl.setToken(null);
 
                     forgotPasswordLinkRepository.save(fpl);
+                }else{
+                    throw new DataValidationException(AppUtility.getResourceMessage("invalid.token"));
                 }
+            }else{
+                throw new DataValidationException(AppUtility.getResourceMessage("invalid.token"));
             }
         } else {
             throw new NoDataFoundException(AppUtility.getResourceMessage("user.not.found"));
@@ -518,17 +523,4 @@ public class UserService {
 
     }
 
-    public void expireForgotPasswordLinks() {
-        List<ForgotPasswordLink> forgotPasswordLinkList = forgotPasswordLinkRepository.findAllByTokenIsNotNull();
-
-        for (ForgotPasswordLink forgotPasswordLink : forgotPasswordLinkList) {
-
-            if (forgotPasswordLink.getCreatedOn().plusMinutes(30).isBefore(ZonedDateTime.now())) {
-                forgotPasswordLink.setToken(null);
-                forgotPasswordLink.setExpired(true);
-                forgotPasswordLink.setExpiredOn(ZonedDateTime.now());
-                forgotPasswordLinkRepository.save(forgotPasswordLink);
-            }
-        }
-    }
 }

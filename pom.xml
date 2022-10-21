@@ -8,7 +8,7 @@
         <module>gateway-service</module>
         <module>authentication-service</module>
         <module>doc-handling-service</module>
-        <module>job-service</module>
+        <module>cron-job-service</module>
     </modules>
 
     <parent>
