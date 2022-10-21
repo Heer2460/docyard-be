@@ -27,6 +27,7 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
 
     private String subject;
     private Boolean shared;
+    private Long dlShareId;
     private String shareType;
     private String name;
     private Boolean isLeafNode;
@@ -103,6 +104,7 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         this.name = entity.getName();
         this.shareType = entity.getShareType();
         this.shared = entity.getShared();
+        this.dlShareId = entity.getDlShareId();
         this.subject = entity.getSubject();
         this.content = entity.getContent();
         this.ocrDone = entity.getOcrDone();

@@ -368,18 +368,16 @@ public class DLDocumentService {
                         }
                     }
                 }
-                if (!AppUtility.isEmpty(dlDocumentList)) {
-                    for (DLDocument doc : dlDocumentList) {
-                        DLDocumentDTO docDTO = new DLDocumentDTO();
-                        docDTO.convertToDTO(doc, true);
-                        Object responseNames = restTemplate.getForObject("http://um-service/um/user/" + docDTO.getCreatedBy(), Object.class);
-                        if (!AppUtility.isEmpty(responseNames)) {
-                            HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) responseNames).get("data");
-                            docDTO.setCreatedByName((String) map.get("name"));
-                            docDTO.setUpdatedByName((String) map.get("name"));
-                        }
-                        documentDTOList.add(docDTO);
+                for (DLDocument doc : dlDocumentList) {
+                    DLDocumentDTO docDTO = new DLDocumentDTO();
+                    docDTO.convertToDTO(doc, true);
+                    Object responseNames = restTemplate.getForObject("http://um-service/um/user/" + docDTO.getCreatedBy(), Object.class);
+                    if (!AppUtility.isEmpty(responseNames)) {
+                        HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) responseNames).get("data");
+                        docDTO.setCreatedByName((String) map.get("name"));
+                        docDTO.setUpdatedByName((String) map.get("name"));
                     }
+                    documentDTOList.add(docDTO);
                 }
             }
         }

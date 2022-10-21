@@ -8,10 +8,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableEurekaClient
 @EnableScheduling
-public class JobServicesApplication {
+public class CronJobServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(JobServicesApplication.class, args);
+        SpringApplication.run(CronJobServiceApplication.class, args);
         System.out.println("JobServicesApplication server running.......");
     }
 
