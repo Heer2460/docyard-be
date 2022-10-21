@@ -490,9 +490,14 @@ public class UserService {
                 ForgotPasswordLink fpl = forgotPasswordLinkRepository.findFirstByToken(changePasswordDTO.getToken());
                 if (!AppUtility.isEmpty(fpl)) {
                     fpl.setExpired(true);
+                    fpl.setToken(null);
 
                     forgotPasswordLinkRepository.save(fpl);
+                }else{
+                    throw new DataValidationException(AppUtility.getResourceMessage("invalid.token"));
                 }
+            }else{
+                throw new DataValidationException(AppUtility.getResourceMessage("invalid.token"));
             }
         } else {
             throw new NoDataFoundException(AppUtility.getResourceMessage("user.not.found"));

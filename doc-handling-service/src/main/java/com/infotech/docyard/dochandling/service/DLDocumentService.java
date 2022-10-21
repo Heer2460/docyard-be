@@ -890,47 +890,6 @@ public class DLDocumentService {
         return children;
     }
 
-    public synchronized void getContentFromAllDocuments() {
-        log.info("DLDocumentService - getContentFromAllDocuments method called...");
-
-        try {
-            List<DLDocument> dlDocumentList = dlDocumentRepository.findAllByFolderFalseAndArchivedFalseAndOcrDoneFalseAndOcrSupportedTrue();
-            for (DLDocument doc : dlDocumentList) {
-                InputStream inputStream = ftpService.downloadInputStream(doc.getVersionGUId());
-                if (!AppUtility.isEmpty(inputStream)) {
-                    ITesseract instance = new Tesseract();
-                    instance.setOcrEngineMode(1);
-                    Path dataDirectory = Paths.get(ClassLoader.getSystemResource("tesseractdata").toURI());
-                    instance.setDatapath(dataDirectory.toString());
-                    String result = null;
-
-                    if (doc.getExtension().equalsIgnoreCase("pdf")) {
-                        //TODO will do it later
-//                        PDDocument document = PDDocument.load(inputStream);
-//                        PDFRenderer pdfRenderer = new PDFRenderer(document);
-//                        StringBuffer stringBuffer = new StringBuffer();
-//                        for (int page = 0; page < document.getNumberOfPages(); page++) {
-//                            BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, 300, ImageType.RGB);
-//                            stringBuffer.append(instance.doOCR(bufferedImage));
-//                        }
-//                        result = stringBuffer.toString();
-//                        document.close();
-                    } else {
-                        BufferedImage bufferedImage = ImageIO.read(inputStream);
-                        result = instance.doOCR(bufferedImage);
-                    }
-
-                    doc.setContent(result);
-                    doc.setOcrDone(true);
-                    doc.setOcrSupported(true);
-                    dlDocumentRepository.save(doc);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     private void getContentFromFile(DLDocument doc, File f) {
         FileInputStream fileInputStream = null;
         try {
@@ -1012,26 +971,6 @@ public class DLDocumentService {
                     ResponseUtility.exceptionResponse(e);
                 }
             }
-        }
-    }
-
-    @Transactional(rollbackFor = {Throwable.class})
-    public void deleteArchivedDocuments() throws CustomException {
-        List<DLDocument> archivedDLDocs = dlDocumentRepository.findAllByArchivedTrue();
-        if (!AppUtility.isEmpty(archivedDLDocs)) {
-            try {
-                for (DLDocument archivedDoc : archivedDLDocs) {
-                    archivedDoc.setDaysArchived(archivedDoc.getDaysArchived() + 1);
-                    if (archivedDoc.getDaysArchived() >= 30) {
-                        deleteDLDocument(archivedDoc.getId());
-                    } else {
-                        dlDocumentRepository.save(archivedDoc);
-                    }
-                }
-            } catch (Exception e) {
-                ResponseUtility.exceptionResponse(e);
-            }
-
         }
     }
 
