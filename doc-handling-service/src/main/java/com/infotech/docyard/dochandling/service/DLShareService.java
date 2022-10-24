@@ -70,6 +70,7 @@ public class DLShareService {
                 Object coll = restTemplate.getForObject("http://um-service/um/user/email/" + dc.get().getEmail(), Object.class);
                 if (!AppUtility.isEmpty(coll)) {
                     HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) coll).get("data");
+                    dto.setDlCollId(dsc.getDlCollaboratorId());
                     dto.setDlCollName((String) map.get("name"));
                     dto.setDlCollEmail((String) map.get("email"));
                     if (!AppUtility.isEmpty(map.get("profilePhoto"))) {

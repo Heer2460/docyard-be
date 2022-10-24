@@ -9,6 +9,7 @@ import java.io.Serializable;
 public class DLDocumentShareDTO implements Serializable {
 
     private Long dlShareId;
+    private Long dlCollId;
     private String dlCollName;
     private String dlCollEmail;
     private String dlCollPic;
