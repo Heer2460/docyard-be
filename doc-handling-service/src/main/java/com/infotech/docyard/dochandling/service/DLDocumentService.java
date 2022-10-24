@@ -324,7 +324,7 @@ public class DLDocumentService {
     public List<DLDocumentDTO> getSharedWithMeDLDocuments(Long userId, Long folderId) {
         log.info("DLDocumentService - getSharedWithMeDLDocuments method called...");
 
-        List<DLDocument> dlDocumentList = null;
+        List<DLDocument> dlDocumentList = new ArrayList<>();
         List<DLDocumentDTO> documentDTOList = new ArrayList<>();
         String email = null;
         if (!AppUtility.isEmpty(userId)) {
