@@ -30,7 +30,7 @@ public class NotificationUtility {
     }
 
     public static String buildOpenShareFileEmailContent(UserDTO ownerDTO, String toName, String filename, String baseFELink) {
-        log.info("buildShareFileEmailContent API initiated...");
+        log.info("buildOpenShareFileEmailContent API initiated...");
 
         StringBuilder content = new StringBuilder("Welcome <strong>" + toName + " ! </strong>");
         content.append("<br>" + ownerDTO.getName() + " has shared a folder / file " + filename + " with you.</br>");

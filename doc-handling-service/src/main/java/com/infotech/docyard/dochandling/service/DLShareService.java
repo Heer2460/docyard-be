@@ -108,8 +108,6 @@ public class DLShareService {
             status = this.shareAnyone(shareRequest, dlDocument);
         } else if (shareRequest.getShareType().equalsIgnoreCase(ShareTypeEnum.RESTRICTED.getValue())) {
             status = shareRestricted(shareRequest, dlDocument);
-        } else if (shareRequest.getShareType().equalsIgnoreCase(ShareTypeEnum.NO_SHARING.getValue())) {
-            status = removeSharing(shareRequest, dlDocument);
         }
         return status;
     }
@@ -171,9 +169,14 @@ public class DLShareService {
     }
 
     @Transactional(rollbackFor = Throwable.class)
-    public String removeSharing(ShareRequestDTO shareRequest, DLDocument dlDocument) {
+    public String removeSharing(ShareRequestDTO shareRequest) {
         log.info("DLShareService - removeSharing method called...");
 
+        DLDocument dlDocument = dlDocumentRepository.findByIdAndArchivedFalse(shareRequest.getDlDocId());
+        if (AppUtility.isEmpty(dlDocument)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+
+        }
         String status = "SHARING";
         if (!AppUtility.isEmpty(dlDocument.getShared()) && dlDocument.getShared()) {
             dlShareCollaboratorRepository.deleteByDlShareId(dlDocument.getDlShareId());
@@ -282,15 +285,37 @@ public class DLShareService {
         return status;
     }
 
+    public String removeCollaboratorFromSharing (Long dlDocId, Long collId) {
+        log.info("DLShareService - shareRestricted method called...");
+
+        DLShare dlShare = dlShareRepository.findByDlDocumentId(dlDocId);
+        if (!AppUtility.isEmpty(dlShare)) {
+            List<DLShareCollaborator> shareColls = dlShareCollaboratorRepository.findAllByDlShareId(dlShare.getId());
+            if (!AppUtility.isEmpty(shareColls)) {
+                if (shareColls.size() == 1) {
+                    ShareRequestDTO shareRequestDTO = new ShareRequestDTO();
+                    shareRequestDTO.setDlDocId(dlDocId);
+                    removeSharing(shareRequestDTO);
+                } else {
+                    dlShareCollaboratorRepository.deleteByDlShareIdAndDlCollaboratorId(dlShare.getId(), collId);
+                }
+            }
+            return "SUCCESS";
+        }
+        return "UNSUCCESSFULL";
+    }
+
     public NameEmailDTO getNamesAndEmails(Long dptId, String[] collabEmails, NameEmailDTO nameEmailDTO) {
-        List<String> emails = null;
-        List<String> names = null;
-        Object response1 = restTemplate.getForObject("http://um-service/um/user/details/department/" + dptId, Object.class);
-        if (!AppUtility.isEmpty(response1)) {
-            HashMap<?, ?> emailsMap = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response1).get("emails");
-            emails = (List<String>) emailsMap.get("emails");
-            HashMap<?, ?> namesMap = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response1).get("names");
-            names = (List<String>) namesMap.get("names");
+        List<String> emails = new ArrayList<>();
+        List<String> names = new ArrayList<>();
+        if (!AppUtility.isEmpty(dptId)) {
+            Object response1 = restTemplate.getForObject("http://um-service/um/user/details/department/" + dptId, Object.class);
+            if (!AppUtility.isEmpty(response1)) {
+                HashMap<?, ?> emailsMap = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response1).get("emails");
+                emails = (List<String>) emailsMap.get("emails");
+                HashMap<?, ?> namesMap = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response1).get("names");
+                names = (List<String>) namesMap.get("names");
+            }
         }
         if (!AppUtility.isEmpty(collabEmails)) {
             for (String email : collabEmails) {
@@ -313,6 +338,7 @@ public class DLShareService {
     public String sendMail(ShareRequestDTO shareRequest, String docName, List<String> names, List<String> emails) {
         try {
             UserDTO ownerDTO = new UserDTO();
+            Boolean emailed = false;
             Object response = restTemplate.getForObject("http://um-service/um/user/" + shareRequest.getUserId(), Object.class);
             if (!AppUtility.isEmpty(response)) {
                 HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
@@ -320,9 +346,10 @@ public class DLShareService {
                 ownerDTO.setEmail((String) map.get("email"));
                 ownerDTO.setUsername((String) map.get("username"));
             }
-            for (int i = 0; i < names.size() - 1; i++) {
+            for (int i = 0; i <= names.size() - 1; i++) {
                 String content = NotificationUtility.buildRestrictedShareFileEmailContent(ownerDTO, names.get(i), docName, shareRequest.getAppContextPath() +
                         shareRequest.getShareLink());
+                emailed = false;
                 if (!AppUtility.isEmpty(content)) {
                     EmailInstance emailInstance = new EmailInstance();
                     emailInstance.setToEmail(emails.get(i));
@@ -336,9 +363,13 @@ public class DLShareService {
                     emailInstance.setUpdatedBy(1L);
                     emailInstanceRepository.save(emailInstance);
                     notificationService.sendEmail(emailInstance);
+                    emailed = true;
                 }
             }
-            return "SUCCESS";
+            if (emailed){
+                return "SUCCESS";
+            }
+            return "UNSUCCESSFUL";
         } catch (Exception e) {
             log.info(e);
             return "UNSUCCESSFUL";

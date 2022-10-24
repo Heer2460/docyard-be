@@ -93,16 +93,16 @@ public class UserAPI {
     }
 
     @RequestMapping(value = "/details/department/{dptId}", method = RequestMethod.GET)
-    public NameEmailDTO searchNamesAndEmailsByDepartmentId(HttpServletRequest request,
+    public NameEmailDTO searchUsersNamesAndEmailsByDepartmentId(HttpServletRequest request,
                                                   @PathVariable(name = "dptId") long dptId) throws CustomException {
-        log.info("searchNamesAndEmailsByDepartmentId API initiated...");
+        log.info("searchUsersNamesAndEmailsByDepartmentId API initiated...");
 
         if (AppUtility.isEmpty(dptId)) {
             throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
         }
         NameEmailDTO nameEmailDto = null;
         try {
-            nameEmailDto = userService.searchNamesAndEmailsByDepartmentId(dptId);
+            nameEmailDto = userService.searchUsersNamesAndEmailsByDepartmentId(dptId);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }

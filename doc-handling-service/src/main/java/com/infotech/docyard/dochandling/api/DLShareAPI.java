@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Path;
 import java.util.List;
 
 @RestController
@@ -75,6 +76,25 @@ public class DLShareAPI {
         return ResponseUtility.buildResponseObject(status);
     }
 
+    @RequestMapping(value = "/{dlDocId}/{collabId}", method = RequestMethod.DELETE)
+    public CustomResponse removeCollaboratorFromSharing(HttpServletRequest request,
+                                                        @PathVariable Long dlDocId,
+                                                        @PathVariable Long collabId)
+            throws CustomException, DataValidationException, NoDataFoundException {
+        log.info("removeCollaboratorFromSharing API initiated...");
+
+        String status = null;
+        if (AppUtility.isEmpty(dlDocId) || AppUtility.isEmpty(collabId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
+        try {
+            status = dlShareService.removeCollaboratorFromSharing(dlDocId, collabId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.buildResponseObject(status);
+    }
+
     @RequestMapping(value = "/remove", method = RequestMethod.DELETE)
     public CustomResponse removeDLDocumentSharing(HttpServletRequest request,
                                                   @RequestBody ShareRequestDTO shareRequestDTO)
@@ -86,7 +106,7 @@ public class DLShareAPI {
         }
         String status = null;
         try {
-            status = dlShareService.shareDLDocument(shareRequestDTO);
+            status = dlShareService.removeSharing(shareRequestDTO);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }

@@ -108,8 +108,8 @@ public class UserService {
         return emails;
     }
 
-    public NameEmailDTO searchNamesAndEmailsByDepartmentId(long deptId) {
-        log.info("searchNamesAndEmailsByDepartmentId method called..");
+    public NameEmailDTO searchUsersNamesAndEmailsByDepartmentId(long deptId) {
+        log.info("searchUsersNamesAndEmailsByDepartmentId method called..");
 
         List<User> users = userRepository.findAllByStatus("active");
         List<String> emails = new ArrayList<>();
