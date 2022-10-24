@@ -3,6 +3,7 @@ package com.infotech.docyard.um.api;
 
 import com.infotech.docyard.um.dl.entity.User;
 import com.infotech.docyard.um.dto.ChangePasswordDTO;
+import com.infotech.docyard.um.dto.NameEmailDTO;
 import com.infotech.docyard.um.dto.ResetPasswordDTO;
 import com.infotech.docyard.um.dto.UserDTO;
 import com.infotech.docyard.um.exceptions.CustomException;
@@ -89,6 +90,23 @@ public class UserAPI {
             ResponseUtility.exceptionResponse(e);
         }
         return emails;
+    }
+
+    @RequestMapping(value = "/details/department/{dptId}", method = RequestMethod.GET)
+    public NameEmailDTO searchNamesAndEmailsByDepartmentId(HttpServletRequest request,
+                                                  @PathVariable(name = "dptId") long dptId) throws CustomException {
+        log.info("searchNamesAndEmailsByDepartmentId API initiated...");
+
+        if (AppUtility.isEmpty(dptId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
+        }
+        NameEmailDTO nameEmailDto = null;
+        try {
+            nameEmailDto = userService.searchNamesAndEmailsByDepartmentId(dptId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return nameEmailDto;
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)

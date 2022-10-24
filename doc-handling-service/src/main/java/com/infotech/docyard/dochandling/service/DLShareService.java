@@ -3,13 +3,14 @@ package com.infotech.docyard.dochandling.service;
 import com.infotech.docyard.dochandling.dl.entity.*;
 import com.infotech.docyard.dochandling.dl.repository.*;
 import com.infotech.docyard.dochandling.dto.DLDocumentShareDTO;
+import com.infotech.docyard.dochandling.dto.NameEmailDTO;
 import com.infotech.docyard.dochandling.dto.ShareRequestDTO;
-import com.infotech.docyard.dochandling.enums.AccessRightEnum;
-import com.infotech.docyard.dochandling.enums.DLActivityTypeEnum;
-import com.infotech.docyard.dochandling.enums.ShareStatusEnum;
-import com.infotech.docyard.dochandling.enums.ShareTypeEnum;
+import com.infotech.docyard.dochandling.dto.UserDTO;
+import com.infotech.docyard.dochandling.enums.*;
 import com.infotech.docyard.dochandling.exceptions.DataValidationException;
+import com.infotech.docyard.dochandling.util.AppConstants;
 import com.infotech.docyard.dochandling.util.AppUtility;
+import com.infotech.docyard.dochandling.util.NotificationUtility;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,10 @@ public class DLShareService {
     private DLShareRepository dlShareRepository;
     @Autowired
     private DLDocumentActivityRepository dlDocumentActivityRepository;
+    @Autowired
+    private NotificationService notificationService;
+    @Autowired
+    private EmailInstanceRepository emailInstanceRepository;
     @Autowired
     private RestTemplate restTemplate;
 
@@ -107,6 +112,8 @@ public class DLShareService {
 
         DLShare dlShare = new DLShare();
         String status = "NOT_FOUND";
+        List<String> emails = new ArrayList<>();
+        List<String> names = new ArrayList<>();
         if (!AppUtility.isEmpty(dlDocument.getShared()) && dlDocument.getShared()) {
             Optional<DLShare> dsOp = dlShareRepository.findById(dlDocument.getDlShareId());
             if (dsOp.isPresent()) {
@@ -144,8 +151,14 @@ public class DLShareService {
         dlDocument.setDlShareId(dlShare.getId());
         dlDocumentRepository.save(dlDocument);
 
-        // send FCM to specific user
+        NameEmailDTO nmEmDTO = new NameEmailDTO();
         status = "SUCCESS";
+        if (!AppUtility.isEmpty(shareRequest.getDepartmentId()) || !AppUtility.isEmpty(shareRequest.getDlCollaborators())) {
+            nmEmDTO = getNamesAndEmails(shareRequest.getDepartmentId(), shareRequest.getDlCollaborators(), nmEmDTO);
+            status = sendMail(shareRequest, dlDocument.getName(), nmEmDTO.getNames(), nmEmDTO.getEmails());
+        }
+
+        // send FCM to specific user
         return status;
     }
 
@@ -153,7 +166,7 @@ public class DLShareService {
     public String removeSharing(ShareRequestDTO shareRequest, DLDocument dlDocument) {
         log.info("DLShareService - removeSharing method called...");
 
-        String status = "NOT_SHARING";
+        String status = "SHARING";
         if (!AppUtility.isEmpty(dlDocument.getShared()) && dlDocument.getShared()) {
             dlShareCollaboratorRepository.deleteByDlShareId(dlDocument.getDlShareId());
             dlShareRepository.deleteById(dlDocument.getDlShareId());
@@ -172,11 +185,13 @@ public class DLShareService {
 
     @Transactional(rollbackFor = Throwable.class)
     public String shareRestricted(ShareRequestDTO shareRequest, DLDocument dlDocument) {
-        log.info("DLShareService - shareInvitedInternalMemberOnly method called...");
+        log.info("DLShareService - shareRestricted method called...");
 
+        NameEmailDTO nameEmailDTO = null;
         DLShare dlShare = new DLShare();
         String status = "NOT_FOUND";
         List<String> emails = new ArrayList<>();
+        List<String> names = new ArrayList<>();
         if (!AppUtility.isEmpty(dlDocument.getShared()) && dlDocument.getShared()) {
             Optional<DLShare> dsOp = dlShareRepository.findById(dlDocument.getDlShareId());
             if (dsOp.isPresent()) {
@@ -207,16 +222,15 @@ public class DLShareService {
         dlDocument.setDlShareId(dlShare.getId());
         dlDocumentRepository.save(dlDocument);
 
-        if (!AppUtility.isEmpty(shareRequest.getDepartmentId())) {
-            Object response = restTemplate.getForObject("http://um-service/um/user/department/" + shareRequest.getDepartmentId(), Object.class);
-            if (!AppUtility.isEmpty(response)) {
-                /*emails = (ArrayList<String>) ((LinkedHashMap<?, ?>) response).get("item");*/
-                emails = (ArrayList<String>) response;
-            }
+        NameEmailDTO nmEmDTO = new NameEmailDTO();
+        status = "SUCCESS";
+        if (!AppUtility.isEmpty(shareRequest.getDepartmentId()) || !AppUtility.isEmpty(shareRequest.getDlCollaborators())) {
+            nmEmDTO = getNamesAndEmails(shareRequest.getDepartmentId(), shareRequest.getDlCollaborators(), nmEmDTO);
+            emails = nmEmDTO.getEmails();
+            names = nmEmDTO.getNames();
         }
-        if (!AppUtility.isEmpty(shareRequest.getDlCollaborators())) {
-            Collections.addAll(emails, shareRequest.getDlCollaborators());
-        }
+
+
         List<DLCollaborator> dlCollList = new ArrayList<>();
         for (String colEmail : emails) {
             DLCollaborator dc = dlCollaboratorRepository.findByEmail(colEmail);
@@ -253,8 +267,73 @@ public class DLShareService {
 
         dlDocument.setDlShareId(dlShare.getId());
         dlDocumentRepository.save(dlDocument);
-        // send FCM to specific user
         status = "SUCCESS";
+
+        status = sendMail(shareRequest, dlDocument.getName(), nmEmDTO.getNames(), nmEmDTO.getEmails());
+        // send FCM to specific user
         return status;
+    }
+
+    public NameEmailDTO getNamesAndEmails(Long dptId, String[] collabEmails, NameEmailDTO nameEmailDTO) {
+        List<String> emails = null;
+        List<String> names = null;
+        Object response1 = restTemplate.getForObject("http://um-service/um/user/details/department/" + dptId, Object.class);
+        if (!AppUtility.isEmpty(response1)) {
+            HashMap<?, ?> emailsMap = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response1).get("emails");
+            emails = (List<String>) emailsMap.get("emails");
+            HashMap<?, ?> namesMap = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response1).get("names");
+            names = (List<String>) namesMap.get("names");
+        }
+        if (!AppUtility.isEmpty(collabEmails)) {
+            for (String email : collabEmails) {
+                Object response2 = restTemplate.getForObject("http://um-service/um/user/email/" + email, Object.class);
+                if (!AppUtility.isEmpty(response2)) {
+                    HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response2).get("data");
+                    String name = ((String) map.get("name"));
+                    if (!names.contains(name) || !email.contains(email)) {
+                        names.add(name);
+                        emails.add(email);
+                    }
+                }
+            }
+        }
+        nameEmailDTO.setNames(names);
+        nameEmailDTO.setEmails(emails);
+        return nameEmailDTO;
+    }
+
+    public String sendMail(ShareRequestDTO shareRequest, String docName, List<String> names, List<String> emails) {
+        try {
+            UserDTO ownerDTO = new UserDTO();
+            Object response = restTemplate.getForObject("http://um-service/um/user/" + shareRequest.getUserId(), Object.class);
+            if (!AppUtility.isEmpty(response)) {
+                HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+                ownerDTO.setName((String) map.get("name"));
+                ownerDTO.setEmail((String) map.get("email"));
+                ownerDTO.setUsername((String) map.get("username"));
+            }
+            for (int i = 0; i < names.size() - 1; i++) {
+                String content = NotificationUtility.buildRestrictedShareFileEmailContent(ownerDTO, names.get(i), docName, shareRequest.getAppContextPath() +
+                        shareRequest.getShareLink());
+                if (!AppUtility.isEmpty(content)) {
+                    EmailInstance emailInstance = new EmailInstance();
+                    emailInstance.setToEmail(emails.get(i));
+                    emailInstance.setType(EmailTypeEnum.SHARE_FILE_RESTRICTED.getValue());
+                    emailInstance.setSubject(AppConstants.EmailSubjectConstants.SHARE_FILE_RESTRICTED);
+                    emailInstance.setContent(content);
+                    emailInstance.setStatus(EmailStatusEnum.NOT_SENT.getValue());
+                    emailInstance.setCreatedOn(ZonedDateTime.now());
+                    emailInstance.setUpdatedOn(ZonedDateTime.now());
+                    emailInstance.setCreatedBy(1L);
+                    emailInstance.setUpdatedBy(1L);
+                    emailInstanceRepository.save(emailInstance);
+                    notificationService.sendEmail(emailInstance);
+                }
+            }
+            return "SUCCESS";
+        } catch (Exception e) {
+            log.info(e);
+            return "UNSUCCESSFUL";
+        }
     }
 }

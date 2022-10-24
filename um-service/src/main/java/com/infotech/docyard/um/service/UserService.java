@@ -108,6 +108,26 @@ public class UserService {
         return emails;
     }
 
+    public NameEmailDTO searchNamesAndEmailsByDepartmentId(long deptId) {
+        log.info("searchNamesAndEmailsByDepartmentId method called..");
+
+        List<User> users = userRepository.findAllByStatus("active");
+        List<String> emails = new ArrayList<>();
+        List<String> names = new ArrayList<>();
+        for (User u : users) {
+            if (!AppUtility.isEmpty(u.getDepartmentIds())) {
+                List<Long> ids = Stream.of(u.getDepartmentIds().split(","))
+                        .map(Long::parseLong)
+                        .collect(Collectors.toList());
+                if (ids.stream().anyMatch(id -> deptId == id.longValue())) {
+                    emails.add(u.getEmail());
+                    names.add((u.getName()));
+                }
+            }
+        }
+        return new NameEmailDTO(names, emails);
+    }
+
     @Transactional
     public User saveUser(UserDTO userDTO, MultipartFile profileImg) throws Exception {
         log.info("saveUser method called..");

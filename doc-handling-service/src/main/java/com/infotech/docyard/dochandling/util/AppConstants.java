@@ -64,4 +64,18 @@ public class AppConstants {
         public static final String EXT_DOC = "doc";
         public static final String EXT_DOCX = "docx";
     }
+    public static class EmailSubjectConstants {
+        public final static String SHARE_FILE_RESTRICTED = "File Shared";
+        public final static String PASSWORD_EXPIRED = "Password Expired";
+        public final static String FORGOT_PASSWORD = "Forgot Password";
+        public final static String CHANGE_PASSWORD = "Change Password";
+        public final static String USER_CREATED = "User Created";
+        public final static String GD_ASSIGNED_EXAMINER = "Goods Declaration Assigned";
+    }
+
+    public static class EmailConstants {
+        public static final String EMAIL_STATUS_NOT_SEND = "NOT_SENT";
+        public static final String EMAIL_STATUS_SEND = "SENT";
+
+    }
 }

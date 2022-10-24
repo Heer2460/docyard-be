@@ -1,4 +1,4 @@
-package com.infotech.docyard.um.enums;
+package com.infotech.docyard.dochandling.enums;
 
 public enum EmailStatusEnum {
 
