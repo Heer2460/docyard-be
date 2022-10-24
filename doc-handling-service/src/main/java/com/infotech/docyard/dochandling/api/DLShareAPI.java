@@ -76,7 +76,7 @@ public class DLShareAPI {
         return ResponseUtility.buildResponseObject(status);
     }
 
-    @RequestMapping(value = "/update-access-permission", method = RequestMethod.POST)
+    @RequestMapping(value = "/update-access-permission", method = RequestMethod.PUT)
     public CustomResponse updateShareCollaboratorAccessPermission(HttpServletRequest request,
                                                                        @RequestParam(value = "dlDocId") Long dlDocId,
                                                                        @RequestParam(value = "collId") Long collId,
