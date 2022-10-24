@@ -65,7 +65,7 @@ public class AppConstants {
         public static final String EXT_DOCX = "docx";
     }
     public static class EmailSubjectConstants {
-        public final static String SHARE_FILE_RESTRICTED = "File Shared";
+        public final static String SHARE_FILE = "File Shared";
         public final static String PASSWORD_EXPIRED = "Password Expired";
         public final static String FORGOT_PASSWORD = "Forgot Password";
         public final static String CHANGE_PASSWORD = "Change Password";

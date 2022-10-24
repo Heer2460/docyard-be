@@ -347,14 +347,27 @@ public class DLShareService {
                 ownerDTO.setUsername((String) map.get("username"));
             }
             for (int i = 0; i <= names.size() - 1; i++) {
-                String content = NotificationUtility.buildRestrictedShareFileEmailContent(ownerDTO, names.get(i), docName, shareRequest.getAppContextPath() +
-                        shareRequest.getShareLink());
+                String content = null;
+                if (shareRequest.getShareType().equals("RESTRICTED")) {
+                    content = NotificationUtility.buildRestrictedShareFileEmailContent(ownerDTO, names.get(i), docName, shareRequest.getAppContextPath() +
+                            shareRequest.getShareLink());
+                }
+                else if (shareRequest.getShareType().equals("ANYONE")){
+                    content = NotificationUtility.buildOpenShareFileEmailContent(ownerDTO, names.get(i), docName, shareRequest.getAppContextPath() +
+                            shareRequest.getShareLink());
+                }
                 emailed = false;
                 if (!AppUtility.isEmpty(content)) {
                     EmailInstance emailInstance = new EmailInstance();
                     emailInstance.setToEmail(emails.get(i));
-                    emailInstance.setType(EmailTypeEnum.SHARE_FILE_RESTRICTED.getValue());
-                    emailInstance.setSubject(AppConstants.EmailSubjectConstants.SHARE_FILE_RESTRICTED);
+                    if (shareRequest.getShareType().equals("RESTRICTED")) {
+                        emailInstance.setType(EmailTypeEnum.SHARE_FILE_RESTRICTED.getValue());
+                        emailInstance.setSubject(AppConstants.EmailSubjectConstants.SHARE_FILE);
+                    }
+                    else if (shareRequest.getShareType().equals("ANYONE")){
+                        emailInstance.setType(EmailTypeEnum.SHARE_FILE_WITH_ANYONE.getValue());
+                        emailInstance.setSubject(AppConstants.EmailSubjectConstants.SHARE_FILE);
+                    }
                     emailInstance.setContent(content);
                     emailInstance.setStatus(EmailStatusEnum.NOT_SENT.getValue());
                     emailInstance.setCreatedOn(ZonedDateTime.now());
