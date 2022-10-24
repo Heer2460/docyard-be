@@ -88,7 +88,7 @@ public class DLShareService {
     }
 
     public DLShare getDLShareById(Long dlShareId) {
-        log.info("DLShareService - getAllSharingDetailsByDLDocId method called...");
+        log.info("DLShareService - getDLShareById method called...");
 
         Optional<DLShare> dlShareOptional = dlShareRepository.findById(dlShareId);
         return dlShareOptional.orElse(null);
@@ -285,8 +285,8 @@ public class DLShareService {
         return status;
     }
 
-    public DLShareCollaborator updateCollaboratorAccessPermissionByDocument (Long dlDocId, Long collId, String accessRight) {
-        log.info("DLShareService - updateCollaboratorAccessPermissionByDocument method called...");
+    public DLShareCollaborator updateShareCollaboratorAccessPermission (Long dlDocId, Long collId, String accessRight) {
+        log.info("DLShareService - updateShareCollaboratorAccessPermission method called...");
 
         DLShareCollaborator shareCollaborator = null;
         if (accessRight.equals(AccessRightEnum.COMMENTOR) || accessRight.equals(AccessRightEnum.VIEWER)) {
@@ -310,7 +310,7 @@ public class DLShareService {
     }
 
     public String removeCollaboratorFromSharing (Long dlDocId, Long collId) {
-        log.info("DLShareService - shareRestricted method called...");
+        log.info("DLShareService - removeCollaboratorFromSharing method called...");
 
         DLShare dlShare = dlShareRepository.findByDlDocumentId(dlDocId);
         if (!AppUtility.isEmpty(dlShare)) {

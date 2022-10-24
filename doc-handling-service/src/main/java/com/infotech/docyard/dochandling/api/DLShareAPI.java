@@ -1,6 +1,5 @@
 package com.infotech.docyard.dochandling.api;
 
-import com.infotech.docyard.dochandling.dl.entity.DLCollaborator;
 import com.infotech.docyard.dochandling.dl.entity.DLShare;
 import com.infotech.docyard.dochandling.dl.entity.DLShareCollaborator;
 import com.infotech.docyard.dochandling.dto.DLDocumentShareDTO;
@@ -18,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Path;
 import java.util.List;
 
 @RestController
@@ -79,16 +77,16 @@ public class DLShareAPI {
     }
 
     @RequestMapping(value = "/update-access-permission", method = RequestMethod.POST)
-    public CustomResponse updateCollaboratorAccessPermissionByDocument(HttpServletRequest request,
+    public CustomResponse updateShareCollaboratorAccessPermission(HttpServletRequest request,
                                                                        @RequestParam(value = "dlDocId") Long dlDocId,
                                                                        @RequestParam(value = "collId") Long collId,
                                                                        @RequestParam(value = "accessRight") String accessRight)
             throws CustomException, DataValidationException, NoDataFoundException {
-        log.info("updateCollaboratorAccessPermissionByDocument API initiated...");
+        log.info("updateShareCollaboratorAccessPermission API initiated...");
 
         DLShareCollaborator shareCollaborator = null;
         try {
-            shareCollaborator = dlShareService.updateCollaboratorAccessPermissionByDocument(dlDocId, collId, accessRight);
+            shareCollaborator = dlShareService.updateShareCollaboratorAccessPermission(dlDocId, collId, accessRight);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
