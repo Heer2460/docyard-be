@@ -1,7 +1,8 @@
 package com.infotech.docyard.dochandling.api;
 
-import com.infotech.docyard.dochandling.dto.DLDocumentCommentDTO;
+import com.infotech.docyard.dochandling.dl.entity.DLShare;
 import com.infotech.docyard.dochandling.dto.DLDocumentShareDTO;
+import com.infotech.docyard.dochandling.dto.DLShareDTO;
 import com.infotech.docyard.dochandling.dto.ShareRequestDTO;
 import com.infotech.docyard.dochandling.exceptions.CustomException;
 import com.infotech.docyard.dochandling.exceptions.DataValidationException;
@@ -37,6 +38,23 @@ public class DLShareAPI {
             ResponseUtility.exceptionResponse(e);
         }
         return ResponseUtility.buildResponseList(shareDTOS);
+    }
+
+    @RequestMapping(value = "/{dlShareId}", method = RequestMethod.GET)
+    public CustomResponse getDLShareById(HttpServletRequest request,
+                                         @PathVariable(name = "dlShareId") Long dlShareId) throws CustomException {
+        log.info("getAllSharingDetailsByDLDocId API initiated...");
+        if (AppUtility.isEmpty(dlShareId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
+
+        DLShare dlShare = null;
+        try {
+            dlShare = dlShareService.getDLShareById(dlShareId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.buildResponseObject(dlShare, new DLShareDTO(), false);
     }
 
     @RequestMapping(value = "/", method = RequestMethod.POST)

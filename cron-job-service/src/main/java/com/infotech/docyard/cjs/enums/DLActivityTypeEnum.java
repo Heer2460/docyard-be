@@ -1,4 +1,4 @@
-package com.infotech.docyard.dochandling.enums;
+package com.infotech.docyard.cjs.enums;
 
 import java.util.HashMap;
 
@@ -40,7 +40,6 @@ public enum DLActivityTypeEnum {
     public static DLActivityTypeEnum getByValue(String value) {
         return map.get(value);
     }
-
     public static DLActivityTypeEnum getByName(String name) {
         return map.get(name);
     }
