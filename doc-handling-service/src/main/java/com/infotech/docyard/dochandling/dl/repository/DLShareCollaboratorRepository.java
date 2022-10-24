@@ -19,4 +19,6 @@ public interface DLShareCollaboratorRepository extends JpaRepository<DLShareColl
 
     List<DLShareCollaborator> findAllByDlShareId(Long dlShareId);
 
+    DLShareCollaborator findByDlShareIdAndDlCollaboratorId(Long dlShareId, Long dlCollId);
+
 }

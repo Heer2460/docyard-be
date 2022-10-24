@@ -1,6 +1,8 @@
 package com.infotech.docyard.dochandling.api;
 
+import com.infotech.docyard.dochandling.dl.entity.DLCollaborator;
 import com.infotech.docyard.dochandling.dl.entity.DLShare;
+import com.infotech.docyard.dochandling.dl.entity.DLShareCollaborator;
 import com.infotech.docyard.dochandling.dto.DLDocumentShareDTO;
 import com.infotech.docyard.dochandling.dto.DLShareDTO;
 import com.infotech.docyard.dochandling.dto.ShareRequestDTO;
@@ -74,6 +76,23 @@ public class DLShareAPI {
             ResponseUtility.exceptionResponse(e);
         }
         return ResponseUtility.buildResponseObject(status);
+    }
+
+    @RequestMapping(value = "/update-access-permission", method = RequestMethod.POST)
+    public CustomResponse updateCollaboratorAccessPermissionByDocument(HttpServletRequest request,
+                                                                       @RequestParam(value = "dlDocId") Long dlDocId,
+                                                                       @RequestParam(value = "collId") Long collId,
+                                                                       @RequestParam(value = "accessRight") String accessRight)
+            throws CustomException, DataValidationException, NoDataFoundException {
+        log.info("updateCollaboratorAccessPermissionByDocument API initiated...");
+
+        DLShareCollaborator shareCollaborator = null;
+        try {
+            shareCollaborator = dlShareService.updateCollaboratorAccessPermissionByDocument(dlDocId, collId, accessRight);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.buildResponseObject(shareCollaborator);
     }
 
     @RequestMapping(value = "/{dlDocId}/{collabId}", method = RequestMethod.DELETE)

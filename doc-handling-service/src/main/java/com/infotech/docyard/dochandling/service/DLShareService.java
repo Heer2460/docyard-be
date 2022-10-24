@@ -285,6 +285,30 @@ public class DLShareService {
         return status;
     }
 
+    public DLShareCollaborator updateCollaboratorAccessPermissionByDocument (Long dlDocId, Long collId, String accessRight) {
+        log.info("DLShareService - updateCollaboratorAccessPermissionByDocument method called...");
+
+        DLShareCollaborator shareCollaborator = null;
+        if (accessRight.equals(AccessRightEnum.COMMENTOR) || accessRight.equals(AccessRightEnum.VIEWER)) {
+            DLShare dlShare = dlShareRepository.findByDlDocumentId(dlDocId);
+            if (!AppUtility.isEmpty(dlShare)) {
+                Optional<DLCollaborator> collabOp = dlCollaboratorRepository.findById(collId);
+                if (collabOp.isPresent()){
+                    shareCollaborator = dlShareCollaboratorRepository.findByDlShareIdAndDlCollaboratorId(dlShare.getId(), collId);
+                    shareCollaborator.setAccessRight(accessRight);
+                    shareCollaborator = dlShareCollaboratorRepository.save(shareCollaborator);
+                } else {
+                    throw new DataValidationException(AppUtility.getResourceMessage("collaborator.not.found"));
+                }
+            } else {
+                throw new DataValidationException(AppUtility.getResourceMessage("document.not.shared"));
+            }
+        } else {
+            throw new DataValidationException(AppUtility.getResourceMessage("valid.access.rights.not.provided"));
+        }
+        return shareCollaborator;
+    }
+
     public String removeCollaboratorFromSharing (Long dlDocId, Long collId) {
         log.info("DLShareService - shareRestricted method called...");
 
