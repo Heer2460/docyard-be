@@ -4,7 +4,7 @@ public enum AccessRightEnum {
 
     OWNER("OWNER"),
     VIEWER("VIEWER"),
-    COMMENT("COMMENT"),
+    COMMENTOR("COMMENTOR"),
     EDITOR("EDITOR");
     private String value;
 

@@ -108,6 +108,26 @@ public class UserService {
         return emails;
     }
 
+    public NameEmailDTO searchUsersNamesAndEmailsByDepartmentId(long deptId) {
+        log.info("searchUsersNamesAndEmailsByDepartmentId method called..");
+
+        List<User> users = userRepository.findAllByStatus("active");
+        List<String> emails = new ArrayList<>();
+        List<String> names = new ArrayList<>();
+        for (User u : users) {
+            if (!AppUtility.isEmpty(u.getDepartmentIds())) {
+                List<Long> ids = Stream.of(u.getDepartmentIds().split(","))
+                        .map(Long::parseLong)
+                        .collect(Collectors.toList());
+                if (ids.stream().anyMatch(id -> deptId == id.longValue())) {
+                    emails.add(u.getEmail());
+                    names.add((u.getName()));
+                }
+            }
+        }
+        return new NameEmailDTO(names, emails);
+    }
+
     @Transactional
     public User saveUser(UserDTO userDTO, MultipartFile profileImg) throws Exception {
         log.info("saveUser method called..");
@@ -126,7 +146,25 @@ public class UserService {
                 userDTO.setProfilePhotoReceived(profileImg);
             }
             userDTO.setPassword(new BCryptPasswordEncoder().encode(userDTO.getPassword()));
-            return userRepository.save(userDTO.convertToEntity());
+            user =  userRepository.save(userDTO.convertToEntity());
+
+            String content = NotificationUtility.buildCreateUserEmailContent(userDTO,baseFELink);
+            if (!AppUtility.isEmpty(content)) {
+                EmailInstance emailInstance = new EmailInstance();
+                emailInstance.setToEmail(userDTO.getEmail());
+                emailInstance.setType(EmailTypeEnum.USER_CREATED.getValue());
+                emailInstance.setSubject(AppConstants.EmailSubjectConstants.USER_CREATED);
+                emailInstance.setContent(content);
+                emailInstance.setStatus(EmailStatusEnum.NOT_SENT.getValue());
+                emailInstance.setCreatedOn(ZonedDateTime.now());
+                emailInstance.setUpdatedOn(ZonedDateTime.now());
+                emailInstance.setCreatedBy(1L);
+                emailInstance.setUpdatedBy(1L);
+                emailInstanceRepository.save(emailInstance);
+                notificationService.sendEmail(emailInstance);
+            }
+
+            return user;
         }
     }
 

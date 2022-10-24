@@ -14,4 +14,11 @@ public interface DLShareCollaboratorRepository extends JpaRepository<DLShareColl
 
     @Modifying
     void deleteByDlShareId(Long dlShareId);
+
+    void deleteByDlShareIdAndDlCollaboratorId(Long dlShareId, Long dlCollId);
+
+    List<DLShareCollaborator> findAllByDlShareId(Long dlShareId);
+
+    DLShareCollaborator findByDlShareIdAndDlCollaboratorId(Long dlShareId, Long dlCollId);
+
 }

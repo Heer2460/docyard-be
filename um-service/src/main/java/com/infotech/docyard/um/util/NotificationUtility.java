@@ -45,11 +45,12 @@ public class NotificationUtility {
     public static String buildCreateUserEmailContent(UserDTO userDTO, String baseFELink) {
         log.info("buildCreateUserEmailContent API initiated...");
 
-        StringBuilder content = new StringBuilder("Welcome <strong>" + userDTO.getName() + " ! </strong>");
-        content.append("<br>Your account has been created. To access the system use the following: <br>");
-        content.append("URL: ").append(baseFELink).append("<br>");
-        content.append("<strong> username: ").append(userDTO.getUsername()).append("</strong><br><br>");
-        content.append("For password please contact your system administrator.");
+        StringBuilder content = new StringBuilder("Welcome <strong>" + userDTO.getName() + " ! </strong><br>");
+        content.append("<br>Your account has been created. To access the system use the following URL:<br>" );
+        content.append("<br><a href=\"").append(baseFELink).append("\">").append(baseFELink).append("</a><br>");
+        content.append("<br><strong> username: ").append(userDTO.getUsername()).append("</strong><br>");
+        content.append("<br>For password please contact your system administrator.");
+        content.append("<br><br><strong>ThankYou!</strong>");
 
         return content.toString();
     }

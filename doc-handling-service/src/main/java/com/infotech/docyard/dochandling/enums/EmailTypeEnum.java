@@ -1,7 +1,9 @@
-package com.infotech.docyard.um.enums;
+package com.infotech.docyard.dochandling.enums;
 
 public enum EmailTypeEnum {
 
+    SHARE_FILE_RESTRICTED("SHARE_FILE_RESTRICTED"),
+    SHARE_FILE_WITH_ANYONE("SHARE_FILE_WITH_ANYONE"),
     EXPIRY_NOTIFICATION("EXPIRY_NOTIFICATION"),
     FORGOT_PASSWORD("FORGOT_PASSWORD"),
     USER_CREATED("USER_CREATED"),

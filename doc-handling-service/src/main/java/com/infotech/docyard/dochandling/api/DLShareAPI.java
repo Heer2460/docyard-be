@@ -1,6 +1,7 @@
 package com.infotech.docyard.dochandling.api;
 
 import com.infotech.docyard.dochandling.dl.entity.DLShare;
+import com.infotech.docyard.dochandling.dl.entity.DLShareCollaborator;
 import com.infotech.docyard.dochandling.dto.DLDocumentShareDTO;
 import com.infotech.docyard.dochandling.dto.DLShareDTO;
 import com.infotech.docyard.dochandling.dto.ShareRequestDTO;
@@ -75,6 +76,42 @@ public class DLShareAPI {
         return ResponseUtility.buildResponseObject(status);
     }
 
+    @RequestMapping(value = "/update-access-permission", method = RequestMethod.PUT)
+    public CustomResponse updateShareCollaboratorAccessPermission(HttpServletRequest request,
+                                                                       @RequestParam(value = "dlDocId") Long dlDocId,
+                                                                       @RequestParam(value = "collId") Long collId,
+                                                                       @RequestParam(value = "accessRight") String accessRight)
+            throws CustomException, DataValidationException, NoDataFoundException {
+        log.info("updateShareCollaboratorAccessPermission API initiated...");
+
+        DLShareCollaborator shareCollaborator = null;
+        try {
+            shareCollaborator = dlShareService.updateShareCollaboratorAccessPermission(dlDocId, collId, accessRight);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.buildResponseObject(shareCollaborator);
+    }
+
+    @RequestMapping(value = "/{dlDocId}/{collabId}", method = RequestMethod.DELETE)
+    public CustomResponse removeCollaboratorFromSharing(HttpServletRequest request,
+                                                        @PathVariable Long dlDocId,
+                                                        @PathVariable Long collabId)
+            throws CustomException, DataValidationException, NoDataFoundException {
+        log.info("removeCollaboratorFromSharing API initiated...");
+
+        String status = null;
+        if (AppUtility.isEmpty(dlDocId) || AppUtility.isEmpty(collabId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
+        try {
+            status = dlShareService.removeCollaboratorFromSharing(dlDocId, collabId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.buildResponseObject(status);
+    }
+
     @RequestMapping(value = "/remove", method = RequestMethod.DELETE)
     public CustomResponse removeDLDocumentSharing(HttpServletRequest request,
                                                   @RequestBody ShareRequestDTO shareRequestDTO)
@@ -86,7 +123,7 @@ public class DLShareAPI {
         }
         String status = null;
         try {
-            status = dlShareService.shareDLDocument(shareRequestDTO);
+            status = dlShareService.removeSharing(shareRequestDTO);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
