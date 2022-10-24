@@ -1,7 +1,6 @@
-package com.infotech.docyard.um.cronjobs;
+package com.infotech.docyard.cjs.jobs;
 
-import com.infotech.docyard.um.service.UserService;
-import com.netflix.discovery.converters.Auto;
+import com.infotech.docyard.cjs.service.JobService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class DayStartJob {
 
     @Autowired
-    private UserService userService;
+    private JobService userService;
 
     @Scheduled(cron = "0 * * * * *") // Each Minute
     public void eachMinuteJob() {

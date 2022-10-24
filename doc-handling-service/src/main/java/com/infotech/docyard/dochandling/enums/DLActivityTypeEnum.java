@@ -40,6 +40,7 @@ public enum DLActivityTypeEnum {
     public static DLActivityTypeEnum getByValue(String value) {
         return map.get(value);
     }
+
     public static DLActivityTypeEnum getByName(String name) {
         return map.get(name);
     }

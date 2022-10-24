@@ -12,9 +12,13 @@ public class NotificationUtility {
 
         String completeLink = baseFELink + "?token=" + token + "&userId=" + user.getId();
         StringBuilder content = new StringBuilder("Dear " + user.getName() + ", </br>");
-        content.append("click on below link to reset your password ");
         content.append("</br> ");
+        content.append("Click on below link to reset your password:");
+        content.append("</br> ");
+        content.append("</br> ");
+        content.append("<b> ");
         content.append(completeLink);
+        content.append("</b> ");
         content.append("</br> ");
         content.append("</br> ");
 
@@ -27,7 +31,8 @@ public class NotificationUtility {
         log.info("buildChangePasswordContent API initiated...");
 
         StringBuilder content = new StringBuilder("Dear " + user.getName() + ", </br>");
-        content.append(" Your password has been changed ");
+        content.append("</br> ");
+        content.append(" Your password has been changed.");
         content.append("</br> ");
         content.append("</br> ");
         content.append("</br> ");

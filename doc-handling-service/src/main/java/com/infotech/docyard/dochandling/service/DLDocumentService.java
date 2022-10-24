@@ -20,6 +20,7 @@ import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,6 +121,31 @@ public class DLDocumentService {
                 int fileCount = dlDocumentRepository.countAllByArchivedFalseAndFolderFalseAndParentId(dlDoc.getId());
                 dto.setSize(fileCount + " Files");
             }
+            Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDoc.getCreatedBy(), Object.class);
+            if (!AppUtility.isEmpty(response)) {
+                HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+                dto.setCreatedByName((String) map.get("name"));
+                dto.setUpdatedByName((String) map.get("name"));
+            }
+            documentDTOList.add(dto);
+        }
+        return documentDTOList;
+    }
+
+    public List<DLDocumentDTO> getAllDocumentsByFolderAndArchive(Long folderId, Boolean archived) {
+        log.info("DLDocumentService - getAllDocumentsByFolderAndArchive method called...");
+
+        List<DLDocumentDTO> documentDTOList = new ArrayList<>();
+        List<DLDocument> dlDocumentList;
+        if (AppUtility.isEmpty(folderId) || folderId == 0L) {
+            dlDocumentList = dlDocumentRepository.findByParentIdIsNullAndArchivedAndFolderFalseOrderByUpdatedOnDesc(archived);
+        } else {
+            dlDocumentList = dlDocumentRepository.findByParentIdAndArchivedAndFolderFalseOrderByUpdatedOnDesc(folderId, archived);
+        }
+        for (DLDocument dlDoc : dlDocumentList) {
+            DLDocumentDTO dto = new DLDocumentDTO();
+            dto.convertToDTO(dlDoc, false);
+
             Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDoc.getCreatedBy(), Object.class);
             if (!AppUtility.isEmpty(response)) {
                 HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
@@ -329,7 +355,7 @@ public class DLDocumentService {
                                 }
                             } else {
                                 Optional<DLDocument> optionalDLDocument = dlDocumentRepository.findById(folderId);
-                                if (optionalDLDocument.isPresent()){
+                                if (optionalDLDocument.isPresent()) {
                                     if (optionalDLDocument.get().getFolder()) {
                                         if (Objects.equals(shareOp.get().getDlDocumentId(), folderId)) {
                                             dlDocumentList = dlDocumentRepository.findByCreatedByAndParentIdAndArchivedFalseOrderByUpdatedOnDesc(
@@ -342,18 +368,16 @@ public class DLDocumentService {
                         }
                     }
                 }
-                if (!AppUtility.isEmpty(dlDocumentList)){
-                    for (DLDocument doc : dlDocumentList) {
-                        DLDocumentDTO docDTO = new DLDocumentDTO();
-                        docDTO.convertToDTO(doc, true);
-                        Object responseNames = restTemplate.getForObject("http://um-service/um/user/" + docDTO.getCreatedBy(), Object.class);
-                        if (!AppUtility.isEmpty(responseNames)) {
-                            HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) responseNames).get("data");
-                            docDTO.setCreatedByName((String) map.get("name"));
-                            docDTO.setUpdatedByName((String) map.get("name"));
-                        }
-                        documentDTOList.add(docDTO);
+                for (DLDocument doc : dlDocumentList) {
+                    DLDocumentDTO docDTO = new DLDocumentDTO();
+                    docDTO.convertToDTO(doc, true);
+                    Object responseNames = restTemplate.getForObject("http://um-service/um/user/" + docDTO.getCreatedBy(), Object.class);
+                    if (!AppUtility.isEmpty(responseNames)) {
+                        HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) responseNames).get("data");
+                        docDTO.setCreatedByName((String) map.get("name"));
+                        docDTO.setUpdatedByName((String) map.get("name"));
                     }
+                    documentDTOList.add(docDTO);
                 }
             }
         }
@@ -403,6 +427,13 @@ public class DLDocumentService {
                     count++;
                 }
                 DashboardDTO.OthersProps othersProps = new DashboardDTO.OthersProps(count, size, null);
+                dashboardDTO = new DashboardDTO(imageProps, videosProps, docsProps, othersProps);
+            } else {
+                DashboardDTO.VideosProps videosProps = new DashboardDTO.VideosProps(0, size, null);
+                DashboardDTO.DocsProps docsProps = new DashboardDTO.DocsProps(0, size, null);
+                DashboardDTO.ImageProps imageProps = new DashboardDTO.ImageProps(0, size, null);
+                DashboardDTO.OthersProps othersProps = new DashboardDTO.OthersProps(0, size, null);
+
                 dashboardDTO = new DashboardDTO(imageProps, videosProps, docsProps, othersProps);
             }
         }
@@ -467,6 +498,9 @@ public class DLDocumentService {
         DLDocument dlDoc = null;
         if (files.length > 0) {
             for (MultipartFile file : files) {
+                if (StringUtils.containsAny(file.getOriginalFilename(), "/\\:*?\"<>|")) {
+                    throw new DataValidationException(AppUtility.getResourceMessage("invalid.doc.name"));
+                }
                 log.info("DLDocumentService - buildDocument object started...");
                 dlDoc = this.buildDocument(file, uploadDocumentDTO, true);
                 log.info("DLDocumentService - buildDocument object ended...");
@@ -518,9 +552,7 @@ public class DLDocumentService {
         try {
             String title = file.getOriginalFilename().substring(0, file.getOriginalFilename().lastIndexOf('.'));
             doc.setTitle(title);
-
-            String fileName = file.getOriginalFilename().replaceAll(" ", "_");
-            doc.setName(fileName);
+            doc.setName(file.getOriginalFilename());
 
             int extDot = file.getOriginalFilename().lastIndexOf('.');
             String extension = extDot > 0 ? file.getOriginalFilename().substring(extDot + 1) : "";
@@ -856,47 +888,6 @@ public class DLDocumentService {
         return children;
     }
 
-    public synchronized void getContentFromAllDocuments() {
-        log.info("DLDocumentService - getContentFromAllDocuments method called...");
-
-        try {
-            List<DLDocument> dlDocumentList = dlDocumentRepository.findAllByFolderFalseAndArchivedFalseAndOcrDoneFalseAndOcrSupportedTrue();
-            for (DLDocument doc : dlDocumentList) {
-                InputStream inputStream = ftpService.downloadInputStream(doc.getVersionGUId());
-                if (!AppUtility.isEmpty(inputStream)) {
-                    ITesseract instance = new Tesseract();
-                    instance.setOcrEngineMode(1);
-                    Path dataDirectory = Paths.get(ClassLoader.getSystemResource("tesseractdata").toURI());
-                    instance.setDatapath(dataDirectory.toString());
-                    String result = null;
-
-                    if (doc.getExtension().equalsIgnoreCase("pdf")) {
-                        //TODO will do it later
-//                        PDDocument document = PDDocument.load(inputStream);
-//                        PDFRenderer pdfRenderer = new PDFRenderer(document);
-//                        StringBuffer stringBuffer = new StringBuffer();
-//                        for (int page = 0; page < document.getNumberOfPages(); page++) {
-//                            BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, 300, ImageType.RGB);
-//                            stringBuffer.append(instance.doOCR(bufferedImage));
-//                        }
-//                        result = stringBuffer.toString();
-//                        document.close();
-                    } else {
-                        BufferedImage bufferedImage = ImageIO.read(inputStream);
-                        result = instance.doOCR(bufferedImage);
-                    }
-
-                    doc.setContent(result);
-                    doc.setOcrDone(true);
-                    doc.setOcrSupported(true);
-                    dlDocumentRepository.save(doc);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     private void getContentFromFile(DLDocument doc, File f) {
         FileInputStream fileInputStream = null;
         try {
@@ -978,26 +969,6 @@ public class DLDocumentService {
                     ResponseUtility.exceptionResponse(e);
                 }
             }
-        }
-    }
-
-    @Transactional(rollbackFor = {Throwable.class})
-    public void deleteArchivedDocuments() throws CustomException {
-        List<DLDocument> archivedDLDocs = dlDocumentRepository.findAllByArchivedTrue();
-        if (!AppUtility.isEmpty(archivedDLDocs)) {
-            try {
-                for (DLDocument archivedDoc : archivedDLDocs) {
-                    archivedDoc.setDaysArchived(archivedDoc.getDaysArchived() + 1);
-                    if (archivedDoc.getDaysArchived() >= 30) {
-                        deleteDLDocument(archivedDoc.getId());
-                    } else {
-                        dlDocumentRepository.save(archivedDoc);
-                    }
-                }
-            } catch (Exception e) {
-                ResponseUtility.exceptionResponse(e);
-            }
-
         }
     }
 

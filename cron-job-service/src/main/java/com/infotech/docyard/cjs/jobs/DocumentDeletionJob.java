@@ -1,6 +1,6 @@
-package com.infotech.docyard.dochandling.cronjobs;
+package com.infotech.docyard.cjs.jobs;
 
-import com.infotech.docyard.dochandling.service.DLDocumentService;
+import com.infotech.docyard.cjs.service.JobService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,13 +13,13 @@ import java.time.LocalDateTime;
 
 public class DocumentDeletionJob {
     @Autowired
-    private DLDocumentService dlDocumentService;
+    private JobService jobService;
 
     @Scheduled(cron = "0 55 23 * * *") //Every day at 23:55
     public void deleteArchivedDocumentsJob() {
         log.info("DocumentDeletionJob - deleteArchivedDocumentsJob Job started at: " + LocalDateTime.now());
         try {
-            Thread t = new Thread(new DocumentDeletionThread(this.dlDocumentService));
+            Thread t = new Thread(new DocumentDeletionThread(this.jobService));
             t.start();
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -29,9 +29,9 @@ public class DocumentDeletionJob {
     @Component
     public static class DocumentDeletionThread implements Runnable {
 
-        private final DLDocumentService dlDocumentService;
+        private final JobService dlDocumentService;
 
-        public DocumentDeletionThread(DLDocumentService dlDocumentService) {
+        public DocumentDeletionThread(JobService dlDocumentService) {
             this.dlDocumentService = dlDocumentService;
         }
 

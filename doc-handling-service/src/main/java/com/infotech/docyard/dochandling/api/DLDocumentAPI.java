@@ -81,6 +81,21 @@ public class DLDocumentAPI {
         return ResponseUtility.buildResponseList(documentDTOList);
     }
 
+    @RequestMapping(value = "/folder/{folderId}", method = RequestMethod.GET)
+    public CustomResponse getAllDocumentsByFolderAndArchive(HttpServletRequest request,
+                                                            @PathVariable(name = "folderId") Long folderId,
+                                                            @RequestParam(value = "archived") Boolean archived) throws CustomException {
+        log.info("getAllDocumentsByFolderAndArchive API initiated...");
+
+        List<DLDocumentDTO> documentDTOList = null;
+        try {
+            documentDTOList = dlDocumentService.getAllDocumentsByFolderAndArchive(folderId, archived);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.buildResponseList(documentDTOList);
+    }
+
     @RequestMapping(value = "/document/owner/{ownerId}", method = RequestMethod.GET)
     public CustomResponse getAllDocumentsByOwnerIdFolderAndArchive(HttpServletRequest request,
                                                                    @PathVariable("ownerId") Long ownerId,

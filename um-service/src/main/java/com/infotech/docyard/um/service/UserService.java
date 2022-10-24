@@ -236,7 +236,7 @@ public class UserService {
 
             userRepository.save(u);
 
-            ForgotPasswordLink forgotPasswordLink = forgotPasswordLinkRepository.findByToken(resetPasswordDTO.getToken());
+            ForgotPasswordLink forgotPasswordLink = forgotPasswordLinkRepository.findFirstByToken(resetPasswordDTO.getToken());
             if (!AppUtility.isEmpty(forgotPasswordLink)) {
                 forgotPasswordLink.setToken(null);
                 forgotPasswordLink.setExpired(true);
@@ -331,7 +331,7 @@ public class UserService {
     public HttpStatus checkTokenExpiry(String token) {
         log.info("checkTokenExpiry method called..");
 
-        ForgotPasswordLink fpl = forgotPasswordLinkRepository.findByToken(token);
+        ForgotPasswordLink fpl = forgotPasswordLinkRepository.findFirstByToken(token);
         HttpStatus status;
         if (!AppUtility.isEmpty(fpl)) {
             if (fpl.getExpired()) {
@@ -507,12 +507,17 @@ public class UserService {
             userRepository.save(u);
 
             if (!AppUtility.isEmpty(changePasswordDTO.getToken())) {
-                ForgotPasswordLink fpl = forgotPasswordLinkRepository.findByToken(changePasswordDTO.getToken());
+                ForgotPasswordLink fpl = forgotPasswordLinkRepository.findFirstByToken(changePasswordDTO.getToken());
                 if (!AppUtility.isEmpty(fpl)) {
                     fpl.setExpired(true);
+                    fpl.setToken(null);
 
                     forgotPasswordLinkRepository.save(fpl);
+                }else{
+                    throw new DataValidationException(AppUtility.getResourceMessage("invalid.token"));
                 }
+            }else{
+                throw new DataValidationException(AppUtility.getResourceMessage("invalid.token"));
             }
         } else {
             throw new NoDataFoundException(AppUtility.getResourceMessage("user.not.found"));
@@ -542,7 +547,6 @@ public class UserService {
         List<ForgotPasswordLink> forgotPasswordLinkList = forgotPasswordLinkRepository.findAllByTokenIsNotNull();
 
         for (ForgotPasswordLink forgotPasswordLink : forgotPasswordLinkList) {
-
             if (forgotPasswordLink.getCreatedOn().plusMinutes(30).isBefore(ZonedDateTime.now())) {
                 forgotPasswordLink.setToken(null);
                 forgotPasswordLink.setExpired(true);

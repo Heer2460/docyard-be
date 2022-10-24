@@ -4,6 +4,7 @@ import com.infotech.docyard.dochandling.dl.entity.*;
 import com.infotech.docyard.dochandling.dl.repository.*;
 import com.infotech.docyard.dochandling.dto.DLDocumentShareDTO;
 import com.infotech.docyard.dochandling.dto.NameEmailDTO;
+import com.infotech.docyard.dochandling.dto.DLShareDTO;
 import com.infotech.docyard.dochandling.dto.ShareRequestDTO;
 import com.infotech.docyard.dochandling.dto.UserDTO;
 import com.infotech.docyard.dochandling.enums.*;
@@ -84,6 +85,13 @@ public class DLShareService {
             }
         }
         return dlDocumentShareDTOList;
+    }
+
+    public DLShare getDLShareById(Long dlShareId) {
+        log.info("DLShareService - getAllSharingDetailsByDLDocId method called...");
+
+        Optional<DLShare> dlShareOptional = dlShareRepository.findById(dlShareId);
+        return dlShareOptional.orElse(null);
     }
 
     @Transactional(rollbackFor = Throwable.class)
