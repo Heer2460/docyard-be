@@ -214,7 +214,7 @@ public class DLShareService {
         }
         dlDocument.setShareLinkCount(shareLinkCount);
         dlDocument.setUpdatedBy(shareRequest.getUserId());
-        dlShare.setPermanentLink(shareRequest.getShareLink());
+        dlShare.setPermanentLink(null);
         dlShare.setAccessRight(shareRequest.getSharePermission());
         dlShare.setShareType(ShareTypeEnum.RESTRICTED.getValue());
         dlShare.setStatus(ShareStatusEnum.SHARED.getValue());

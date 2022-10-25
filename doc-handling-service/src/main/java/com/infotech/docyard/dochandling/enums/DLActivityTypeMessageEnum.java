@@ -14,10 +14,9 @@ public enum DLActivityTypeMessageEnum {
     RESTORED_ARCHIVED("has restored from archived"),
     STARRED("has starred"),
     ARCHIVED("has archived"),
-    SHARING_DISABLED("has disabled shared"),
-    INVITED_PEOPLE_ONLY("has shared with invited people only"),
-    INVITED_EXTERNAL_PEOPLE_ONLY("has shared with external people"),
-    OPEN_LINK("has shared with an open link");
+    NO_SHARING("has removed sharing"),
+    RESTRICTED("has shared with restricted access"),
+    ANY_ONE("has shared with any one");
 
     private static final HashMap<String, DLActivityTypeMessageEnum> map = new HashMap<>();
 

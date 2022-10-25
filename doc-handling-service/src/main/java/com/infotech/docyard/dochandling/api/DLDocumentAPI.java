@@ -38,13 +38,13 @@ public class DLDocumentAPI {
                                             @PathVariable(value = "userId") Long userId) throws CustomException {
         log.info("searchDLDocuments API initiated...");
 
-        List<DLDocument> dlDocumentList = null;
+        List<DLDocumentDTO> documentDTOList = null;
         try {
-            dlDocumentList = dlDocumentService.searchDLDocuments(searchKey, userId);
+            documentDTOList = dlDocumentService.searchDLDocuments(searchKey, userId);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return ResponseUtility.buildResponseList(dlDocumentList, new DLDocumentDTO(), true);
+        return ResponseUtility.buildResponseList(documentDTOList);
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)

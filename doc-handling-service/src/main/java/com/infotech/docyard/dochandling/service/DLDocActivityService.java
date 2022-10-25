@@ -47,7 +47,7 @@ public class DLDocActivityService {
         for (DLDocumentActivityDTO activityDTO : dlDocumentActivityDTOList) {
             DLDocumentActivityResponseDTO activityResponseDTO = new DLDocumentActivityResponseDTO();
 
-            switch (activityDTO.getActivityType()){
+            switch (activityDTO.getActivityType()) {
                 case "COMMENT_POSTED":
                     activityResponseDTO.setAction(DLActivityTypeMessageEnum.COMMENT_POSTED.getValue());
                     Optional<DLDocumentComment> commentOP = dlDocumentCommentRepository.findById(activityDTO.getEntityId());
@@ -80,17 +80,14 @@ public class DLDocActivityService {
                 case "STARRED":
                     activityResponseDTO.setAction(DLActivityTypeMessageEnum.STARRED.getValue());
                     break;
-                case "OPEN_LINK":
-                    activityResponseDTO.setAction(DLActivityTypeMessageEnum.OPEN_LINK.getValue());
+                case "ANY_ONE":
+                    activityResponseDTO.setAction(DLActivityTypeMessageEnum.ANY_ONE.getValue());
                     break;
-                case "INVITED_PEOPLE_ONLY":
-                    activityResponseDTO.setAction(DLActivityTypeMessageEnum.INVITED_PEOPLE_ONLY.getValue());
+                case "RESTRICTED":
+                    activityResponseDTO.setAction(DLActivityTypeMessageEnum.RESTRICTED.getValue());
                     break;
-                case "INVITED_EXTERNAL_PEOPLE_ONLY":
-                    activityResponseDTO.setAction(DLActivityTypeMessageEnum.INVITED_EXTERNAL_PEOPLE_ONLY.getValue());
-                    break;
-                case "SHARING_DISABLED":
-                    activityResponseDTO.setAction(DLActivityTypeMessageEnum.SHARING_DISABLED.getValue());
+                case "NO_SHARING":
+                    activityResponseDTO.setAction(DLActivityTypeMessageEnum.NO_SHARING.getValue());
                     break;
                 default:
                     break;

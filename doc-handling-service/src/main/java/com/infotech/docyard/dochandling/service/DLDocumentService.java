@@ -68,10 +68,28 @@ public class DLDocumentService {
     @Autowired
     private RestTemplate restTemplate;
 
-    public List<DLDocument> searchDLDocuments(String searchKey, Long userId) {
+    public List<DLDocumentDTO> searchDLDocuments(String searchKey, Long userId) {
         log.info("DLDocumentService - searchDLDocuments method called...");
 
-        return dlDocumentRepository.findDLDocumentBySearchKey(searchKey, userId);
+        List<DLDocumentDTO> documentDTOList = new ArrayList<>();
+        List<DLDocument> dlDocumentList = dlDocumentRepository.findDLDocumentBySearchKey(searchKey, userId);
+        for (DLDocument dlDoc : dlDocumentList) {
+            DLDocumentDTO dto = new DLDocumentDTO();
+            dto.convertToDTO(dlDoc, false);
+
+            if (dlDoc.getFolder()) {
+                int fileCount = dlDocumentRepository.countAllByArchivedFalseAndFolderFalseAndParentId(dlDoc.getId());
+                dto.setSize(fileCount + " Files");
+            }
+            Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDoc.getCreatedBy(), Object.class);
+            if (!AppUtility.isEmpty(response)) {
+                HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+                dto.setCreatedByName((String) map.get("name"));
+                dto.setUpdatedByName((String) map.get("name"));
+            }
+            documentDTOList.add(dto);
+        }
+        return documentDTOList;
     }
 
     public List<DLDocumentDTO> getDLDocumentsByFolderIdAndArchive(Long folderId, Boolean archived) {
