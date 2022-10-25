@@ -5,12 +5,12 @@ import com.infotech.docyard.dochandling.dl.repository.*;
 import com.infotech.docyard.dochandling.dto.DLDocumentShareDTO;
 import com.infotech.docyard.dochandling.dto.NameEmailDTO;
 import com.infotech.docyard.dochandling.dto.ShareRequestDTO;
-import com.infotech.docyard.dochandling.dto.UserDTO;
-import com.infotech.docyard.dochandling.enums.*;
+import com.infotech.docyard.dochandling.enums.AccessRightEnum;
+import com.infotech.docyard.dochandling.enums.DLActivityTypeEnum;
+import com.infotech.docyard.dochandling.enums.ShareStatusEnum;
+import com.infotech.docyard.dochandling.enums.ShareTypeEnum;
 import com.infotech.docyard.dochandling.exceptions.DataValidationException;
-import com.infotech.docyard.dochandling.util.AppConstants;
 import com.infotech.docyard.dochandling.util.AppUtility;
-import com.infotech.docyard.dochandling.util.NotificationUtility;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,8 +36,6 @@ public class DLShareService {
     private DLDocumentActivityRepository dlDocumentActivityRepository;
     @Autowired
     private NotificationService notificationService;
-    @Autowired
-    private EmailInstanceRepository emailInstanceRepository;
     @Autowired
     private RestTemplate restTemplate;
 
@@ -118,8 +116,6 @@ public class DLShareService {
 
         DLShare dlShare = new DLShare();
         String status = "NOT_FOUND";
-        List<String> emails = new ArrayList<>();
-        List<String> names = new ArrayList<>();
         if (!AppUtility.isEmpty(dlDocument.getShared()) && dlDocument.getShared()) {
             Optional<DLShare> dsOp = dlShareRepository.findById(dlDocument.getDlShareId());
             if (dsOp.isPresent()) {
@@ -151,7 +147,8 @@ public class DLShareService {
 
         dlShare = dlShareRepository.save(dlShare);
 
-        DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.ANYONE.getValue(), dlShare.getId(), dlDocument.getId());
+        DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.ANYONE.getValue(),
+                dlShare.getId(), dlDocument.getId());
         dlDocumentActivityRepository.save(activity);
 
         dlDocument.setDlShareId(dlShare.getId());
@@ -161,7 +158,7 @@ public class DLShareService {
         status = "SUCCESS";
         if (!AppUtility.isEmpty(shareRequest.getDepartmentId()) || !AppUtility.isEmpty(shareRequest.getDlCollaborators())) {
             nmEmDTO = getNamesAndEmails(shareRequest.getDepartmentId(), shareRequest.getDlCollaborators(), nmEmDTO);
-            status = sendMail(shareRequest, dlDocument.getName(), nmEmDTO.getNames(), nmEmDTO.getEmails());
+            status = notificationService.sendShareNotification(shareRequest, dlDocument.getName(), nmEmDTO.getNames(), nmEmDTO.getEmails());
         }
 
         // send FCM to specific user
@@ -169,15 +166,13 @@ public class DLShareService {
     }
 
     @Transactional(rollbackFor = Throwable.class)
-    public String removeSharing(ShareRequestDTO shareRequest) {
+    public void removeSharing(ShareRequestDTO shareRequest) {
         log.info("DLShareService - removeSharing method called...");
 
         DLDocument dlDocument = dlDocumentRepository.findByIdAndArchivedFalse(shareRequest.getDlDocId());
         if (AppUtility.isEmpty(dlDocument)) {
             throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
-
         }
-        String status = "SHARING";
         if (!AppUtility.isEmpty(dlDocument.getShared()) && dlDocument.getShared()) {
             dlShareCollaboratorRepository.deleteByDlShareId(dlDocument.getDlShareId());
             dlShareRepository.deleteById(dlDocument.getDlShareId());
@@ -187,22 +182,21 @@ public class DLShareService {
             dlDocument.setUpdatedOn(ZonedDateTime.now());
             dlDocumentRepository.save(dlDocument);
 
-            DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.SHARING_REMOVED.getValue(), null, dlDocument.getId());
+            DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(),
+                    DLActivityTypeEnum.SHARING_REMOVED.getValue(), null, dlDocument.getId());
             dlDocumentActivityRepository.save(activity);
-            status = "SHARING_REMOVED";
+        } else {
+            throw new DataValidationException(AppUtility.getResourceMessage("document.share.remove.error"));
         }
-        return status;
     }
 
     @Transactional(rollbackFor = Throwable.class)
     public String shareRestricted(ShareRequestDTO shareRequest, DLDocument dlDocument) {
         log.info("DLShareService - shareRestricted method called...");
 
-        NameEmailDTO nameEmailDTO = null;
         DLShare dlShare = new DLShare();
         String status = "NOT_FOUND";
         List<String> emails = new ArrayList<>();
-        List<String> names = new ArrayList<>();
         if (!AppUtility.isEmpty(dlDocument.getShared()) && dlDocument.getShared()) {
             Optional<DLShare> dsOp = dlShareRepository.findById(dlDocument.getDlShareId());
             if (dsOp.isPresent()) {
@@ -238,10 +232,7 @@ public class DLShareService {
         if (!AppUtility.isEmpty(shareRequest.getDepartmentId()) || !AppUtility.isEmpty(shareRequest.getDlCollaborators())) {
             nmEmDTO = getNamesAndEmails(shareRequest.getDepartmentId(), shareRequest.getDlCollaborators(), nmEmDTO);
             emails = nmEmDTO.getEmails();
-            names = nmEmDTO.getNames();
         }
-
-
         List<DLCollaborator> dlCollList = new ArrayList<>();
         for (String colEmail : emails) {
             DLCollaborator dc = dlCollaboratorRepository.findByEmail(colEmail);
@@ -280,20 +271,20 @@ public class DLShareService {
         dlDocumentRepository.save(dlDocument);
         status = "SUCCESS";
 
-        status = sendMail(shareRequest, dlDocument.getName(), nmEmDTO.getNames(), nmEmDTO.getEmails());
+        status = notificationService.sendShareNotification(shareRequest, dlDocument.getName(), nmEmDTO.getNames(), nmEmDTO.getEmails());
         // send FCM to specific user
         return status;
     }
 
-    public DLShareCollaborator updateShareCollaboratorAccessPermission (Long dlDocId, Long collId, String accessRight) {
+    public DLShareCollaborator updateShareCollaboratorAccessPermission(Long dlDocId, Long collId, String accessRight) {
         log.info("DLShareService - updateShareCollaboratorAccessPermission method called...");
 
         DLShareCollaborator shareCollaborator = null;
-        if (accessRight.equals(AccessRightEnum.COMMENTOR) || accessRight.equals(AccessRightEnum.VIEWER)) {
+        if (accessRight.equals(AccessRightEnum.COMMENTOR.getValue()) || accessRight.equals(AccessRightEnum.VIEWER.getValue())) {
             DLShare dlShare = dlShareRepository.findByDlDocumentId(dlDocId);
             if (!AppUtility.isEmpty(dlShare)) {
                 Optional<DLCollaborator> collabOp = dlCollaboratorRepository.findById(collId);
-                if (collabOp.isPresent()){
+                if (collabOp.isPresent()) {
                     shareCollaborator = dlShareCollaboratorRepository.findByDlShareIdAndDlCollaboratorId(dlShare.getId(), collId);
                     shareCollaborator.setAccessRight(accessRight);
                     shareCollaborator = dlShareCollaboratorRepository.save(shareCollaborator);
@@ -309,24 +300,16 @@ public class DLShareService {
         return shareCollaborator;
     }
 
-    public String removeCollaboratorFromSharing (Long dlDocId, Long collId) {
-        log.info("DLShareService - removeCollaboratorFromSharing method called...");
+    @Transactional(rollbackFor = Throwable.class)
+    public void removeShareCollaborator(Long dlDocId, Long collId) {
+        log.info("DLShareService - removeShareCollaborator method called...");
 
         DLShare dlShare = dlShareRepository.findByDlDocumentId(dlDocId);
-        if (!AppUtility.isEmpty(dlShare)) {
-            List<DLShareCollaborator> shareColls = dlShareCollaboratorRepository.findAllByDlShareId(dlShare.getId());
-            if (!AppUtility.isEmpty(shareColls)) {
-                if (shareColls.size() == 1) {
-                    ShareRequestDTO shareRequestDTO = new ShareRequestDTO();
-                    shareRequestDTO.setDlDocId(dlDocId);
-                    removeSharing(shareRequestDTO);
-                } else {
-                    dlShareCollaboratorRepository.deleteByDlShareIdAndDlCollaboratorId(dlShare.getId(), collId);
-                }
-            }
-            return "SUCCESS";
+        if (AppUtility.isEmpty(dlShare)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("share.not.found"));
+        } else {
+            dlShareCollaboratorRepository.deleteByDlShareIdAndDlCollaboratorId(dlShare.getId(), collId);
         }
-        return "UNSUCCESSFULL";
     }
 
     public NameEmailDTO getNamesAndEmails(Long dptId, String[] collabEmails, NameEmailDTO nameEmailDTO) {
@@ -359,57 +342,5 @@ public class DLShareService {
         return nameEmailDTO;
     }
 
-    public String sendMail(ShareRequestDTO shareRequest, String docName, List<String> names, List<String> emails) {
-        try {
-            UserDTO ownerDTO = new UserDTO();
-            Boolean emailed = false;
-            Object response = restTemplate.getForObject("http://um-service/um/user/" + shareRequest.getUserId(), Object.class);
-            if (!AppUtility.isEmpty(response)) {
-                HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
-                ownerDTO.setName((String) map.get("name"));
-                ownerDTO.setEmail((String) map.get("email"));
-                ownerDTO.setUsername((String) map.get("username"));
-            }
-            for (int i = 0; i <= names.size() - 1; i++) {
-                String content = null;
-                if (shareRequest.getShareType().equals("RESTRICTED")) {
-                    content = NotificationUtility.buildRestrictedShareFileEmailContent(ownerDTO, names.get(i), docName, shareRequest.getAppContextPath() +
-                            shareRequest.getShareLink());
-                }
-                else if (shareRequest.getShareType().equals("ANYONE")){
-                    content = NotificationUtility.buildOpenShareFileEmailContent(ownerDTO, names.get(i), docName, shareRequest.getAppContextPath() +
-                            shareRequest.getShareLink());
-                }
-                emailed = false;
-                if (!AppUtility.isEmpty(content)) {
-                    EmailInstance emailInstance = new EmailInstance();
-                    emailInstance.setToEmail(emails.get(i));
-                    if (shareRequest.getShareType().equals("RESTRICTED")) {
-                        emailInstance.setType(EmailTypeEnum.SHARE_FILE_RESTRICTED.getValue());
-                        emailInstance.setSubject(AppConstants.EmailSubjectConstants.SHARE_FILE);
-                    }
-                    else if (shareRequest.getShareType().equals("ANYONE")){
-                        emailInstance.setType(EmailTypeEnum.SHARE_FILE_WITH_ANYONE.getValue());
-                        emailInstance.setSubject(AppConstants.EmailSubjectConstants.SHARE_FILE);
-                    }
-                    emailInstance.setContent(content);
-                    emailInstance.setStatus(EmailStatusEnum.NOT_SENT.getValue());
-                    emailInstance.setCreatedOn(ZonedDateTime.now());
-                    emailInstance.setUpdatedOn(ZonedDateTime.now());
-                    emailInstance.setCreatedBy(1L);
-                    emailInstance.setUpdatedBy(1L);
-                    emailInstanceRepository.save(emailInstance);
-                    notificationService.sendEmail(emailInstance);
-                    emailed = true;
-                }
-            }
-            if (emailed){
-                return "SUCCESS";
-            }
-            return "UNSUCCESSFUL";
-        } catch (Exception e) {
-            log.info(e);
-            return "UNSUCCESSFUL";
-        }
-    }
+
 }

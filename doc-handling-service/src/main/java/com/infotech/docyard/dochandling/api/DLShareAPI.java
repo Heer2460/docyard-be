@@ -93,23 +93,22 @@ public class DLShareAPI {
         return ResponseUtility.buildResponseObject(shareCollaborator);
     }
 
-    @RequestMapping(value = "/{dlDocId}/{collabId}", method = RequestMethod.DELETE)
-    public CustomResponse removeCollaboratorFromSharing(HttpServletRequest request,
-                                                        @PathVariable Long dlDocId,
-                                                        @PathVariable Long collabId)
+    @RequestMapping(value = "/dl-document/{dlDocId}/collaborator/{colId}", method = RequestMethod.DELETE)
+    public CustomResponse removeShareCollaborator(HttpServletRequest request,
+                                                        @PathVariable(name = "dlDocId") Long dlDocId,
+                                                        @PathVariable(name = "colId") Long colId)
             throws CustomException, DataValidationException, NoDataFoundException {
-        log.info("removeCollaboratorFromSharing API initiated...");
+        log.info("removeShareCollaborator API initiated...");
 
-        String status = null;
-        if (AppUtility.isEmpty(dlDocId) || AppUtility.isEmpty(collabId)) {
+        if (AppUtility.isEmpty(dlDocId) || AppUtility.isEmpty(colId)) {
             throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
         }
         try {
-            status = dlShareService.removeCollaboratorFromSharing(dlDocId, collabId);
+            dlShareService.removeShareCollaborator(dlDocId, colId);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return ResponseUtility.buildResponseObject(status);
+        return ResponseUtility.successResponse(null, AppUtility.getResourceMessage("collaborator.remove.success"));
     }
 
     @RequestMapping(value = "/remove", method = RequestMethod.DELETE)
@@ -118,15 +117,14 @@ public class DLShareAPI {
             throws CustomException, DataValidationException, NoDataFoundException {
         log.info("removeDLDocumentSharing API initiated...");
 
-        if (AppUtility.isEmpty(shareRequestDTO)) {
+        if (AppUtility.isEmpty(shareRequestDTO) || AppUtility.isEmpty(shareRequestDTO.getDlDocId())) {
             throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
         }
-        String status = null;
         try {
-            status = dlShareService.removeSharing(shareRequestDTO);
+            dlShareService.removeSharing(shareRequestDTO);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return ResponseUtility.buildResponseObject(status);
+        return ResponseUtility.successResponse(null, AppUtility.getResourceMessage("document.share.remove.success"));
     }
 }
