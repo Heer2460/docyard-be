@@ -22,8 +22,8 @@ public class NotificationUtility {
     public static String buildRestrictedShareFileEmailContent(UserDTO ownerDTO, String toName, String filename, String baseFELink) {
         log.info("buildShareFileEmailContent API initiated...");
 
-        StringBuilder content = new StringBuilder("Welcome <strong>" + toName + " ! </strong>");
-        content.append("<br>" + ownerDTO.getName() + " has shared a folder / file " + filename + " with you.</br></br>");
+        StringBuilder content = new StringBuilder("Dear <strong>" + toName + ", </strong>");
+        content.append("<br><strong>" + ownerDTO.getName() + "</strong> has shared a folder / file named \"" + filename + "\" with you.</br></br>");
         content.append("For any query please contact your system administrator.");
 
         return content.toString();
@@ -32,8 +32,8 @@ public class NotificationUtility {
     public static String buildOpenShareFileEmailContent(UserDTO ownerDTO, String toName, String filename, String baseFELink) {
         log.info("buildOpenShareFileEmailContent API initiated...");
 
-        StringBuilder content = new StringBuilder("Welcome <strong>" + toName + " ! </strong>");
-        content.append("<br><br><strong>" + ownerDTO.getName() + "</strong> has shared a folder / file named\"" + filename + "\" with you.</br>");
+        StringBuilder content = new StringBuilder("Dear <strong>" + toName + ", </strong>");
+        content.append("<br><br><strong>" + ownerDTO.getName() + "</strong> has shared a folder / file named\"<strong>" + filename + "</strong>\" with you.</br>");
         content.append("<br><br>Please use following URL to access the file / folder.</br>");
         content.append("<strong>URL : " + baseFELink + "</strong></br></br>");
         content.append("For any query please contact your system administrator.");
