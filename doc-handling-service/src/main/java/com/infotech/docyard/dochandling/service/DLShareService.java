@@ -280,7 +280,7 @@ public class DLShareService {
         log.info("DLShareService - updateShareCollaboratorAccessPermission method called...");
 
         DLShareCollaborator shareCollaborator = null;
-        if (accessRight.equals(AccessRightEnum.COMMENTOR.getValue()) || accessRight.equals(AccessRightEnum.VIEWER.getValue())) {
+        if (accessRight.equals(AccessRightEnum.COMMENT.getValue()) || accessRight.equals(AccessRightEnum.VIEW.getValue())) {
             DLShare dlShare = dlShareRepository.findByDlDocumentId(dlDocId);
             if (!AppUtility.isEmpty(dlShare)) {
                 Optional<DLCollaborator> collabOp = dlCollaboratorRepository.findById(collId);

@@ -3,8 +3,8 @@ package com.infotech.docyard.dochandling.enums;
 public enum AccessRightEnum {
 
     OWNER("OWNER"),
-    VIEWER("VIEWER"),
-    COMMENTOR("COMMENTOR"),
+    VIEW("VIEW"),
+    COMMENT("COMMENT"),
     EDITOR("EDITOR");
     private String value;
 
@@ -13,7 +13,7 @@ public enum AccessRightEnum {
     }
 
     public static AccessRightEnum getDefault() {
-        return VIEWER;
+        return VIEW;
     }
 
     public String getValue() {
