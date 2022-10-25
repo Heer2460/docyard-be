@@ -91,6 +91,58 @@ public class FTPService {
         }
     }
 
+    /*public boolean uploadDirectory(String remoteDirPath, String localParentDir) throws Exception {
+        log.info("FTP upload file method called.. " + config.getRoot());
+
+        FTPClient ftpClient = createFtp();
+        File localDir = new File(localParentDir);
+        File[] subFiles = localDir.listFiles();
+        String remoteParentDir = config.getRoot();
+        if (subFiles != null && subFiles.length > 0) {
+            for (File item : subFiles) {
+                String remoteFilePath = remoteDirPath + "/" + remoteParentDir
+                        + "/" + item.getName();
+                if (remoteParentDir.equals("")) {
+                    remoteFilePath = remoteDirPath + "/" + item.getName();
+                }
+                if (item.isFile()) {
+                    // upload the file
+                    *//*String localFilePath = item.getAbsolutePath();
+                    System.out.println("About to upload the file: " + localFilePath);
+                    boolean uploaded = uploadSingleFile(ftpClient,
+                            localFilePath, remoteFilePath);
+                    if (uploaded) {
+                        System.out.println("UPLOADED a file to: "
+                                + remoteFilePath);
+                    } else {
+                        System.out.println("COULD NOT upload the file: "
+                                + localFilePath);
+                    }*//*
+                } else {
+                    // create directory on the server
+                    boolean created = ftpClient.makeDirectory(remoteFilePath);
+                    if (created) {
+                        System.out.println("CREATED the directory: "
+                                + remoteFilePath);
+                    } else {
+                        System.out.println("COULD NOT create the directory: "
+                                + remoteFilePath);
+                    }
+
+                    // upload the sub directory
+                    String parent = remoteParentDir + "/" + item.getName();
+                    if (remoteParentDir.equals("")) {
+                        parent = item.getName();
+                    }
+
+                    localParentDir = item.getAbsolutePath();
+                    uploadDirectory(ftpClient, remoteDirPath, localParentDir,
+                            parent);
+                }
+            }
+        }
+    }*/
+
     public boolean uploadFile(String targetPath, String fileName, InputStream inputStream) throws Exception {
         log.info("FTP upload file method called.. " + config.getRoot());
 

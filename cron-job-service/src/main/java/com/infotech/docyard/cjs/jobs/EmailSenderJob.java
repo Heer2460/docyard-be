@@ -55,7 +55,7 @@ public class EmailSenderJob {
         return isSent;
     }
 
-    @Scheduled(cron = "* * * * * *")
+    @Scheduled(cron = "0 * * * * *") // Each Minute
     public void run() {
         Properties properties = null;
         ConfigSMTP configSMTP = emailService.getConfigSMTP();

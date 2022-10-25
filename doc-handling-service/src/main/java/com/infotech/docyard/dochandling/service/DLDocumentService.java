@@ -38,7 +38,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -498,6 +497,10 @@ public class DLDocumentService {
         DLDocument dlDoc = null;
         if (files.length > 0) {
             for (MultipartFile file : files) {
+                double allowedSize = 200 * 1024 * 1024;
+                if (file.getSize() > allowedSize) {
+                    throw new DataValidationException(AppUtility.getResourceMessage("invalid.file.size"));
+                }
                 if (StringUtils.containsAny(file.getOriginalFilename(), "/\\:*?\"<>|")) {
                     throw new DataValidationException(AppUtility.getResourceMessage("invalid.doc.name"));
                 }
@@ -513,7 +516,7 @@ public class DLDocumentService {
                 f.deleteOnExit();
                 FileUtils.writeByteArrayToFile(f, file.getBytes());
 
-                // UPLOADING ON SFTP
+                // UPLOADING ON FTP
                 log.info("DLDocumentService - Uploaded on FTP started....");
                 boolean isDocUploaded = ftpService.uploadFile(docLocation, dlDoc.getVersionGUId(), file.getInputStream());
                 log.info("DLDocumentService - Uploaded on FTP ended with success: " + isDocUploaded);
@@ -867,6 +870,8 @@ public class DLDocumentService {
                 DLDocumentActivity activity = new DLDocumentActivity(doc.getCreatedBy(), DLActivityTypeEnum.DOWNLOADED.getValue(),
                         doc.getId(), doc.getId());
                 dlDocumentActivityRepository.save(activity);
+            } else {
+
             }
         } else {
             throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));

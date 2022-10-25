@@ -147,7 +147,7 @@ public class DLShareService {
 
         dlShare = dlShareRepository.save(dlShare);
 
-        DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.ANYONE.getValue(),
+        DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.OPEN_LINK_SHARE.getValue(),
                 dlShare.getId(), dlDocument.getId());
         dlDocumentActivityRepository.save(activity);
 
@@ -264,7 +264,7 @@ public class DLShareService {
         }
         dlShareCollaboratorRepository.saveAll(scList);
 
-        DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.RESTRICTED.getValue(), dlShare.getId(), dlDocument.getId());
+        DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.RESTRICTED_SHARE.getValue(), dlShare.getId(), dlDocument.getId());
         dlDocumentActivityRepository.save(activity);
 
         dlDocument.setDlShareId(dlShare.getId());
