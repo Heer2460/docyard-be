@@ -451,9 +451,9 @@ public class UserService {
         if (!AppUtility.isEmpty(user)) {
             userRepository.save(user);
         }
-        //String tokenValue = authHeader.replace("Bearer", "").trim();
-        //OAuth2AccessToken accessToken = tokenStore.readAccessToken(tokenValue);
-        //tokenStore.removeAccessToken(accessToken);
+//        String tokenValue = authHeader.replace("Bearer", "").trim();
+//        OAuth2AccessToken accessToken = tokenStore.readAccessToken(tokenValue);
+//        tokenStore.removeAccessToken(accessToken);
     }
 
     private List<ModuleDTO> getMenuList(List<Module> moduleList) {
