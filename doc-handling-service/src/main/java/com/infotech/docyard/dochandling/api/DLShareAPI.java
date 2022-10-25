@@ -49,13 +49,13 @@ public class DLShareAPI {
             throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
         }
 
-        DLShare dlShare = null;
+        DLShareDTO dlShareDTO = null;
         try {
-            dlShare = dlShareService.getDLShareById(dlShareId);
+            dlShareDTO = dlShareService.getDLShareById(dlShareId);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return ResponseUtility.buildResponseObject(dlShare, new DLShareDTO(), false);
+        return ResponseUtility.buildResponseObject(dlShareDTO);
     }
 
     @RequestMapping(value = "/", method = RequestMethod.POST)
@@ -78,9 +78,9 @@ public class DLShareAPI {
 
     @RequestMapping(value = "/update-access-permission", method = RequestMethod.PUT)
     public CustomResponse updateShareCollaboratorAccessPermission(HttpServletRequest request,
-                                                                       @RequestParam(value = "dlDocId") Long dlDocId,
-                                                                       @RequestParam(value = "collId") Long collId,
-                                                                       @RequestParam(value = "accessRight") String accessRight)
+                                                                  @RequestParam(value = "dlDocId") Long dlDocId,
+                                                                  @RequestParam(value = "collId") Long collId,
+                                                                  @RequestParam(value = "accessRight") String accessRight)
             throws CustomException, DataValidationException, NoDataFoundException {
         log.info("updateShareCollaboratorAccessPermission API initiated...");
 
@@ -95,8 +95,8 @@ public class DLShareAPI {
 
     @RequestMapping(value = "/dl-document/{dlDocId}/collaborator/{colId}", method = RequestMethod.DELETE)
     public CustomResponse removeShareCollaborator(HttpServletRequest request,
-                                                        @PathVariable(name = "dlDocId") Long dlDocId,
-                                                        @PathVariable(name = "colId") Long colId)
+                                                  @PathVariable(name = "dlDocId") Long dlDocId,
+                                                  @PathVariable(name = "colId") Long colId)
             throws CustomException, DataValidationException, NoDataFoundException {
         log.info("removeShareCollaborator API initiated...");
 

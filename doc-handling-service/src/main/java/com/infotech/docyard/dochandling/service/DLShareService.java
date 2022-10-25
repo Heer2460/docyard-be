@@ -2,9 +2,7 @@ package com.infotech.docyard.dochandling.service;
 
 import com.infotech.docyard.dochandling.dl.entity.*;
 import com.infotech.docyard.dochandling.dl.repository.*;
-import com.infotech.docyard.dochandling.dto.DLDocumentShareDTO;
-import com.infotech.docyard.dochandling.dto.NameEmailDTO;
-import com.infotech.docyard.dochandling.dto.ShareRequestDTO;
+import com.infotech.docyard.dochandling.dto.*;
 import com.infotech.docyard.dochandling.enums.AccessRightEnum;
 import com.infotech.docyard.dochandling.enums.DLActivityTypeEnum;
 import com.infotech.docyard.dochandling.enums.ShareStatusEnum;
@@ -85,11 +83,20 @@ public class DLShareService {
         return dlDocumentShareDTOList;
     }
 
-    public DLShare getDLShareById(Long dlShareId) {
+    public DLShareDTO getDLShareById(Long dlShareId) {
         log.info("DLShareService - getDLShareById method called...");
 
+        DLShareDTO dlShareDTO = null;
         Optional<DLShare> dlShareOptional = dlShareRepository.findById(dlShareId);
-        return dlShareOptional.orElse(null);
+        if (dlShareOptional.isPresent()) {
+            dlShareDTO = new DLShareDTO();
+            dlShareDTO.convertToDTO(dlShareOptional.get(), false);
+            for (DLShareCollaboratorDTO dto : dlShareDTO.getDlShareCollaboratorDTOList()) {
+                Optional<DLCollaborator> c = dlCollaboratorRepository.findById(dto.getDlCollaboratorId());
+                c.ifPresent(dlCollaborator -> dto.setDlCollaboratorEmail(dlCollaborator.getEmail()));
+            }
+        }
+        return dlShareDTO;
     }
 
     @Transactional(rollbackFor = Throwable.class)
