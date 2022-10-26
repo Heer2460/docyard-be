@@ -1,6 +1,7 @@
 package com.infotech.docyard.um.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.infotech.docyard.um.config.SecurityAuth2Configuration;
 import com.infotech.docyard.um.dl.entity.Module;
 import com.infotech.docyard.um.dl.entity.*;
 import com.infotech.docyard.um.dl.repository.*;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -54,6 +56,8 @@ public class UserService {
     private ModuleActionRepository moduleActionRepository;
     @Autowired
     private RestTemplate restTemplate;
+    @Autowired
+    private SecurityAuth2Configuration securityAuth2Configuration;
     @Value("${fe.reset.pass.base.link}")
     private String resetPassBaseFELink;
     @Value("${fe.base.link}")
@@ -146,9 +150,9 @@ public class UserService {
                 userDTO.setProfilePhotoReceived(profileImg);
             }
             userDTO.setPassword(new BCryptPasswordEncoder().encode(userDTO.getPassword()));
-            user =  userRepository.save(userDTO.convertToEntity());
+            user = userRepository.save(userDTO.convertToEntity());
 
-            String content = NotificationUtility.buildCreateUserEmailContent(userDTO,baseFELink);
+            String content = NotificationUtility.buildCreateUserEmailContent(userDTO, baseFELink);
             if (!AppUtility.isEmpty(content)) {
                 EmailInstance emailInstance = new EmailInstance();
                 emailInstance.setToEmail(userDTO.getEmail());
@@ -224,7 +228,8 @@ public class UserService {
         }
     }
 
-    public void deleteUser(Long id) {
+    @Transactional(rollbackFor = {Throwable.class})
+    public void deleteUser(Long id, String authHeader, Principal principal) {
         log.info("deleteUser method called..");
 
         Optional<User> user = userRepository.findById(id);
@@ -233,6 +238,9 @@ public class UserService {
             if (user.get().getStatus().equalsIgnoreCase(AppConstants.Status.ACTIVE)) {
                 throw new DataValidationException(AppUtility.getResourceMessage("record.cannot.be.deleted.dependency"));
             } else {
+                if (user.get().getUsername().equals(principal.getName())) {
+                    getLoggedOutUser(principal, authHeader);
+                }
                 userRepository.deleteById(id);
             }
         }
@@ -316,8 +324,7 @@ public class UserService {
         User user = userRepository.findByEmail(email);
         if (AppUtility.isEmpty(user)) {
             throw new NoDataFoundException(AppUtility.getResourceMessage("user.not.found"));
-        }
-        if (!AppUtility.isEmpty(user)) {
+        } else {
             String token = UUID.randomUUID().toString();
             user.setPasswordResetToken(token);
             user.setPasswordExpired(true);
@@ -447,6 +454,7 @@ public class UserService {
     @Transactional(rollbackFor = {Throwable.class})
     public void getLoggedOutUser(Principal principal, String authHeader) {
         log.info("getLoggedOutUser method called..");
+
         User user = userRepository.findByUsername(principal.getName());
         if (!AppUtility.isEmpty(user)) {
             userRepository.save(user);
@@ -531,10 +539,10 @@ public class UserService {
                     fpl.setToken(null);
 
                     forgotPasswordLinkRepository.save(fpl);
-                }else{
+                } else {
                     throw new DataValidationException(AppUtility.getResourceMessage("invalid.token"));
                 }
-            }else{
+            } else {
                 throw new DataValidationException(AppUtility.getResourceMessage("invalid.token"));
             }
         } else {

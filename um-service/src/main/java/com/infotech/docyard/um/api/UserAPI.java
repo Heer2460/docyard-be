@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -202,23 +203,6 @@ public class UserAPI {
         return ResponseUtility.successResponse(user, AppUtility.getResourceMessage("user.status.update"));
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public CustomResponse deleteUser(HttpServletRequest request,
-                                     @PathVariable("id") Long id)
-            throws DataValidationException, NoDataFoundException, CustomException {
-        log.info("deleteUser API initiated...");
-
-        if (AppUtility.isEmpty(id)) {
-            throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
-        }
-        try {
-            userService.deleteUser(id);
-        } catch (Exception e) {
-            ResponseUtility.exceptionResponse(e);
-        }
-        return ResponseUtility.deleteSuccessResponse(null, AppUtility.getResourceMessage("deleted.success"));
-    }
-
     @RequestMapping(value = "/change-password", method = RequestMethod.PUT)
     public CustomResponse changePassword(HttpServletRequest request,
                                          @RequestBody ChangePasswordDTO changePasswordDTO)
@@ -268,4 +252,24 @@ public class UserAPI {
         return ResponseUtility.successResponseForPut(null, AppUtility.getResourceMessage("password.reset.token.incorrect"));
     }
 
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public CustomResponse deleteUser(HttpServletRequest request, Principal principal,
+                                     @PathVariable("id") Long id)
+            throws DataValidationException, NoDataFoundException, CustomException {
+        log.info("deleteUser API initiated...");
+
+        String authHeader = request.getHeader("Authorization");
+        if (AppUtility.isEmpty(authHeader)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
+        if (AppUtility.isEmpty(id)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
+        }
+        try {
+            userService.deleteUser(id, authHeader, principal);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.deleteSuccessResponse(null, AppUtility.getResourceMessage("deleted.success"));
+    }
 }
