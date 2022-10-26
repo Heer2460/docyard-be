@@ -15,7 +15,7 @@ public class DocumentDeletionJob {
     private JobService jobService;
 
     // @Scheduled(cron = "0 0 0 * * ?") // Start for every day.
-    @Scheduled(cron = "0 0 0 * * ?") // Start for every day.
+    @Scheduled(cron = "0 0 * * * *") //Every hour
     public void deleteArchivedDocumentsJob() {
         log.info("DocumentDeletionJob - deleteArchivedDocumentsJob Job started at: " + LocalDateTime.now());
         try {

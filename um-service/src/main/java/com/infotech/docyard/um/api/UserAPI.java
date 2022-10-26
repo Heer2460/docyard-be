@@ -253,20 +253,16 @@ public class UserAPI {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public CustomResponse deleteUser(HttpServletRequest request, Principal principal,
+    public CustomResponse deleteUser(HttpServletRequest request,
                                      @PathVariable("id") Long id)
             throws DataValidationException, NoDataFoundException, CustomException {
         log.info("deleteUser API initiated...");
 
-        String authHeader = request.getHeader("Authorization");
-        if (AppUtility.isEmpty(authHeader)) {
-            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
-        }
         if (AppUtility.isEmpty(id)) {
             throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
         }
         try {
-            userService.deleteUser(id, authHeader, principal);
+            userService.deleteUser(id);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }

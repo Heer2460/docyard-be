@@ -240,34 +240,44 @@ public class DLShareService {
             nmEmDTO = getNamesAndEmails(shareRequest.getDepartmentId(), shareRequest.getDlCollaborators(), nmEmDTO);
             emails = nmEmDTO.getEmails();
         }
+        String sharedByEmail = null;
+        Object response = restTemplate.getForObject("http://um-service/um/user/" + shareRequest.getUserId(), Object.class);
+        if (!AppUtility.isEmpty(response)) {
+            HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+            sharedByEmail = (String) map.get("email");
+        }
         List<DLCollaborator> dlCollList = new ArrayList<>();
         for (String colEmail : emails) {
-            DLCollaborator dc = dlCollaboratorRepository.findByEmail(colEmail);
-            if (AppUtility.isEmpty(dc)) {
-                DLCollaborator dlCollaborator = new DLCollaborator();
-                dlCollaborator.setEmail(colEmail);
-                dlCollaborator.setCreatedOn(ZonedDateTime.now());
-                dlCollaborator.setUpdatedOn(ZonedDateTime.now());
-                dlCollaborator.setCreatedBy(shareRequest.getUserId());
-                dlCollaborator.setUpdatedBy(shareRequest.getUserId());
-                dlCollaborator.setDlShareCollaborators(new ArrayList<>());
-                dlCollaborator = dlCollaboratorRepository.save(dlCollaborator);
-                dlCollList.add(dlCollaborator);
-            } else {
-                dlCollList.add(dc);
+            if (!colEmail.equalsIgnoreCase(sharedByEmail)) {
+                DLCollaborator dc = dlCollaboratorRepository.findByEmail(colEmail);
+                if (AppUtility.isEmpty(dc)) {
+                    DLCollaborator dlCollaborator = new DLCollaborator();
+                    dlCollaborator.setEmail(colEmail);
+                    dlCollaborator.setCreatedOn(ZonedDateTime.now());
+                    dlCollaborator.setUpdatedOn(ZonedDateTime.now());
+                    dlCollaborator.setCreatedBy(shareRequest.getUserId());
+                    dlCollaborator.setUpdatedBy(shareRequest.getUserId());
+                    dlCollaborator.setDlShareCollaborators(new ArrayList<>());
+                    dlCollaborator = dlCollaboratorRepository.save(dlCollaborator);
+                    dlCollList.add(dlCollaborator);
+                } else {
+                    dlCollList.add(dc);
+                }
             }
         }
         List<DLShareCollaborator> scList = new ArrayList<>();
         for (DLCollaborator col : dlCollList) {
-            DLShareCollaborator sc = new DLShareCollaborator();
-            sc.setDlShareId(dlShare.getId());
-            sc.setAccessRight(shareRequest.getSharePermission());
-            sc.setDlCollaboratorId(col.getId());
-            sc.setCreatedOn(ZonedDateTime.now());
-            sc.setUpdatedOn(ZonedDateTime.now());
-            sc.setCreatedBy(shareRequest.getUserId());
-            sc.setUpdatedBy(shareRequest.getUserId());
-            scList.add(sc);
+            if (!col.getEmail().equalsIgnoreCase(sharedByEmail)) {
+                DLShareCollaborator sc = new DLShareCollaborator();
+                sc.setDlShareId(dlShare.getId());
+                sc.setAccessRight(shareRequest.getSharePermission());
+                sc.setDlCollaboratorId(col.getId());
+                sc.setCreatedOn(ZonedDateTime.now());
+                sc.setUpdatedOn(ZonedDateTime.now());
+                sc.setCreatedBy(shareRequest.getUserId());
+                sc.setUpdatedBy(shareRequest.getUserId());
+                scList.add(sc);
+            }
         }
         dlShareCollaboratorRepository.saveAll(scList);
 
@@ -337,7 +347,7 @@ public class DLShareService {
                 if (!AppUtility.isEmpty(response2)) {
                     HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response2).get("data");
                     String name = ((String) map.get("name"));
-                    if (!names.contains(name) || !email.contains(email)) {
+                    if (!names.contains(name) || !emails.contains(email)) {
                         names.add(name);
                         emails.add(email);
                     }
@@ -348,6 +358,4 @@ public class DLShareService {
         nameEmailDTO.setEmails(emails);
         return nameEmailDTO;
     }
-
-
 }
