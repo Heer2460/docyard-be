@@ -15,6 +15,7 @@ public class DLShareCollaboratorDTO extends BaseDTO<DLShareCollaboratorDTO, DLSh
 
     private Long dlShareId;
     private Long dlCollaboratorId;
+    private String dlCollaboratorEmail;
     private String accessRight;
 
     public DLShareCollaboratorDTO() {

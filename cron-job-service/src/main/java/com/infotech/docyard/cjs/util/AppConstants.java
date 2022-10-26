@@ -2,46 +2,34 @@ package com.infotech.docyard.cjs.util;
 
 public class AppConstants {
 
-    public static class DB {
-
-    }
-
-    public static class Status {
-        public final static String ACTIVE = "Active";
-        public final static String SUSPEND = "Suspend";
-        public final static String TERMINATE = "Terminate";
-
-        public static final String LOCKED = "Locked";
-    }
-
-    public static class DateFormats {
-        public final static String DATE_FORMAT_ONE = "dd-MM-yyyy";
-        public final static String MONTH_DATE_YEAR = "M/d/yyyy";
-        public final static String DATE_MONTH_YEAR = "d/m/yyyy";
-        public final static String DATE_FORMAT_TWO = "dd-M-yyyy";
-        public final static String DATE_FORMAT_THREE = "d-M-yyyy";
-        public final static String DATE_FORMAT_FOUR = "d/M/yyyy";
-    }
-
-    public static class EmailSubjectConstants {
-        public final static String PASSWORD_EXPIRED = "Password Expired";
-        public final static String FORGOT_PASSWORD = "Forgot Password";
-        public final static String CHANGE_PASSWORD = "Change Password";
-        public final static String USER_CREATED = "User Created";
-        public final static String GD_ASSIGNED_EXAMINER = "Goods Declaration Assigned";
+    public static class FileType {
+        public static final String EXT_PPT = "ppt";
+        public static final String EXT_PPTX = "pptx";
+        public static final String EXT_XLS = "xls";
+        public static final String EXT_XLSX = "xlsx";
+        public static final String EXT_PNG = "png";
+        public static final String EXT_GIF = "gif";
+        public static final String EXT_JPG = "jpg";
+        public static final String EXT_JPEG = "jpeg";
+        public static final String EXT_FLV = "flv";
+        public static final String EXT_TXT = "txt";
+        public static final String EXT_HTML = "html";
+        public static final String EXT_XHTML = "xhtml";
+        public static final String EXT_PDF = "pdf";
+        public static final String EXT_SQL = "sql";
+        public static final String EXT_RAR = "rar";
+        public static final String EXT_ZIP = "zip";
+        public static final String EXT_SVG = "svg";
+        public static final String EXT_PSD = "psd";
+        public static final String EXT_7ZIP = "7z";
+        public static final String EXT_BMP = "bmp";
+        public static final String EXT_DOC = "doc";
+        public static final String EXT_DOCX = "docx";
     }
 
     public static class EmailConstants {
         public static final String EMAIL_STATUS_NOT_SEND = "NOT_SENT";
         public static final String EMAIL_STATUS_SEND = "SENT";
-
-    }
-
-    public static class DBConstraints {
-        public final static String UNQ_CODE = "UNQ_CODE";
-        public final static String UNQ_ROLE_CODE = "UNQ_ROLE_CODE";
-        public final static String UNQ_GROUP_CODE = "UNQ_GROUP_CODE";
-        public final static String UNQ_DEPARTMENT_CODE = "UNQ_DEPARTMENT_CODE";
 
     }
 }

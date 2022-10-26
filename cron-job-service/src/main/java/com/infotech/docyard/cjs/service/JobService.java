@@ -1,5 +1,6 @@
 package com.infotech.docyard.cjs.service;
 
+import com.infotech.docyard.cjs.config.OCRProperties;
 import com.infotech.docyard.cjs.dl.entity.DLDocument;
 import com.infotech.docyard.cjs.dl.entity.DLDocumentActivity;
 import com.infotech.docyard.cjs.dl.entity.ForgotPasswordLink;
@@ -41,6 +42,8 @@ public class JobService {
     private DLDocumentCommentRepository dlDocumentCommentRepository;
     @Autowired
     private DLDocumentActivityRepository dlDocumentActivityRepository;
+    @Autowired
+    private OCRProperties ocrProperties;
 
     public synchronized void getContentFromAllDocuments() {
         log.info("DLDocumentService - getContentFromAllDocuments method called...");
@@ -48,34 +51,19 @@ public class JobService {
         try {
             List<DLDocument> dlDocumentList = dlDocumentRepository.findAllByFolderFalseAndArchivedFalseAndOcrDoneFalseAndOcrSupportedTrue();
             for (DLDocument doc : dlDocumentList) {
-                InputStream inputStream = ftpService.downloadInputStream(doc.getVersionGUId());
-                if (!AppUtility.isEmpty(inputStream)) {
-                    ITesseract instance = new Tesseract();
-                    instance.setOcrEngineMode(1);
-                    Path dataDirectory = Paths.get(ClassLoader.getSystemResource("tesseractdata").toURI());
-                    instance.setDatapath(dataDirectory.toString());
-                    String result = null;
-
-                    if (doc.getExtension().equalsIgnoreCase("pdf")) {
-                        //TODO will do it later
-//                        PDDocument document = PDDocument.load(inputStream);
-//                        PDFRenderer pdfRenderer = new PDFRenderer(document);
-//                        StringBuffer stringBuffer = new StringBuffer();
-//                        for (int page = 0; page < document.getNumberOfPages(); page++) {
-//                            BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(page, 300, ImageType.RGB);
-//                            stringBuffer.append(instance.doOCR(bufferedImage));
-//                        }
-//                        result = stringBuffer.toString();
-//                        document.close();
-                    } else {
+                if (AppUtility.isOCRType(doc)) {
+                    InputStream inputStream = ftpService.downloadInputStream(doc.getVersionGUId());
+                    if (!AppUtility.isEmpty(inputStream)) {
+                        ITesseract instance = new Tesseract();
+                        instance.setOcrEngineMode(1);
+                        instance.setDatapath(ocrProperties.getPath());
                         BufferedImage bufferedImage = ImageIO.read(inputStream);
-                        result = instance.doOCR(bufferedImage);
+                        String result = instance.doOCR(bufferedImage);
+                        doc.setContent(result);
+                        doc.setOcrDone(true);
+                        doc.setOcrSupported(true);
+                        dlDocumentRepository.save(doc);
                     }
-
-                    doc.setContent(result);
-                    doc.setOcrDone(true);
-                    doc.setOcrSupported(true);
-                    dlDocumentRepository.save(doc);
                 }
             }
         } catch (Exception e) {
@@ -84,7 +72,7 @@ public class JobService {
     }
 
     @Transactional(rollbackFor = {Throwable.class})
-    public void deleteDLDocument(Long dlDocumentId) throws Exception {
+    public void deleteDLDocument(Long dlDocumentId) {
         log.info("DLDocumentService - deleteDocument method called...");
         if (!AppUtility.isEmpty(dlDocumentId)) {
             if (dlDocumentRepository.existsById(dlDocumentId)) {
@@ -109,6 +97,7 @@ public class JobService {
             }
         }
     }
+
     @Transactional(rollbackFor = {Throwable.class})
     public void deleteFileWithDependencies(DLDocument dldocument) throws Exception {
         boolean deleted = false;
@@ -133,6 +122,7 @@ public class JobService {
             }
         }
     }
+
     public List<DLDocument> getChildren(Long dlDocumentId) {
         log.info("DLDocumentService - getChildren method called...");
 
@@ -141,13 +131,11 @@ public class JobService {
         return children;
     }
 
-
     public Boolean checkIsParent(Long dlDocumentId) {
         log.info("DLDocumentService - checkIsParent method called...");
 
         return !AppUtility.isEmpty(dlDocumentRepository.findByParentIdAndArchivedFalse(dlDocumentId));
     }
-
 
     @Transactional(rollbackFor = {Throwable.class})
     public void deleteArchivedDocuments() throws CustomException {
@@ -165,7 +153,6 @@ public class JobService {
             } catch (Exception e) {
                 ResponseUtility.exceptionResponse(e);
             }
-
         }
     }
 
@@ -173,7 +160,6 @@ public class JobService {
         List<ForgotPasswordLink> forgotPasswordLinkList = forgotPasswordLinkRepository.findAllByTokenIsNotNull();
 
         for (ForgotPasswordLink forgotPasswordLink : forgotPasswordLinkList) {
-
             if (forgotPasswordLink.getCreatedOn().plusMinutes(30).isBefore(ZonedDateTime.now())) {
                 forgotPasswordLink.setToken(null);
                 forgotPasswordLink.setExpired(true);

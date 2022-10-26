@@ -18,12 +18,12 @@ import java.util.Arrays;
 public class FTPService {
 
     @Autowired
-    private SFTPProperties config;
+    private SFTPProperties sftpProperties;
 
     public InputStream downloadInputStream(String targetPath) throws Exception {
         FTPClient ftpClient = createFtp();
         try {
-            ftpClient.changeWorkingDirectory(config.getRoot());
+            ftpClient.changeWorkingDirectory(sftpProperties.getRoot());
             log.info("Download file success. TargetPath: {}", targetPath);
             return ftpClient.retrieveFileStream(targetPath);
         } catch (Exception e) {
@@ -35,12 +35,12 @@ public class FTPService {
     }
 
     public boolean deleteFile(String targetPath, String fileName) throws Exception {
-        log.info("FTP deleteFile method called.. " + config.getRoot());
+        log.info("FTP deleteFile method called.. " + sftpProperties.getRoot());
 
         FTPClient ftpClient = createFtp();
         try {
             FTPFile[] ftpFiles = ftpClient.listFiles();
-            ftpClient.changeWorkingDirectory(config.getRoot());
+            ftpClient.changeWorkingDirectory(sftpProperties.getRoot());
             ftpFiles = ftpClient.listFiles();
             ftpFiles = Arrays.stream(ftpFiles).filter(file -> file.getName().equals(fileName)).toArray(FTPFile[]::new);
             if ((!AppUtility.isEmpty(ftpFiles)) && (ftpFiles.length != 0)) {
@@ -62,10 +62,10 @@ public class FTPService {
     private FTPClient createFtp() {
         FTPClient ftpClient = new FTPClient();
         try {
-            log.info("Try to connect ftp[" + config.getUsername() + "@" + config.getHost() + "], " +
-                    "use password[" + config.getPassword() + "]");
-            ftpClient.connect(config.getHost(), config.getPort());
-            ftpClient.login(config.getUsername(), config.getPassword());
+            log.info("Try to connect ftp[" + sftpProperties.getUsername() + "@" + sftpProperties.getHost() + "], " +
+                    "use password[" + sftpProperties.getPassword() + "]");
+            ftpClient.connect(sftpProperties.getHost(), sftpProperties.getPort());
+            ftpClient.login(sftpProperties.getUsername(), sftpProperties.getPassword());
             ftpClient.enterLocalPassiveMode();
             ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
         } catch (IOException e) {

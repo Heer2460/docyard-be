@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.infotech.docyard.cjs.dl.entity.BaseEntity;
+import com.infotech.docyard.cjs.dl.entity.DLDocument;
 import com.infotech.docyard.cjs.exceptions.CustomException;
 
 import java.io.UnsupportedEncodingException;
@@ -542,5 +543,12 @@ public class AppUtility {
             }
         }
         return str;
+    }
+
+    public static boolean isOCRType(DLDocument doc) {
+        return doc.getExtension().equalsIgnoreCase(AppConstants.FileType.EXT_PNG) ||
+                doc.getExtension().equalsIgnoreCase(AppConstants.FileType.EXT_JPG) ||
+                doc.getExtension().equalsIgnoreCase(AppConstants.FileType.EXT_BMP) ||
+                doc.getExtension().equalsIgnoreCase(AppConstants.FileType.EXT_JPEG);
     }
 }

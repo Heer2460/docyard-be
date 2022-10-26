@@ -31,10 +31,4 @@ public class DLShareCollaborator extends BaseEntity implements Serializable {
     public DLShareCollaborator() {
     }
 
-    public DLShareCollaborator(Long dlShareId, Long dlCollaboratorId, String accessRight) {
-        this.dlShareId = dlShareId;
-        this.dlCollaboratorId = dlCollaboratorId;
-        this.accessRight = accessRight;
-    }
-
 }

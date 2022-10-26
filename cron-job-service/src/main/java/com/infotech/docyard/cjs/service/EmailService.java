@@ -20,7 +20,6 @@ public class EmailService {
     @Autowired
     private ConfigSMTPRepository configSMTPRepository;
 
-
     @Transactional(rollbackFor = {Throwable.class})
     public EmailInstance saveUpdateEmailInstance(EmailInstance emailInstance) {
         log.info("saveUpdateEmailInstance method called..");
