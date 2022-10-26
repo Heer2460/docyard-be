@@ -83,8 +83,8 @@ public class DLDocActivityService {
                 case "ANY_ONE":
                     activityResponseDTO.setAction(DLActivityTypeMessageEnum.ANY_ONE.getValue());
                     break;
-                case "RESTRICTED":
-                    activityResponseDTO.setAction(DLActivityTypeMessageEnum.RESTRICTED.getValue());
+                case "RESTRICTED_SHARE":
+                    activityResponseDTO.setAction(DLActivityTypeMessageEnum.RESTRICTED_SHARE.getValue());
                     break;
                 case "NO_SHARING":
                     activityResponseDTO.setAction(DLActivityTypeMessageEnum.NO_SHARING.getValue());

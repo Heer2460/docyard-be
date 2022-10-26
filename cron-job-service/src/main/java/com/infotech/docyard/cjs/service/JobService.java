@@ -50,23 +50,39 @@ public class JobService {
 
         try {
             List<DLDocument> dlDocumentList = dlDocumentRepository.findAllByFolderFalseAndArchivedFalseAndOcrDoneFalseAndOcrSupportedTrue();
+            log.info("DLDocumentService - Document size is: " + dlDocumentList.size());
+
             for (DLDocument doc : dlDocumentList) {
+                log.info("DLDocumentService - Document name is: " + doc.getName());
+
                 if (AppUtility.isOCRType(doc)) {
+                    log.info("DLDocumentService - Document OCR supported.");
+
                     InputStream inputStream = ftpService.downloadInputStream(doc.getVersionGUId());
                     if (!AppUtility.isEmpty(inputStream)) {
+                        log.info("DLDocumentService - Input Stream fetched successfully.");
+
                         ITesseract instance = new Tesseract();
                         instance.setOcrEngineMode(1);
                         instance.setDatapath(ocrProperties.getPath());
+                        log.info("DLDocumentService - Data Model directory path is: " + ocrProperties.getPath());
+
                         BufferedImage bufferedImage = ImageIO.read(inputStream);
                         String result = instance.doOCR(bufferedImage);
+                        log.info("DLDocumentService - result is : " + result);
+
                         doc.setContent(result);
                         doc.setOcrDone(true);
                         doc.setOcrSupported(true);
                         dlDocumentRepository.save(doc);
+                    } else {
+                        log.info("DLDocumentService - Input Stream fetched failed.");
                     }
                 }
             }
         } catch (Exception e) {
+            log.info("DLDocumentService - Exception occurred.");
+
             e.printStackTrace();
         }
     }
@@ -74,6 +90,7 @@ public class JobService {
     @Transactional(rollbackFor = {Throwable.class})
     public void deleteDLDocument(Long dlDocumentId) {
         log.info("DLDocumentService - deleteDocument method called...");
+
         if (!AppUtility.isEmpty(dlDocumentId)) {
             if (dlDocumentRepository.existsById(dlDocumentId)) {
                 Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
@@ -157,6 +174,8 @@ public class JobService {
     }
 
     public void expireForgotPasswordLinks() {
+        log.info("expireForgotPasswordLinks called..");
+
         List<ForgotPasswordLink> forgotPasswordLinkList = forgotPasswordLinkRepository.findAllByTokenIsNotNull();
 
         for (ForgotPasswordLink forgotPasswordLink : forgotPasswordLinkList) {

@@ -1,9 +1,9 @@
 package com.infotech.docyard.cjs.jobs;
 
-
 import com.infotech.docyard.cjs.dl.entity.ConfigSMTP;
 import com.infotech.docyard.cjs.dl.entity.EmailInstance;
 import com.infotech.docyard.cjs.service.EmailService;
+import com.infotech.docyard.cjs.service.JobService;
 import com.infotech.docyard.cjs.util.AppConstants;
 import com.infotech.docyard.cjs.util.AppUtility;
 import lombok.extern.log4j.Log4j2;
@@ -14,49 +14,31 @@ import org.springframework.stereotype.Component;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Properties;
 
 @Component
 @Log4j2
-public class EmailSenderJob {
+public class EachMinuteJob {
 
     @Autowired
+    private JobService userService;
+    @Autowired
     private EmailService emailService;
-
     private String fromEmail = null, fromPassword = null;
 
-    private boolean sendEmail(EmailInstance emailInstance, Session session) {
-        boolean isSent = false;
-        Message message = new MimeMessage(session);
-        try {
-            message.setFrom(new InternetAddress(fromEmail));
-            if (!AppUtility.isEmpty(emailInstance.getToEmail())) {
-                message.setRecipients(Message.RecipientType.TO,
-                        InternetAddress.parse(emailInstance.getToEmail()));
-            }
-           /* if (!AppUtility.isEmpty(emailInstance.getToEmail())) {
-                message.setRecipients(Message.RecipientType.CC, InternetAddress.parse(emailInstance.getCc()));
-            }
-            if (!AppUtility.isEmpty(emailInstance.getBcc())) {
-                message.setRecipients(Message.RecipientType.BCC, InternetAddress.parse(emailInstance.getBcc()));
-            }*/
-            if (!AppUtility.isEmpty(emailInstance.getSubject())) {
-                message.setSubject(emailInstance.getSubject());
-            }
-            if (!AppUtility.isEmpty(emailInstance.getContent())) {
-                message.setContent(emailInstance.getContent(), "text/html; charset=utf-8");
-            }
-            Transport.send(message);
-            isSent = true;
-        } catch (MessagingException e) {
-            e.printStackTrace();
-        }
-        return isSent;
+    @Scheduled(cron = "0 * * * * *") // Each Minute
+    public void eachMinuteJob() {
+        log.info("eachMinuteJob started at: " + ZonedDateTime.now());
+        userService.expireForgotPasswordLinks();
+        this.sendEmailJob();
+        log.info("eachMinuteJob ended at: " + ZonedDateTime.now());
     }
 
-    @Scheduled(cron = "0 * * * * *") // Each Minute
-    public void run() {
+    public void sendEmailJob() {
+        log.info("sendEmailJob called..");
+
         Properties properties = null;
         ConfigSMTP configSMTP = emailService.getConfigSMTP();
         if (!AppUtility.isEmpty(configSMTP)) {
@@ -90,4 +72,34 @@ public class EmailSenderJob {
             }
         }
     }
+
+    private boolean sendEmail(EmailInstance emailInstance, Session session) {
+        boolean isSent = false;
+        Message message = new MimeMessage(session);
+        try {
+            message.setFrom(new InternetAddress(fromEmail));
+            if (!AppUtility.isEmpty(emailInstance.getToEmail())) {
+                message.setRecipients(Message.RecipientType.TO,
+                        InternetAddress.parse(emailInstance.getToEmail()));
+            }
+           /* if (!AppUtility.isEmpty(emailInstance.getToEmail())) {
+                message.setRecipients(Message.RecipientType.CC, InternetAddress.parse(emailInstance.getCc()));
+            }
+            if (!AppUtility.isEmpty(emailInstance.getBcc())) {
+                message.setRecipients(Message.RecipientType.BCC, InternetAddress.parse(emailInstance.getBcc()));
+            }*/
+            if (!AppUtility.isEmpty(emailInstance.getSubject())) {
+                message.setSubject(emailInstance.getSubject());
+            }
+            if (!AppUtility.isEmpty(emailInstance.getContent())) {
+                message.setContent(emailInstance.getContent(), "text/html; charset=utf-8");
+            }
+            Transport.send(message);
+            isSent = true;
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+        return isSent;
+    }
+
 }
