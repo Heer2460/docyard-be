@@ -1,8 +1,6 @@
 package com.infotech.docyard.um.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.infotech.docyard.um.config.SecurityAuth2Configuration;
-import com.infotech.docyard.um.dl.entity.Module;
 import com.infotech.docyard.um.dl.entity.*;
 import com.infotech.docyard.um.dl.repository.*;
 import com.infotech.docyard.um.dto.*;
@@ -19,7 +17,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -56,8 +53,6 @@ public class UserService {
     private ModuleActionRepository moduleActionRepository;
     @Autowired
     private RestTemplate restTemplate;
-    @Autowired
-    private SecurityAuth2Configuration securityAuth2Configuration;
     @Value("${fe.reset.pass.base.link}")
     private String resetPassBaseFELink;
     @Value("${fe.base.link}")
@@ -229,7 +224,7 @@ public class UserService {
     }
 
     @Transactional(rollbackFor = {Throwable.class})
-    public void deleteUser(Long id, String authHeader, Principal principal) {
+    public void deleteUser(Long id) {
         log.info("deleteUser method called..");
 
         Optional<User> user = userRepository.findById(id);
@@ -237,13 +232,10 @@ public class UserService {
         if (user.isPresent()) {
             if (user.get().getStatus().equalsIgnoreCase(AppConstants.Status.ACTIVE)) {
                 throw new DataValidationException(AppUtility.getResourceMessage("record.cannot.be.deleted.dependency"));
-            } else {
-                if (user.get().getUsername().equals(principal.getName())) {
-                    getLoggedOutUser(principal, authHeader);
-                }
-                userRepository.deleteById(id);
             }
+            userRepository.deleteById(id);
         }
+
     }
 
     @Transactional(rollbackFor = {Throwable.class})
