@@ -18,13 +18,10 @@ public class ForgotPasswordLink extends BaseEntity {
 
     @Column(name = "EXPIRED_ON")
     private ZonedDateTime expiredOn;
-
     @Column(name = "IS_EXPIRED")
     private Boolean expired;
-
     @Column(name = "TOKEN")
     private String token;
-
     public ForgotPasswordLink() {
     }
 

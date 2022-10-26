@@ -115,8 +115,7 @@ public class NotificationService {
                             shareRequest.getShareLink());
                 }
                 else if (shareRequest.getShareType().equals("ANYONE")){
-                    content = NotificationUtility.buildOpenShareFileEmailContent(ownerDTO, names.get(i), docName, shareRequest.getAppContextPath() +
-                            shareRequest.getShareLink());
+                    content = NotificationUtility.buildOpenShareFileEmailContent(ownerDTO, names.get(i), docName, shareRequest.getShareLink());
                 }
                 emailed = false;
                 if (!AppUtility.isEmpty(content)) {

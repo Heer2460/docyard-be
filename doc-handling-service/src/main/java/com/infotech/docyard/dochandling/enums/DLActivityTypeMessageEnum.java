@@ -15,8 +15,8 @@ public enum DLActivityTypeMessageEnum {
     STARRED("has starred"),
     ARCHIVED("has archived"),
     NO_SHARING("has removed sharing"),
-    RESTRICTED("has shared with restricted access"),
-    ANY_ONE("has shared with any one");
+    RESTRICTED("has shared file/folder with restricted access"),
+    ANY_ONE("has shared file/folder with any one");
 
     private static final HashMap<String, DLActivityTypeMessageEnum> map = new HashMap<>();
 
