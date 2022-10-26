@@ -10,7 +10,6 @@ import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
 @EnableEurekaClient
-@EnableScheduling
 public class UMServicesApplication {
 
     public static void main(String[] args) {

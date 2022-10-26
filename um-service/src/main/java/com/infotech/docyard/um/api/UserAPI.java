@@ -20,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -95,7 +94,7 @@ public class UserAPI {
 
     @RequestMapping(value = "/details/department/{dptId}", method = RequestMethod.GET)
     public NameEmailDTO searchUsersNamesAndEmailsByDepartmentId(HttpServletRequest request,
-                                                  @PathVariable(name = "dptId") long dptId) throws CustomException {
+                                                                @PathVariable(name = "dptId") long dptId) throws CustomException {
         log.info("searchUsersNamesAndEmailsByDepartmentId API initiated...");
 
         if (AppUtility.isEmpty(dptId)) {
@@ -232,7 +231,6 @@ public class UserAPI {
         }
         return ResponseUtility.successResponse(user, AppUtility.getResourceMessage("password.reset.success"));
     }
-
 
     @RequestMapping(value = "/validate-token-reset-password", method = RequestMethod.PUT)
     public CustomResponse verifyTokenAndResetPassword(HttpServletRequest request,

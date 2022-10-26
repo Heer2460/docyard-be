@@ -190,7 +190,7 @@ public class DLShareService {
             dlDocumentRepository.save(dlDocument);
 
             DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(),
-                    DLActivityTypeEnum.SHARING_REMOVED.getValue(), null, dlDocument.getId());
+                    DLActivityTypeEnum.NO_SHARING.getValue(), null, dlDocument.getId());
             dlDocumentActivityRepository.save(activity);
         } else {
             throw new DataValidationException(AppUtility.getResourceMessage("document.share.remove.error"));
