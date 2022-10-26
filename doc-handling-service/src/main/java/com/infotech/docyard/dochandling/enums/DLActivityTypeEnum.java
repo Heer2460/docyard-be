@@ -20,8 +20,7 @@ public enum DLActivityTypeEnum {
     RESTRICTED_SHARE("RESTRICTED_SHARE"),
     ANY_ONE("ANY_ONE"),
     RESTRICTED("RESTRICTED"),
-    ANYONE("ANYONE"),
-    SHARING_REMOVED("SHARING_REMOVED");
+    NO_SHARING("NO_SHARING");
 
     private static final HashMap<String, DLActivityTypeEnum> map = new HashMap<>();
 

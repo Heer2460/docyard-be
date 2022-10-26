@@ -23,7 +23,7 @@ public class NotificationUtility {
         log.info("buildShareFileEmailContent API initiated...");
 
         StringBuilder content = new StringBuilder("Dear <strong>" + toName + ", </strong>");
-        content.append("<br><strong>" + ownerDTO.getName() + "</strong> has shared a folder / file named \"" + filename + "\" with you.</br></br>");
+        content.append("</br></br><strong>" + ownerDTO.getName() + "</strong> has shared a folder / file named \"<strong>" + filename + "</strong>\" with you.</br></br>");
         content.append("For any query please contact your system administrator.");
 
         return content.toString();
@@ -33,7 +33,7 @@ public class NotificationUtility {
         log.info("buildOpenShareFileEmailContent API initiated...");
 
         StringBuilder content = new StringBuilder("Dear <strong>" + toName + ", </strong>");
-        content.append("<br><br><strong>" + ownerDTO.getName() + "</strong> has shared a folder / file named\"<strong>" + filename + "</strong>\" with you.</br>");
+        content.append("<br></br><strong>" + ownerDTO.getName() + "</strong> has shared a folder / file named\"<strong>" + filename + "</strong>\" with you.</br>");
         content.append("<br><br>Please use following URL to access the file / folder.</br>");
         content.append("<strong>URL : " + baseFELink + "</strong></br></br>");
         content.append("For any query please contact your system administrator.");
