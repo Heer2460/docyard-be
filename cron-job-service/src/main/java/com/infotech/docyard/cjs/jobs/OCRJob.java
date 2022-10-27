@@ -16,7 +16,7 @@ public class OCRJob {
     @Autowired
     private JobService jobService;
 
-    @Scheduled(cron = "0 */2 * ? * *") //every 10 mins
+    @Scheduled(cron = "0 */10 * ? * *") //every 10 mins
     public void doOCRJob() {
         log.info("OCRJob - doOCRJob Job started at: " + LocalDateTime.now());
         try {
