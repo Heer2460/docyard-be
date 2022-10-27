@@ -100,12 +100,12 @@ public class DLDocumentService {
             throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
         } else {
             DLDocument doc = opDoc.get();
-            if (doc.getParentId() != null && AppUtility.isEmpty(doc.getParentId())) {
+            if (doc.getParentId() != null && !AppUtility.isEmpty(doc.getParentId())) {
                 docDTOList = getDLDocumentHierarchy(doc.getParentId());
-                DLDocumentDTO docDTO = new DLDocumentDTO();
-                docDTO.convertToDTO(doc, true);
-                docDTOList.add(docDTO);
             }
+            DLDocumentDTO docDTO = new DLDocumentDTO();
+            docDTO.convertToDTO(doc, true);
+            docDTOList.add(docDTO);
         }
         return docDTOList;
     }
