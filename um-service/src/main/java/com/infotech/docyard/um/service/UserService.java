@@ -160,7 +160,6 @@ public class UserService {
                 emailInstance.setCreatedBy(1L);
                 emailInstance.setUpdatedBy(1L);
                 emailInstanceRepository.save(emailInstance);
-                notificationService.sendEmail(emailInstance);
             }
 
             return user;
@@ -292,7 +291,6 @@ public class UserService {
                         emailInstance.setCreatedBy(1L);
                         emailInstance.setUpdatedBy(1L);
                         emailInstanceRepository.save(emailInstance);
-                        notificationService.sendEmail(emailInstance);
                     }
                     userRepository.save(u);
 
@@ -336,7 +334,6 @@ public class UserService {
                 ForgotPasswordLink fpl = new ForgotPasswordLink(token);
                 forgotPasswordLinkRepository.save(fpl);
                 emailInstanceRepository.save(emailInstance);
-                notificationService.sendEmail(emailInstance);
                 status = HttpStatus.OK;
             }
             userRepository.save(user);
