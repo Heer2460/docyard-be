@@ -160,11 +160,13 @@ public class JobService {
         if (!AppUtility.isEmpty(archivedDLDocs)) {
             try {
                 for (DLDocument archivedDoc : archivedDLDocs) {
-                    archivedDoc.setDaysArchived(archivedDoc.getDaysArchived() + 1);
-                    if (archivedDoc.getDaysArchived() >= 30) {
-                        deleteDLDocument(archivedDoc.getId());
-                    } else {
-                        dlDocumentRepository.save(archivedDoc);
+                    if (archivedDoc.getDaysArchived() != null && !AppUtility.isEmpty(archivedDoc.getDaysArchived())) {
+                        archivedDoc.setDaysArchived(archivedDoc.getDaysArchived() + 1);
+                        if (archivedDoc.getDaysArchived() >= 30) {
+                            deleteDLDocument(archivedDoc.getId());
+                        } else {
+                            dlDocumentRepository.save(archivedDoc);
+                        }
                     }
                 }
             } catch (Exception e) {

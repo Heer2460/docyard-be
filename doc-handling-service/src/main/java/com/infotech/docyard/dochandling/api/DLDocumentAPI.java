@@ -3,7 +3,6 @@ package com.infotech.docyard.dochandling.api;
 import com.infotech.docyard.dochandling.dl.entity.DLDocument;
 import com.infotech.docyard.dochandling.dto.DLDocumentDTO;
 import com.infotech.docyard.dochandling.dto.DLDocumentListDTO;
-import com.infotech.docyard.dochandling.dto.DashboardDTO;
 import com.infotech.docyard.dochandling.dto.UploadDocumentDTO;
 import com.infotech.docyard.dochandling.exceptions.CustomException;
 import com.infotech.docyard.dochandling.exceptions.DataValidationException;
@@ -41,6 +40,20 @@ public class DLDocumentAPI {
         List<DLDocumentDTO> documentDTOList = null;
         try {
             documentDTOList = dlDocumentService.searchDLDocuments(searchKey, userId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.buildResponseList(documentDTOList);
+    }
+
+    @RequestMapping(value = "/hierarchy/{dlDocId}", method = RequestMethod.GET)
+    public CustomResponse getDLDocumentHierarchy(HttpServletRequest request,
+                                                 @PathVariable(value = "dlDocId") Long dlDocId) throws CustomException {
+        log.info("getDLDocumentHierarchy API initiated...");
+
+        List<DLDocumentDTO> documentDTOList = null;
+        try {
+            documentDTOList = dlDocumentService.getDLDocumentHierarchy(dlDocId);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }

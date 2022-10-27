@@ -91,6 +91,25 @@ public class DLDocumentService {
         return documentDTOList;
     }
 
+    public List<DLDocumentDTO> getDLDocumentHierarchy (Long dlDocId) {
+        log.info("DLDocumentService - getDLDocumentHierarchy method called...");
+
+        List<DLDocumentDTO> docDTOList = new ArrayList<>();
+        Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocId);
+        if (!opDoc.isPresent()) {
+            throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+        } else {
+            DLDocument doc = opDoc.get();
+            if (doc.getParentId() != null && AppUtility.isEmpty(doc.getParentId())) {
+                docDTOList = getDLDocumentHierarchy(doc.getParentId());
+                DLDocumentDTO docDTO = new DLDocumentDTO();
+                docDTO.convertToDTO(doc, true);
+                docDTOList.add(docDTO);
+            }
+        }
+        return docDTOList;
+    }
+
     public List<DLDocumentDTO> getDLDocumentsByFolderIdAndArchive(Long folderId, Boolean archived) {
         log.info("DLDocumentService - getDlDocumentsByFolderIdAndArchive method called...");
 
