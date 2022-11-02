@@ -80,8 +80,8 @@ public class DLDocActivityService {
                 case "STARRED":
                     activityResponseDTO.setAction(DLActivityTypeMessageEnum.STARRED.getValue());
                     break;
-                case "ANY_ONE":
-                    activityResponseDTO.setAction(DLActivityTypeMessageEnum.ANY_ONE.getValue());
+                case "SHARED_WITH_OPEN_LINK":
+                    activityResponseDTO.setAction(DLActivityTypeMessageEnum.SHARED_WITH_OPEN_LINK.getValue());
                     break;
                 case "RESTRICTED_SHARE":
                     activityResponseDTO.setAction(DLActivityTypeMessageEnum.RESTRICTED_SHARE.getValue());
