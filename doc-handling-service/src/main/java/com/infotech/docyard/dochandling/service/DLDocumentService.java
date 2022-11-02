@@ -738,6 +738,7 @@ public class DLDocumentService {
             doc = opDoc.get();
             doc.setDaysArchived(0);
             doc.setArchived(archive);
+            doc.setArchivedOn(ZonedDateTime.now());
             dlDocumentRepository.save(doc);
         }
         DLDocumentActivity activity = new DLDocumentActivity(doc.getCreatedBy(), DLActivityTypeEnum.ARCHIVED.getValue(),
@@ -991,6 +992,8 @@ public class DLDocumentService {
                     throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
                 }
                 doc.setArchived(false);
+                doc.setDaysArchived(null);
+                doc.setArchivedOn(null);
                 dlDocumentRepository.save(doc);
             } catch (Exception e) {
                 ResponseUtility.exceptionResponse(e);
