@@ -12,6 +12,7 @@ public class NameEmailDTO {
     public NameEmailDTO() {
 
     }
+
     public NameEmailDTO(List<String> names, List<String> emails) {
         this.names = names;
         this.emails = emails;

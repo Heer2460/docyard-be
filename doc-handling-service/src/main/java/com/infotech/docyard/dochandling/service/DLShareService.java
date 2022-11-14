@@ -336,9 +336,19 @@ public class DLShareService {
             Object response1 = restTemplate.getForObject("http://um-service/um/user/details/department/" + dptId, Object.class);
             if (!AppUtility.isEmpty(response1)) {
                 HashMap<?, ?> emailsMap = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response1).get("emails");
-                emails = (List<String>) emailsMap.get("emails");
+                if (emailsMap.get("emails") instanceof ArrayList) {
+                    emails = (List<String>) emailsMap.get("emails");
+                } else {
+                    String email = (String) emailsMap.get("emails");
+                    emails.add(email);
+                }
                 HashMap<?, ?> namesMap = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response1).get("names");
-                names = (List<String>) namesMap.get("names");
+                if (namesMap.get("names") instanceof ArrayList) {
+                    emails = (List<String>) emailsMap.get("names");
+                } else {
+                    String name = (String) emailsMap.get("names");
+                    names.add(name);
+                }
             }
         }
         if (!AppUtility.isEmpty(collabEmails)) {

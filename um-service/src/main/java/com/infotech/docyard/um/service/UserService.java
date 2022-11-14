@@ -118,7 +118,7 @@ public class UserService {
                 List<Long> ids = Stream.of(u.getDepartmentIds().split(","))
                         .map(Long::parseLong)
                         .collect(Collectors.toList());
-                if (ids.stream().anyMatch(id -> deptId == id.longValue())) {
+                if (ids.stream().anyMatch(id -> deptId == id)) {
                     emails.add(u.getEmail());
                     names.add((u.getName()));
                 }
