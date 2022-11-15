@@ -2,10 +2,7 @@ package com.infotech.docyard.dochandling.service;
 
 import com.infotech.docyard.dochandling.dl.entity.*;
 import com.infotech.docyard.dochandling.dl.repository.*;
-import com.infotech.docyard.dochandling.dto.DLDocumentDTO;
-import com.infotech.docyard.dochandling.dto.DLDocumentListDTO;
-import com.infotech.docyard.dochandling.dto.DashboardDTO;
-import com.infotech.docyard.dochandling.dto.UploadDocumentDTO;
+import com.infotech.docyard.dochandling.dto.*;
 import com.infotech.docyard.dochandling.enums.DLActivityTypeEnum;
 import com.infotech.docyard.dochandling.enums.FileTypeEnum;
 import com.infotech.docyard.dochandling.enums.FileViewerEnum;
@@ -91,7 +88,7 @@ public class DLDocumentService {
         return documentDTOList;
     }
 
-    public List<DLDocumentDTO> getDLDocumentHierarchy (Long dlDocId) {
+    public List<DLDocumentDTO> getDLDocumentHierarchy(Long dlDocId) {
         log.info("DLDocumentService - getDLDocumentHierarchy method called...");
 
         List<DLDocumentDTO> docDTOList = new ArrayList<>();
@@ -235,12 +232,12 @@ public class DLDocumentService {
         return documentDTOList;
     }
 
-    public String getUsedSpaceByUserId(Long ownerId) {
+    public UserSpaceOccupiedDTO getUsedSpaceByUserId(Long ownerId) {
         log.info("DLDocumentService - getUsedSpaceByUserId method called...");
 
         List<DLDocument> dlDocumentList = dlDocumentRepository.findAllByCreatedByAndArchivedAndFolderFalseOrderByUpdatedOnDesc(ownerId, false);
         long usedSpace = dlDocumentList.stream().filter(d -> d.getSizeBytes() != null).mapToLong(DLDocument::getSizeBytes).sum();
-        return DocumentUtil.getFileSize(usedSpace);
+        return new UserSpaceOccupiedDTO(usedSpace, DocumentUtil.getFileSize(usedSpace));
     }
 
     public List<DLDocumentDTO> getAllFavouriteDLDocumentsByOwnerIdFolderAndArchive(Long ownerId, Long folderId, Boolean archived) {
@@ -430,7 +427,7 @@ public class DLDocumentService {
             List<DLDocument> docs;
             List<DLDocument> videos;
             List<DLDocument> others;
-            double size = 0D;
+            Long size = 0L;
             int count = 0;
             if (!AppUtility.isEmpty(docList)) {
                 images = docList.stream().filter(this::isImage).collect(Collectors.toList());
@@ -442,21 +439,21 @@ public class DLDocumentService {
                     count++;
                 }
                 DashboardDTO.VideosProps videosProps = new DashboardDTO.VideosProps(count, size, null);
-                size = 0;
+                size = 0L;
                 count = 0;
                 for (DLDocument doc : docs) {
                     size += doc.getSizeBytes();
                     count++;
                 }
                 DashboardDTO.DocsProps docsProps = new DashboardDTO.DocsProps(count, size, null);
-                size = 0;
+                size = 0L;
                 count = 0;
                 for (DLDocument img : images) {
                     size += img.getSizeBytes();
                     count++;
                 }
                 DashboardDTO.ImageProps imageProps = new DashboardDTO.ImageProps(count, size, null);
-                size = 0;
+                size = 0L;
                 count = 0;
                 for (DLDocument other : others) {
                     size += other.getSizeBytes();

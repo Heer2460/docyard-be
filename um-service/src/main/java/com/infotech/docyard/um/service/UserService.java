@@ -430,7 +430,10 @@ public class UserService {
             // Calculating space used by user
             Object response = restTemplate.getForObject("http://doc-handling-service/dl/dl-document/used-space/user/" + userDTO.getId(), Object.class);
             if (!AppUtility.isEmpty(response)) {
-                userDTO.setSpaceUsed(((LinkedHashMap<?, ?>) response).get("data").toString());
+                LinkedHashMap<?, ?> map = (LinkedHashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+                userDTO.setSpaceUsedFormatted((String) map.get("spaceUsedFormatted"));
+                userDTO.setTotalAllottedSize(Long.parseLong((String) map.get("totalAllottedSize")));
+                userDTO.setTotalUsedSpace(Long.parseLong((String) map.get("totalUsedSpace")));
             }
             user.setUnsuccessfulLoginAttempt(0);
             userRepository.save(user);

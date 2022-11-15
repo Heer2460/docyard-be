@@ -41,7 +41,10 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
     private String passwordResetToken;
     private List<ModuleAction> moduleActionList;
     private List<ModuleDTO> moduleDTOList;
-    private String spaceUsed;
+    private Long totalAllottedSize = 52428800000L;
+    private Long totalUsedSpace;
+    private String spaceUsedFormatted;
+
     private Integer unsuccessfulLoginAttempt = 0;
 
     public UserDTO() {

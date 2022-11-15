@@ -18,7 +18,7 @@ public class DashboardDTO {
     @Data
     public static class Properties {
         private Integer count;
-        private Double occupiedSize;
+        private Long occupiedSize;
         private String formattedOccupiedSize;
         private Double totalSize = 52428800000D;
         private String formattedTotalSize;
@@ -28,7 +28,7 @@ public class DashboardDTO {
 
         }
 
-        public Properties(Integer count, Double occupiedSize, Double totalSize) {
+        public Properties(Integer count, Long occupiedSize, Double totalSize) {
             this.count = count;
             this.occupiedSize = occupiedSize;
             this.formattedOccupiedSize = DocumentUtil.getFileSize(this.occupiedSize);
@@ -44,7 +44,7 @@ public class DashboardDTO {
 
         }
 
-        public ImageProps(Integer count, Double occupiedSize, Double totalSize) {
+        public ImageProps(Integer count, Long occupiedSize, Double totalSize) {
             super(count, occupiedSize, totalSize);
         }
     }
@@ -55,7 +55,7 @@ public class DashboardDTO {
 
         }
 
-        public VideosProps(Integer count, Double occupiedSize, Double totalSize) {
+        public VideosProps(Integer count, Long occupiedSize, Double totalSize) {
             super(count, occupiedSize, totalSize);
         }
     }
@@ -66,7 +66,7 @@ public class DashboardDTO {
 
         }
 
-        public DocsProps(Integer count, Double occupiedSize, Double totalSize) {
+        public DocsProps(Integer count, Long occupiedSize, Double totalSize) {
             super(count, occupiedSize, totalSize);
         }
     }
@@ -77,7 +77,7 @@ public class DashboardDTO {
 
         }
 
-        public OthersProps(Integer count, Double occupiedSize, Double totalSize) {
+        public OthersProps(Integer count, Long occupiedSize, Double totalSize) {
             super(count, occupiedSize, totalSize);
         }
     }

@@ -4,6 +4,7 @@ import com.infotech.docyard.dochandling.dl.entity.DLDocument;
 import com.infotech.docyard.dochandling.dto.DLDocumentDTO;
 import com.infotech.docyard.dochandling.dto.DLDocumentListDTO;
 import com.infotech.docyard.dochandling.dto.UploadDocumentDTO;
+import com.infotech.docyard.dochandling.dto.UserSpaceOccupiedDTO;
 import com.infotech.docyard.dochandling.exceptions.CustomException;
 import com.infotech.docyard.dochandling.exceptions.DataValidationException;
 import com.infotech.docyard.dochandling.exceptions.NoDataFoundException;
@@ -136,7 +137,7 @@ public class DLDocumentAPI {
         if (AppUtility.isEmpty(ownerId)) {
             throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
         }
-        String usedSpace = null;
+        UserSpaceOccupiedDTO usedSpace = null;
         try {
             usedSpace = dlDocumentService.getUsedSpaceByUserId(ownerId);
         } catch (Exception e) {
