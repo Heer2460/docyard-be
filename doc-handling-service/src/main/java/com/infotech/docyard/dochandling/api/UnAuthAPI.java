@@ -32,7 +32,8 @@ public class UnAuthAPI {
 
     @RequestMapping(value = "/document/{guid}", method = RequestMethod.GET)
     public CustomResponse getDocumentByGUID(HttpServletRequest request,
-                                            @PathVariable(name = "guid") String guid) throws CustomException {
+                                            @PathVariable(name = "guid") String guid,
+                                            @RequestParam(value = "shared") Boolean shared) throws CustomException {
         log.info("getDocumentByGUID API initiated...");
 
         if (AppUtility.isEmpty(guid)) {
@@ -40,11 +41,11 @@ public class UnAuthAPI {
         }
         DLDocumentDTO dlDocumentDTO = null;
         try {
-            dlDocumentDTO = dlDocumentService.getDocumentByGUID(guid);
+            dlDocumentDTO = dlDocumentService.getDocumentByGUID(guid, shared);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return ResponseUtility.successResponseForPut(dlDocumentDTO, AppUtility.getResourceMessage("generic.success"));
+        return ResponseUtility.buildResponseObject(dlDocumentDTO);
     }
 
     @RequestMapping(value = "/document/download/{dlDocumentId}", method = RequestMethod.GET)
@@ -72,7 +73,8 @@ public class UnAuthAPI {
 
     @RequestMapping(value = "/folder/{folderId}", method = RequestMethod.GET)
     public CustomResponse getAllDlDocumentsByFolderId(HttpServletRequest request,
-                                                      @PathVariable("folderId") Long folderId) throws CustomException {
+                                                      @PathVariable("folderId") Long folderId,
+                                                      @RequestParam(value = "shared") Boolean shared) throws CustomException {
         log.info("getAllDlDocumentsByFolderId API initiated...");
 
         if (AppUtility.isEmpty(folderId)) {
@@ -80,7 +82,7 @@ public class UnAuthAPI {
         }
         List<DLDocumentDTO> documentDTOList = null;
         try {
-            documentDTOList = dlDocumentService.getAllDlDocumentsByFolderId(folderId);
+            documentDTOList = dlDocumentService.getAllDlDocumentsByFolderId(folderId, shared);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }

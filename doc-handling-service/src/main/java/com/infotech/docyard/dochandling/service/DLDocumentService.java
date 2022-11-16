@@ -8,6 +8,7 @@ import com.infotech.docyard.dochandling.enums.FileTypeEnum;
 import com.infotech.docyard.dochandling.enums.FileViewerEnum;
 import com.infotech.docyard.dochandling.exceptions.CustomException;
 import com.infotech.docyard.dochandling.exceptions.DataValidationException;
+import com.infotech.docyard.dochandling.exceptions.NoDataFoundException;
 import com.infotech.docyard.dochandling.util.AppConstants;
 import com.infotech.docyard.dochandling.util.AppUtility;
 import com.infotech.docyard.dochandling.util.DocumentUtil;
@@ -190,26 +191,53 @@ public class DLDocumentService {
         return documentDTOList;
     }
 
-    public List<DLDocumentDTO> getAllDlDocumentsByFolderId(Long folderId) {
+    public List<DLDocumentDTO> getAllDlDocumentsByFolderId(Long folderId, Boolean shared) {
         log.info("DLDocumentService - getAllDlDocumentsByFolderId method called...");
 
+        DLDocument dlFolder;
         List<DLDocumentDTO> documentDTOList = new ArrayList<>();
-        List<DLDocument> dlDocumentList = dlDocumentRepository.findByParentIdAndArchivedFalseOrderByUpdatedOnDesc(folderId);
-        for (DLDocument dlDoc : dlDocumentList) {
-            DLDocumentDTO dto = new DLDocumentDTO();
-            dto.convertToDTO(dlDoc, false);
+        if (shared) {
+            dlFolder = dlDocumentRepository.findByIdAndArchivedFalseAndFolderTrueAndSharedTrue(folderId);
 
-            if (dlDoc.getFolder()) {
-                int fileCount = dlDocumentRepository.countAllByArchivedFalseAndFolderFalseAndParentId(dlDoc.getId());
-                dto.setSize(fileCount + " Files");
+            if (AppUtility.isEmpty(dlFolder)) {
+                throw new NoDataFoundException(AppUtility.getResourceMessage("folder.not.shared"));
+            } else {
+                List<DLDocument> dlDocumentList = dlDocumentRepository.findByParentIdAndArchivedFalseOrderByUpdatedOnDesc(folderId);
+                for (DLDocument dlDoc : dlDocumentList) {
+                    DLDocumentDTO dto = new DLDocumentDTO();
+                    dto.convertToDTO(dlDoc, false);
+
+                    if (dlDoc.getFolder()) {
+                        int fileCount = dlDocumentRepository.countAllByArchivedFalseAndFolderFalseAndParentId(dlDoc.getId());
+                        dto.setSize(fileCount + " Files");
+                    }
+                    Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDoc.getCreatedBy(), Object.class);
+                    if (!AppUtility.isEmpty(response)) {
+                        HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+                        dto.setCreatedByName((String) map.get("name"));
+                        dto.setUpdatedByName((String) map.get("name"));
+                    }
+                    documentDTOList.add(dto);
+                }
             }
-            Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDoc.getCreatedBy(), Object.class);
-            if (!AppUtility.isEmpty(response)) {
-                HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
-                dto.setCreatedByName((String) map.get("name"));
-                dto.setUpdatedByName((String) map.get("name"));
+        } else {
+            List<DLDocument> dlDocumentList = dlDocumentRepository.findByParentIdAndArchivedFalseOrderByUpdatedOnDesc(folderId);
+            for (DLDocument dlDoc : dlDocumentList) {
+                DLDocumentDTO dto = new DLDocumentDTO();
+                dto.convertToDTO(dlDoc, false);
+
+                if (dlDoc.getFolder()) {
+                    int fileCount = dlDocumentRepository.countAllByArchivedFalseAndFolderFalseAndParentId(dlDoc.getId());
+                    dto.setSize(fileCount + " Files");
+                }
+                Object response = restTemplate.getForObject("http://um-service/um/user/" + dlDoc.getCreatedBy(), Object.class);
+                if (!AppUtility.isEmpty(response)) {
+                    HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+                    dto.setCreatedByName((String) map.get("name"));
+                    dto.setUpdatedByName((String) map.get("name"));
+                }
+                documentDTOList.add(dto);
             }
-            documentDTOList.add(dto);
         }
         return documentDTOList;
     }
@@ -877,10 +905,15 @@ public class DLDocumentService {
         return new DLDocumentDTO();
     }
 
-    public DLDocumentDTO getDocumentByGUID(String guid) {
+    public DLDocumentDTO getDocumentByGUID(String guid, Boolean shared) {
         log.info("DLDocumentService - getDocumentByGUID method called...");
 
-        DLDocument document = dlDocumentRepository.findByVersionGUIdAndArchivedFalseAndFolderFalse(guid);
+        DLDocument document = null;
+        if (shared) {
+            document = dlDocumentRepository.findByVersionGUIdAndArchivedFalseAndFolderFalseAndSharedTrue(guid);
+        } else {
+            document = dlDocumentRepository.findByVersionGUIdAndArchivedFalseAndFolderFalse(guid);
+        }
         if (!AppUtility.isEmpty(document)) {
             DLDocumentDTO dlDocumentDTO = new DLDocumentDTO();
             dlDocumentDTO.convertToDTO(document, false);
