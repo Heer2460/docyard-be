@@ -1,8 +1,28 @@
 version: "3.9"
 
 services:
+  db:
+    # We use a mariadb image which supports both amd64 & arm64 architecture
+    image: mariadb:10.6.4-focal
+    # If you really want to use MySQL, uncomment the following line
+    #image: mysql:8.0.19
+    environment:
+      - MYSQL_DATABASE=example
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 3s
+      retries: 5
+      start_period: 30s
+    secrets:
+      - db-password
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - docyard-be_default
   registry-service:
-    image: registrysevice
+    image: registrysevice:${TAG}
     container_name: RegistryServiceContainer
     build:
       context: ./registry-service
@@ -11,86 +31,85 @@ services:
       - "8761:8761"
     networks:
       - docyard-be_default
+  gateway-service:
+    image: gatewayservice:${TAG}
+    #    environment:
+    #      - JAVA_OPTS=
+    #        - EUREKA_SERVER=http://registry-service:8761/eureka/
+    container_name: GatewayServiceContainer
+    build:
+      context: ./gateway-service
+      dockerfile: Dockerfile
+    depends_on:
+      - registry-service
+    ports:
+      - "8080:8080"
+    networks:
+      - docyard-be_default
 #
-#  doc-handling-service:
-#    image: dochandelingservice:${TAG}
-##    environment:
-##      - JAVA_OPTS=
-##      - EUREKA_SERVER=http://registry-service:8761/eureka/
-#    container_name: DocServiceContainer
-#    build:
-#      context: ./doc-handling-service
-#      dockerfile: Dockerfile
-#    depends_on:
-#      - registry-service
-#    ports:
-#      - "8084:8084"
-#    networks:
-#      - docyard-be_default
-#
-#  authentication-service:
-#    image: authenticationservice:${TAG}
-##    environment:
-##      - JAVA_OPTS=
-##      - EUREKA_SERVER=http://registry-service:8761/eureka/
-#    container_name: authServiceContainer
-#    build:
-#      context: ./authentication-service
-#      dockerfile: Dockerfile
-#    depends_on:
-#      - registry-service
-#    ports:
-#      - "8081:8081"
-#    networks:
-#      - docyard-be_default
-#
-#  cron-job-service:
-#    image: cronjobservice:${TAG}
-##    environment:
-##      - JAVA_OPTS=
-##      - EUREKA_SERVER=http://registry-service:8761/eureka/
-#    container_name: CronServiceContainer
-#    build:
-#      context: ./cron-job-service
-#      dockerfile: Dockerfile
-#    depends_on:
-#      - registry-service
-#    ports:
-#      - "8085:8085"
-#    networks:
-#      - docyard-be_default
-#
-#  um-service:
-#    image: umservice:${TAG}
-##    environment:
-##      - JAVA_OPTS=
-##      - EUREKA_SERVER=http://registry-service:8761/eureka/
-#    container_name: UmServiceContainer
-#    build:
-#      context: ./um-service
-#      dockerfile: Dockerfile
-#    depends_on:
-#      - registry-service
-#    ports:
-#      - "8083:8083"
-#    networks:
-#      - docyard-be_default
-#
-#  gateway-service:
-#    image: gatewayservice:${TAG}
-##    environment:
-##      - JAVA_OPTS=
-##        - EUREKA_SERVER=http://registry-service:8761/eureka/
-#    container_name: GatewayServiceContainer
-#    build:
-#      context: ./gateway-service
-#      dockerfile: Dockerfile
-#    depends_on:
-#      - registry-service
-#    ports:
-#      - "8080:8080"
-#    networks:
-#      - docyard-be_default
+  doc-handling-service:
+    image: dochandelingservice:${TAG}
+#    environment:
+#      - JAVA_OPTS=
+#      - EUREKA_SERVER=http://registry-service:8761/eureka/
+    container_name: DocServiceContainer
+    build:
+      context: ./doc-handling-service
+      dockerfile: Dockerfile
+    depends_on:
+      - registry-service
+    ports:
+      - "8084:8084"
+    networks:
+      - docyard-be_default
+
+  authentication-service:
+    image: authenticationservice:${TAG}
+#    environment:
+#      - JAVA_OPTS=
+#      - EUREKA_SERVER=http://registry-service:8761/eureka/
+    container_name: authServiceContainer
+    build:
+      context: ./authentication-service
+      dockerfile: Dockerfile
+    depends_on:
+      - registry-service
+    ports:
+      - "8081:8081"
+    networks:
+      - docyard-be_default
+
+  cron-job-service:
+    image: cronjobservice:${TAG}
+#    environment:
+#      - JAVA_OPTS=
+#      - EUREKA_SERVER=http://registry-service:8761/eureka/
+    container_name: CronServiceContainer
+    build:
+      context: ./cron-job-service
+      dockerfile: Dockerfile
+    depends_on:
+      - registry-service
+    ports:
+      - "8085:8085"
+    networks:
+      - docyard-be_default
+
+  um-service:
+    image: umservice:${TAG}
+#    environment:
+#      - JAVA_OPTS=
+#      - EUREKA_SERVER=http://registry-service:8761/eureka/
+    container_name: UmServiceContainer
+    build:
+      context: ./um-service
+      dockerfile: Dockerfile
+    depends_on:
+      - registry-service
+    ports:
+      - "8083:8083"
+    networks:
+      - docyard-be_default
 
 networks:
-  docyard-be_default:
+  docyard-be_default:{}
