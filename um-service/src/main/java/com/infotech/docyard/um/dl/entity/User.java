@@ -1,6 +1,5 @@
 package com.infotech.docyard.um.dl.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -11,39 +10,21 @@ import java.time.ZonedDateTime;
 
 @Data
 @Entity
-@Table(name = "USERS")
+@Table(name = "USER")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @EqualsAndHashCode(callSuper = false)
 public class User extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Column(name = "USERNAME")
-    private String username;
+    @Column(name = "USER_NAME")
+    private String userName;
 
     @Column(name = "PASSWORD")
     private String password;
 
-    @Column(name = "EMAIL")
-    private String email;
-
-    @Column(name = "NAME")
-    private String name;
-
-    @Column(name = "PHONE_NUMBER")
-    private String phoneNumber;
-
-    @Column(name = "MOBILE_NUMBER")
-    private String mobileNumber;
-
     @Column(name = "STATUS")
     private String status;
-
-    @Column(name = "ADDRESS")
-    private String address;
-
-    @Column(name = "DEPARTMENT_IDS")
-    private String departmentIds;
 
     @Column(name = "IS_ONLINE", columnDefinition = "boolean default false")
     private Boolean online;
@@ -66,17 +47,14 @@ public class User extends BaseEntity implements Serializable {
     @Column(name = "UN_SUC_LOGIN_ATTEMPTS")
     private Integer unsuccessfulLoginAttempt;
 
-
-    @JsonIgnore
-    @Lob
-    @Column(name = "PROFILE_PHOTO")
-    private byte[] profilePhoto;
-
     @OneToOne(targetEntity = Group.class)
     @JoinColumn(name = "GROUP_ID")
     private Group group;
 
-    public User() {
-    }
+    @Column(name = "DEPARTMENT_IDS")
+    private String departmentIds;
 
+    @OneToOne(targetEntity = UserProfile.class, orphanRemoval = true, fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "PROFILE_ID")
+    private UserProfile userProfile;
 }

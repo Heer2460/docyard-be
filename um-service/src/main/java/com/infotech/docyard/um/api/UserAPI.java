@@ -85,7 +85,7 @@ public class UserAPI {
         }
         List<String> emails = null;
         try {
-            emails = userService.searchUsersByDepartmentId(dptId);
+            emails = userService.searchUserEmailsByDepartmentId(dptId);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -187,7 +187,7 @@ public class UserAPI {
         return ResponseUtility.successResponse(user, AppUtility.getResourceMessage("user.profile.update"));
     }
 
-    @RequestMapping(value = "/update-user-status", method = RequestMethod.PUT)
+    @RequestMapping(value = "/update-user-status", method = RequestMethod.PUT) // TODO
     public CustomResponse updateUserStatus(HttpServletRequest request,
                                            @RequestBody UserDTO userDTO)
             throws CustomException, NoDataFoundException {

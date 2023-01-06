@@ -35,26 +35,40 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private AdvSearchRepository advSearchRepository;
+
     @Autowired
     private ForgotPasswordLinkRepository forgotPasswordLinkRepository;
+
     @Autowired
     private EmailInstanceRepository emailInstanceRepository;
+
     @Autowired
     private NotificationService notificationService;
+
     @Autowired
     private GroupRoleRepository groupRoleRepository;
+
     @Autowired
     private RolePermissionRepository rolePermissionRepository;
+
     @Autowired
     private ModuleRepository moduleRepository;
+
     @Autowired
     private ModuleActionRepository moduleActionRepository;
+
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private UserProfileRepository userProfileRepository;
+
     @Value("${fe.reset.pass.base.link}")
     private String resetPassBaseFELink;
+
     @Value("${fe.base.link}")
     private String baseFELink;
 
@@ -80,16 +94,16 @@ public class UserService {
     public User getUserByUserName(String username) {
         log.info("getUserByUserName method called..");
 
-        return userRepository.findByUsername(username);
+        return userRepository.findByUserName(username);
     }
 
     public User getUserByUserEmail(String email) {
         log.info("getUserByUserEmail method called..");
 
-        return userRepository.findByEmail(email);
+        return userRepository.findUserByEmail(email);
     }
 
-    public List<String> searchUsersByDepartmentId(long deptId) {
+    public List<String> searchUserEmailsByDepartmentId(long deptId) {
         log.info("searchUsersByDepartmentId method called..");
 
         List<User> users = userRepository.findAllByStatus("active");
@@ -100,10 +114,11 @@ public class UserService {
                         .map(Long::parseLong)
                         .collect(Collectors.toList());
                 if (ids.stream().anyMatch(id -> deptId == id.longValue())) {
-                    emails.add(u.getEmail());
+                    emails.add(u.getUserProfile().getEmail());
                 }
             }
         }
+
         return emails;
     }
 
@@ -119,11 +134,12 @@ public class UserService {
                         .map(Long::parseLong)
                         .collect(Collectors.toList());
                 if (ids.stream().anyMatch(id -> deptId == id)) {
-                    emails.add(u.getEmail());
-                    names.add((u.getName()));
+                    emails.add(u.getUserProfile().getEmail());
+                    names.add((u.getUserProfile().getName()));
                 }
             }
         }
+
         return new NameEmailDTO(names, emails);
     }
 
@@ -131,8 +147,9 @@ public class UserService {
     public User saveUser(UserDTO userDTO, MultipartFile profileImg) throws Exception {
         log.info("saveUser method called..");
 
-        Boolean userExistsWithUsername = userRepository.existsByUsername(userDTO.getUsername());
-        Boolean userExistsWithEmail = userRepository.existsByEmail(userDTO.getEmail());
+        Boolean userExistsWithUsername = userRepository.existsByUserName(userDTO.getUserName());
+        Boolean userExistsWithEmail = userProfileRepository.existsByEmail(userDTO.getUserProfile().getEmail());
+
         if (userExistsWithEmail && userExistsWithUsername) {
             throw new DataValidationException(AppUtility.getResourceMessage("user.with.same.username.and.email"));
         } else if (userExistsWithEmail) {
@@ -142,15 +159,21 @@ public class UserService {
         } else {
             User user = null;
             if (!AppUtility.isEmpty(profileImg)) {
-                userDTO.setProfilePhotoReceived(profileImg);
+                userDTO.getUserProfile().setProfilePhotoReceived(profileImg);
             }
             userDTO.setPassword(new BCryptPasswordEncoder().encode(userDTO.getPassword()));
-            user = userRepository.save(userDTO.convertToEntity());
+            UserProfile userProfile = userDTO.getUserProfile().convertToEntity();
+            userProfileRepository.save(userProfile);
+            user = userDTO.convertToEntity();
+            user.setUserProfile(userProfile);
+            user = userRepository.save(user);
+
+            //user = userRepository.save(userDTO.convertToEntity());
 
             String content = NotificationUtility.buildCreateUserEmailContent(userDTO, baseFELink);
             if (!AppUtility.isEmpty(content)) {
                 EmailInstance emailInstance = new EmailInstance();
-                emailInstance.setToEmail(userDTO.getEmail());
+                emailInstance.setToEmail(userDTO.getUserProfile().getEmail());
                 emailInstance.setType(EmailTypeEnum.USER_CREATED.getValue());
                 emailInstance.setSubject(AppConstants.EmailSubjectConstants.USER_CREATED);
                 emailInstance.setContent(content);
@@ -171,19 +194,25 @@ public class UserService {
 
         Optional<User> dbUser = userRepository.findById(userDTO.getId());
         if (dbUser.isPresent()) {
-            if (dbUser.get().getUsername().equals(userDTO.getUsername())) {
-                if (!(dbUser.get().getEmail().equals(userDTO.getEmail()))) {
-                    Boolean userExistsWithEmail = userRepository.existsByEmail(userDTO.getEmail());
+            if (dbUser.get().getUserName().equals(userDTO.getUserName())) {
+                if (!(dbUser.get().getUserProfile().getEmail().equals(userDTO.getUserProfile().getEmail()))) {
+                    Boolean userExistsWithEmail = userProfileRepository.existsByEmail(userDTO.getUserProfile().getEmail());
                     if (userExistsWithEmail) {
                         throw new DataValidationException(AppUtility.getResourceMessage("user.with.same.email"));
                     }
                 }
                 if (!AppUtility.isEmpty(profileImg)) {
-                    userDTO.setProfilePhotoReceived(profileImg);
+                    userDTO.getUserProfile().setProfilePhotoReceived(profileImg);
                 }
                 userDTO.setPassword(dbUser.get().getPassword());
 
-                return userRepository.save(userDTO.convertToEntityForUpdate());
+                UserProfile userProfile = userDTO.getUserProfile().convertToEntity();
+                userProfileRepository.save(userProfile);
+                User user = userDTO.convertToEntity();
+                user.setUserProfile(userProfile);
+                return userRepository.save(user);
+
+                //return userRepository.save(userDTO.convertToEntityForUpdate());
             } else {
                 throw new DataValidationException(AppUtility.getResourceMessage("user.can.not.change.username"));
             }
@@ -199,7 +228,7 @@ public class UserService {
         if (dbUser.isPresent()) {
             userDTO.convertToDTO(dbUser.get(), false);
             if (!AppUtility.isEmpty(profileImg)) {
-                userDTO.setProfilePhotoReceived(profileImg);
+                userDTO.getUserProfile().setProfilePhotoReceived(profileImg);
             }
             return userRepository.save(userDTO.convertToEntityForUpdate());
         } else {
@@ -213,7 +242,7 @@ public class UserService {
         Optional<User> dbUser = userRepository.findById(userDTO.getId());
         if (dbUser.isPresent()) {
             String status = userDTO.getStatus();
-            userDTO.convertToDTO(dbUser.get(), true);
+            userDTO.convertToDTO(dbUser.get(), false);
             userDTO.setStatus(status);
             userDTO.setUpdatedOn(ZonedDateTime.now());
             return userRepository.save(userDTO.convertToEntityForUpdate());
@@ -281,7 +310,7 @@ public class UserService {
                     String content = NotificationUtility.buildChangePasswordContent(u);
                     if (!AppUtility.isEmpty(content)) {
                         EmailInstance emailInstance = new EmailInstance();
-                        emailInstance.setToEmail(u.getEmail());
+                        emailInstance.setToEmail(u.getUserProfile().getEmail());
                         emailInstance.setType(EmailTypeEnum.CHANGE_PASSWORD.getValue());
                         emailInstance.setSubject(AppConstants.EmailSubjectConstants.CHANGE_PASSWORD);
                         emailInstance.setContent(content);
@@ -311,7 +340,7 @@ public class UserService {
         log.info("forgotPassword method called..");
 
         HttpStatus status = HttpStatus.NOT_FOUND;
-        User user = userRepository.findByEmail(email);
+        User user = userRepository.findUserByEmail(email);
         if (AppUtility.isEmpty(user)) {
             throw new NoDataFoundException(AppUtility.getResourceMessage("user.not.found"));
         } else {
@@ -386,11 +415,11 @@ public class UserService {
     }
 
     @Transactional(rollbackFor = {Throwable.class})
-    public UserDTO userSignIn(String username) throws JsonProcessingException {
+    public UserDTO userSignIn(String userName) throws JsonProcessingException {
         log.info("userSignIn method called..");
 
         UserDTO userDTO;
-        User user = userRepository.findByUsername(username);
+        User user = userRepository.findByUserName(userName);
         if (!AppUtility.isEmpty(user)) {
             userDTO = new UserDTO();
             userDTO.convertToDTO(user, false);
@@ -447,7 +476,7 @@ public class UserService {
     public void getLoggedOutUser(Principal principal, String authHeader) {
         log.info("getLoggedOutUser method called..");
 
-        User user = userRepository.findByUsername(principal.getName());
+        User user = userRepository.findByUserName(principal.getName());
         if (!AppUtility.isEmpty(user)) {
             userRepository.save(user);
         }
@@ -545,7 +574,7 @@ public class UserService {
 
     public void unsuccessfulLoginAttempt(String username) {
         log.info("unsuccessfulLoginAttempt method called...");
-        User user = userRepository.findByUsername(username);
+        User user = userRepository.findByUserName(username);
         if (!AppUtility.isEmpty(user)) {
 
             user.setUnsuccessfulLoginAttempt(AppUtility.isEmpty(user.getUnsuccessfulLoginAttempt()) ? 1 : user.getUnsuccessfulLoginAttempt() + 1);
@@ -556,9 +585,7 @@ public class UserService {
             if (user1.getUnsuccessfulLoginAttempt() >= 3) {
                 throw new DataValidationException("User is locked please contact administration. ");
             }
-
         }
-
     }
 
     public void expireForgotPasswordLinks() {

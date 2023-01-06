@@ -6,7 +6,6 @@ import com.infotech.docyard.um.dl.entity.ModuleAction;
 import com.infotech.docyard.um.dl.entity.User;
 import com.infotech.docyard.um.util.AppUtility;
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -18,94 +17,73 @@ import java.util.stream.Collectors;
 @Data
 public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
 
-    MultipartFile profilePhotoReceived;
     private Long id;
-    private String username;
-    private String email;
-    private String name;
-    private String phoneNumber;
-    private String mobileNumber;
-    private Long groupId;
-    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-    private List<String> departmentIds;
-    private String status;
-    private String address;
+    private String userName;
     private String password;
-    private byte[] profilePhoto;
-    private String groupName;
     private Boolean online;
+    private String status;
     private Boolean forcePasswordChange;
     private ZonedDateTime lastLogin;
     private ZonedDateTime lastPassUpdatedOn;
     private Boolean passwordExpired;
     private String passwordResetToken;
+    private Integer unsuccessfulLoginAttempt = 0;
+    private Long groupId;
+    private String groupName;
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    private List<String> departmentIds;
     private List<ModuleAction> moduleActionList;
     private List<ModuleDTO> moduleDTOList;
     private Long totalAllottedSize = 52428800000L;
     private Long totalUsedSpace;
     private String spaceUsedFormatted;
-
-    private Integer unsuccessfulLoginAttempt = 0;
+    private UserProfileDTO userProfile;
 
     public UserDTO() {
-
-    }
-
-    public void setProfilePhotoFromDTO(User user, MultipartFile profilePhotoReceived) throws IOException {
-        if (!AppUtility.isEmpty(profilePhotoReceived)) {
-            user.setProfilePhoto(profilePhotoReceived.getBytes());
-            this.setProfilePhoto(profilePhotoReceived.getBytes());
-        }
     }
 
     @Override
     public User convertToEntity() throws IOException {
         User user = new User();
         user.setId(this.id);
-        user.setUsername(this.username);
-        user.setEmail(this.email);
-        user.setName(AppUtility.isEmpty(this.name) ? this.name : this.name.trim());
-        user.setPhoneNumber(this.phoneNumber);
-        user.setMobileNumber(this.mobileNumber);
-        if (!AppUtility.isEmpty(this.groupId)) {
-            user.setGroup(new Group(this.groupId));
-        }
-        if (!AppUtility.isEmpty(this.departmentIds)) {
-            user.setDepartmentIds(this.getDepartmentIds().stream().collect(Collectors.joining(",")));
-        }
-        setProfilePhotoFromDTO(user, this.profilePhotoReceived);
-        user.setProfilePhoto(this.profilePhoto);
-        user.setStatus(this.status);
-        user.setAddress(this.address);
+        user.setUserName(this.userName);
         user.setPassword(this.password);
         user.setCreatedOn(AppUtility.isEmpty(this.createdOn) ? ZonedDateTime.now() : this.createdOn);
         user.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
         user.setCreatedBy(this.getCreatedBy());
         user.setUpdatedBy(this.getUpdatedBy());
+        user.setStatus(this.status);
         user.setUnsuccessfulLoginAttempt(this.unsuccessfulLoginAttempt);
+
+       // if(!AppUtility.isEmpty(this.userProfile))
+       //     user.setUserProfile(this.userProfile.convertToEntity());
+
+        if (!AppUtility.isEmpty(this.groupId))
+            user.setGroup(new Group(this.groupId));
+
+        if (!AppUtility.isEmpty(this.departmentIds))
+            user.setDepartmentIds(this.getDepartmentIds().stream().collect(Collectors.joining(",")));
+
         return user;
     }
 
     public User convertToEntityForUpdate() throws IOException {
         User user = new User();
         user.setId(this.id);
-        user.setUsername(this.username);
-        user.setEmail(this.email);
-        user.setName(this.name);
-        user.setPhoneNumber(this.phoneNumber);
-        user.setMobileNumber(this.mobileNumber);
-        if (!AppUtility.isEmpty(this.groupId)) {
-            user.setGroup(new Group(this.groupId));
-        }
-        if (!AppUtility.isEmpty(this.departmentIds)) {
-            user.setDepartmentIds(this.getDepartmentIds().stream().collect(Collectors.joining(",")));
-        }
-        setProfilePhotoFromDTO(user, this.profilePhotoReceived);
-        user.setProfilePhoto(this.profilePhoto);
-        user.setStatus(this.status);
-        user.setAddress(this.address);
+        user.setUserName(this.userName);
         user.setPassword(this.password);
         user.setPasswordResetToken(this.passwordResetToken);
+        user.setStatus(this.status);
+
+        if(!AppUtility.isEmpty(this.userProfile))
+            user.setUserProfile(this.userProfile.convertToEntity());
+
+        if (!AppUtility.isEmpty(this.groupId))
+            user.setGroup(new Group(this.groupId));
+
+        if (!AppUtility.isEmpty(this.departmentIds))
+            user.setDepartmentIds(this.getDepartmentIds().stream().collect(Collectors.joining(",")));
+
         user.setCreatedOn(AppUtility.isEmpty(this.createdOn) ? ZonedDateTime.now() : this.createdOn);
         user.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
         user.setUpdatedBy(this.getUpdatedBy());
@@ -117,29 +95,29 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
     @Override
     public void convertToDTO(User entity, boolean partialFill) {
         this.id = entity.getId();
-        this.username = entity.getUsername();
-        this.email = entity.getEmail();
-        this.name = entity.getName();
-        this.phoneNumber = entity.getPhoneNumber();
-        this.mobileNumber = entity.getMobileNumber();
-        this.groupId = AppUtility.isEmpty(entity.getGroup()) ? null : entity.getGroup().getId();
-        this.groupName = AppUtility.isEmpty(entity.getGroup()) ? null : entity.getGroup().getName();
-        if (!AppUtility.isEmpty(entity.getDepartmentIds())) {
-            this.setDepartmentIds(Arrays.asList(entity.getDepartmentIds().split(",")));
-        }
-        this.profilePhoto = entity.getProfilePhoto();
-        this.status = entity.getStatus();
-        this.address = entity.getAddress();
-        this.profilePhoto = entity.getProfilePhoto();
+        this.userName = entity.getUserName();
         this.lastLogin = entity.getLastLogin();
         this.lastPassUpdatedOn = entity.getLastPassUpdatedOn();
         this.passwordExpired = entity.getPasswordExpired();
+        this.groupId = AppUtility.isEmpty(entity.getGroup()) ? null : entity.getGroup().getId();
+        this.groupName = AppUtility.isEmpty(entity.getGroup()) ? null : entity.getGroup().getName();
+
+        if (!AppUtility.isEmpty(entity.getDepartmentIds()))
+            this.setDepartmentIds(Arrays.asList(entity.getDepartmentIds().split(",")));
+
+        this.status = entity.getStatus();
         this.updatedOn = entity.getUpdatedOn();
         this.createdOn = entity.getCreatedOn();
         this.updatedBy = entity.getUpdatedBy();
         this.createdBy = entity.getCreatedBy();
         this.password = entity.getPassword();
         this.unsuccessfulLoginAttempt = entity.getUnsuccessfulLoginAttempt();
+
+        if(!partialFill) {
+            this.userProfile = new UserProfileDTO();
+            this.userProfile.convertToDTO(entity.getUserProfile(), partialFill);
+        }
+
     }
 
     @Override
