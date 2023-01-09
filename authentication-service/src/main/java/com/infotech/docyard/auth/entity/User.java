@@ -10,36 +10,21 @@ import java.time.ZonedDateTime;
 
 @Data
 @Entity
-@Table(name = "USERS")
+@Table(name = "USER")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @EqualsAndHashCode(callSuper = false)
 public class User extends BaseEntity implements Serializable {
 
     private static final long serialVersionUID = 7657451394244852266L;
 
-    @Column(name = "USERNAME")
-    private String username;
+    @Column(name = "USER_NAME")
+    private String userName;
 
     @Column(name = "PASSWORD")
     private String password;
 
-    @Column(name = "EMAIL")
-    private String email;
-
-    @Column(name = "NAME")
-    private String name;
-
-    @Column(name = "PHONE_NUMBER")
-    private Long phoneNumber;
-
-    @Column(name = "GROUP_ID")
-    private Long groupId;
-
-    @Column(name="STATUS")
+    @Column(name = "STATUS")
     private String status;
-
-    @Column(name="ADDRESS")
-    private String address;
 
     @Column(name = "IS_ONLINE", columnDefinition = "boolean default false")
     private Boolean online;
@@ -56,8 +41,14 @@ public class User extends BaseEntity implements Serializable {
     @Column(name = "IS_PASS_EXPIRED", columnDefinition = "boolean default false")
     private Boolean passwordExpired;
 
+    @Column(name = "PASSWORD_REST_TOKEN")
+    private String passwordResetToken;
 
+    @Column(name = "UN_SUC_LOGIN_ATTEMPTS")
+    private Integer unsuccessfulLoginAttempt;
 
+    @Column(name = "GROUP_ID")
+    private Long groupId;
 
     public User() {
     }
