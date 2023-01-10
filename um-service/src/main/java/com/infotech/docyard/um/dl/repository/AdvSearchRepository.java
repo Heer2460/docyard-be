@@ -1,10 +1,7 @@
 package com.infotech.docyard.um.dl.repository;
 
 
-import com.infotech.docyard.um.dl.entity.Department;
-import com.infotech.docyard.um.dl.entity.Group;
-import com.infotech.docyard.um.dl.entity.Role;
-import com.infotech.docyard.um.dl.entity.User;
+import com.infotech.docyard.um.dl.entity.*;
 import com.infotech.docyard.um.util.AppUtility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -47,15 +44,16 @@ public class AdvSearchRepository {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<User> cq = cb.createQuery(User.class);
         Root<User> userRoot = cq.from(User.class);
+        Join<User, UserProfile> joinUserProfile = userRoot.join("userProfile");
 
         Join<Object, Object> group = userRoot.join("group", JoinType.LEFT);
 
         List<Predicate> predicates = new ArrayList<>();
         if (!AppUtility.isEmpty(username)) {
-            predicates.add(cb.like(userRoot.get("username"), "%" + username + "%"));
+            predicates.add(cb.like(userRoot.get("userName"), "%" + username + "%"));
         }
         if (!AppUtility.isEmpty(name)) {
-            predicates.add(cb.like(userRoot.get("name"), "%" + name + "%"));
+            predicates.add(cb.like(joinUserProfile.get("name"), "%" + name + "%"));
         }
         if (!AppUtility.isEmpty(groupId)) {
             predicates.add(cb.equal(group.get("id"), groupId));
