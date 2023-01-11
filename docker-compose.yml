@@ -1,36 +1,52 @@
 version: "3.9"
 
 services:
-  db:
-    # We use a mariadb image which supports both amd64 & arm64 architecture
-    image: mariadb:10.6.4-focal
-    # If you really want to use MySQL, uncomment the following line
-    #image: mysql:8.0.19
+  mysqldb:
+    image: mysql:8.0
+    container_name: mysqldb8
     environment:
-      - MYSQL_DATABASE=example
-      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
-    restart: always
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
-      interval: 3s
-      retries: 5
-      start_period: 30s
-    secrets:
-      - db-password
-    volumes:
-      - db-data:/var/lib/mysql
+      MYSQL_DATABASE: dockyard_dev
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
     networks:
-      - docyard-be_default
+      - docyard
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+#  db:
+#    # We use a mariadb image which supports both amd64 & arm64 architecture
+#    image: mariadb:10.6.4-focal
+#    # If you really want to use MySQL, uncomment the following line
+#    #image: mysql:8.0.19
+#    environment:
+#      - MYSQL_DATABASE=example
+#      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
+#    restart: always
+#    healthcheck:
+#      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+#      interval: 3s
+#      retries: 5
+#      start_period: 30s
+#    secrets:
+#      - db-password
+#    volumes:
+#      - db-data:/var/lib/mysql
+#    networks:
+#      - docyard
   registry-service:
     image: registrysevice:${TAG}
     container_name: RegistryServiceContainer
+    hostname: registry-service
     build:
       context: ./registry-service
       dockerfile: Dockerfile
     ports:
       - "8761:8761"
     networks:
-      - docyard-be_default
+      - docyard
   gateway-service:
     image: gatewayservice:${TAG}
     #    environment:
@@ -44,56 +60,65 @@ services:
       - registry-service
     ports:
       - "8080:8080"
+    environment:
+       EUREKA_SERVER: http://registry-service:8761/eureka/
     networks:
-      - docyard-be_default
+      - docyard
+##
+#  doc-handling-service:
+#    image: dochandelingservice:${TAG}
+##    environment:
+##      - JAVA_OPTS=
+##      - EUREKA_SERVER=http://registry-service:8761/eureka/
+#    container_name: DocServiceContainer
+#    build:
+#      context: ./doc-handling-service
+#      dockerfile: Dockerfile
+#    depends_on:
+#      - registry-service
+#    ports:
+#      - "8084:8084"
+#    networks:
+#      - docyard
 #
-  doc-handling-service:
-    image: dochandelingservice:${TAG}
+#  authentication-service:
+#    image: authenticationservice:${TAG}
+##    environment:
+##      - JAVA_OPTS=
+#
+#    container_name: authServiceContainer
+#    build:
+#      context: ./authentication-service
+#      dockerfile: Dockerfile
+#    depends_on:
+#      - registry-service
+#    ports:
+#      - "8081:8081"
 #    environment:
-#      - JAVA_OPTS=
 #      - EUREKA_SERVER=http://registry-service:8761/eureka/
-    container_name: DocServiceContainer
-    build:
-      context: ./doc-handling-service
-      dockerfile: Dockerfile
-    depends_on:
-      - registry-service
-    ports:
-      - "8084:8084"
-    networks:
-      - docyard-be_default
-
-  authentication-service:
-    image: authenticationservice:${TAG}
-#    environment:
-#      - JAVA_OPTS=
-#      - EUREKA_SERVER=http://registry-service:8761/eureka/
-    container_name: authServiceContainer
-    build:
-      context: ./authentication-service
-      dockerfile: Dockerfile
-    depends_on:
-      - registry-service
-    ports:
-      - "8081:8081"
-    networks:
-      - docyard-be_default
-
-  cron-job-service:
-    image: cronjobservice:${TAG}
-#    environment:
-#      - JAVA_OPTS=
-#      - EUREKA_SERVER=http://registry-service:8761/eureka/
-    container_name: CronServiceContainer
-    build:
-      context: ./cron-job-service
-      dockerfile: Dockerfile
-    depends_on:
-      - registry-service
-    ports:
-      - "8085:8085"
-    networks:
-      - docyard-be_default
+#      - MYSQL_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/dockyard_dev?allowPublicKeyRetrieval=true&useSSL=false&zeroDateTimeBehavior=convertToNull&autoReconnect=true&characterEncoding=UTF-8&characterSetResults=UTF-8&createDatabaseIfNotExist=true
+#        MYSQL_HOST: mysqldb
+#        MYSQL_USER: admin
+#        MYSQL_PASSWORD: admin
+#        MYSQL_PORT: 3306
+#    networks:
+#      - docyard
+#
+#  cron-job-service:
+#    image: cronjobservice:${TAG}
+##    environment:
+##      - JAVA_OPTS=
+##      - EUREKA_SERVER=http://registry-service:8761/eureka/
+#    container_name: CronServiceContainer
+#    build:
+#      context: ./cron-job-service
+#      dockerfile: Dockerfile
+#    depends_on:
+#      - registry-service
+#    ports:
+#      - "8085:8085"
+#    networks:
+#      - docyard
 
   um-service:
     image: umservice:${TAG}
@@ -108,8 +133,17 @@ services:
       - registry-service
     ports:
       - "8083:8083"
+    environment:
+      EUREKA_SERVER: http://registry-service:8761/eureka/
+      MYSQL_DATASOURCE_URL: mysqldb:3306
+      MYSQL_HOST: mysqldb
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
     networks:
-      - docyard-be_default
+      - docyard
 
 networks:
-  docyard-be_default:{}
+  docyard:
+
+volumes:
+  mysql-data:

@@ -45,7 +45,7 @@ eureka:
     allow-redirects: true
     fetch-registry: true
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_SERVER}
 
 infotech:
   gw:
