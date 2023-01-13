@@ -54,7 +54,7 @@ public class User extends BaseEntity implements Serializable {
     @Column(name = "DEPARTMENT_IDS")
     private String departmentIds;
 
-    @OneToOne(targetEntity = UserProfile.class, orphanRemoval = true, fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+    @OneToOne(targetEntity = UserProfile.class, orphanRemoval = true, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "PROFILE_ID")
     private UserProfile userProfile;
 }

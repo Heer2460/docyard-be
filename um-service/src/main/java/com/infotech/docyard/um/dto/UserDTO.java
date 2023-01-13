@@ -55,8 +55,8 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
         user.setStatus(this.status);
         user.setUnsuccessfulLoginAttempt(this.unsuccessfulLoginAttempt);
 
-       // if(!AppUtility.isEmpty(this.userProfile))
-       //     user.setUserProfile(this.userProfile.convertToEntity());
+        if(!AppUtility.isEmpty(this.userProfile))
+            user.setUserProfile(this.userProfile.convertToEntity());
 
         if (!AppUtility.isEmpty(this.groupId))
             user.setGroup(new Group(this.groupId));
@@ -117,7 +117,6 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
             this.userProfile = new UserProfileDTO();
             this.userProfile.convertToDTO(entity.getUserProfile(), partialFill);
         }
-
     }
 
     @Override
@@ -126,5 +125,4 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
         userDTO.convertToDTO(entity, partialFill);
         return userDTO;
     }
-
 }

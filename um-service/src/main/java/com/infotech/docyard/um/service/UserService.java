@@ -162,13 +162,8 @@ public class UserService {
                 userDTO.getUserProfile().setProfilePhotoReceived(profileImg);
             }
             userDTO.setPassword(new BCryptPasswordEncoder().encode(userDTO.getPassword()));
-            UserProfile userProfile = userDTO.getUserProfile().convertToEntity();
-            userProfileRepository.save(userProfile);
-            user = userDTO.convertToEntity();
-            user.setUserProfile(userProfile);
-            user = userRepository.save(user);
 
-            //user = userRepository.save(userDTO.convertToEntity());
+            user = userRepository.save(userDTO.convertToEntity());
 
             String content = NotificationUtility.buildCreateUserEmailContent(userDTO, baseFELink);
             if (!AppUtility.isEmpty(content)) {
@@ -193,6 +188,7 @@ public class UserService {
         log.info("updateUser method called..");
 
         Optional<User> dbUser = userRepository.findById(userDTO.getId());
+
         if (dbUser.isPresent()) {
             if (dbUser.get().getUserName().equals(userDTO.getUserName())) {
                 if (!(dbUser.get().getUserProfile().getEmail().equals(userDTO.getUserProfile().getEmail()))) {
@@ -205,14 +201,7 @@ public class UserService {
                     userDTO.getUserProfile().setProfilePhotoReceived(profileImg);
                 }
                 userDTO.setPassword(dbUser.get().getPassword());
-
-                UserProfile userProfile = userDTO.getUserProfile().convertToEntity();
-                userProfileRepository.save(userProfile);
-                User user = userDTO.convertToEntity();
-                user.setUserProfile(userProfile);
-                return userRepository.save(user);
-
-                //return userRepository.save(userDTO.convertToEntityForUpdate());
+                return userRepository.save(userDTO.convertToEntityForUpdate());
             } else {
                 throw new DataValidationException(AppUtility.getResourceMessage("user.can.not.change.username"));
             }
