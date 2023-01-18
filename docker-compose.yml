@@ -47,11 +47,10 @@ services:
       - "8761:8761"
     networks:
       - docyard
+    depends_on:
+      - mysqldb
   gateway-service:
     image: gatewayservice:${TAG}
-    #    environment:
-    #      - JAVA_OPTS=
-    #        - EUREKA_SERVER=http://registry-service:8761/eureka/
     container_name: GatewayServiceContainer
     build:
       context: ./gateway-service
@@ -64,67 +63,59 @@ services:
        EUREKA_SERVER: http://registry-service:8761/eureka/
     networks:
       - docyard
-##
-#  doc-handling-service:
-#    image: dochandelingservice:${TAG}
-##    environment:
-##      - JAVA_OPTS=
-##      - EUREKA_SERVER=http://registry-service:8761/eureka/
-#    container_name: DocServiceContainer
-#    build:
-#      context: ./doc-handling-service
-#      dockerfile: Dockerfile
-#    depends_on:
-#      - registry-service
-#    ports:
-#      - "8084:8084"
-#    networks:
-#      - docyard
-#
-#  authentication-service:
-#    image: authenticationservice:${TAG}
-##    environment:
-##      - JAVA_OPTS=
-#
-#    container_name: authServiceContainer
-#    build:
-#      context: ./authentication-service
-#      dockerfile: Dockerfile
-#    depends_on:
-#      - registry-service
-#    ports:
-#      - "8081:8081"
-#    environment:
-#      - EUREKA_SERVER=http://registry-service:8761/eureka/
-#      - MYSQL_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/dockyard_dev?allowPublicKeyRetrieval=true&useSSL=false&zeroDateTimeBehavior=convertToNull&autoReconnect=true&characterEncoding=UTF-8&characterSetResults=UTF-8&createDatabaseIfNotExist=true
-#        MYSQL_HOST: mysqldb
-#        MYSQL_USER: admin
-#        MYSQL_PASSWORD: admin
-#        MYSQL_PORT: 3306
-#    networks:
-#      - docyard
-#
-#  cron-job-service:
-#    image: cronjobservice:${TAG}
-##    environment:
-##      - JAVA_OPTS=
-##      - EUREKA_SERVER=http://registry-service:8761/eureka/
-#    container_name: CronServiceContainer
-#    build:
-#      context: ./cron-job-service
-#      dockerfile: Dockerfile
-#    depends_on:
-#      - registry-service
-#    ports:
-#      - "8085:8085"
-#    networks:
-#      - docyard
-
+  doc-handling-service:
+    image: dochandelingservice:${TAG}
+    container_name: DocServiceContainer
+    build:
+      context: ./doc-handling-service
+      dockerfile: Dockerfile
+    depends_on:
+      - registry-service
+    ports:
+      - "8084:8084"
+    environment:
+      EUREKA_SERVER: http://registry-service:8761/eureka/
+    networks:
+      - docyard
+  authentication-service:
+    image: authenticationservice:${TAG}
+    container_name: authServiceContainer
+    build:
+      context: ./authentication-service
+      dockerfile: Dockerfile
+    depends_on:
+      - registry-service
+    ports:
+      - "8081:8081"
+    environment:
+        EUREKA_SERVER: http://registry-service:8761/eureka/
+        MYSQL_HOST: mysqldb
+        MYSQL_USER: admin
+        MYSQL_PASSWORD: admin
+        MYSQL_PORT: 3306
+    networks:
+      - docyard
+  cron-job-service:
+    image: cronjobservice:${TAG}
+    container_name: CronServiceContainer
+    build:
+      context: ./cron-job-service
+      dockerfile: Dockerfile
+    depends_on:
+      - mysqldb
+      - registry-service
+    ports:
+      - "8085:8085"
+    networks:
+      - docyard
+    environment:
+      EUREKA_SERVER: http://registry-service:8761/eureka/
+      MYSQL_HOST: mysqldb
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_PORT: 3306
   um-service:
     image: umservice:${TAG}
-#    environment:
-#      - JAVA_OPTS=
-#      - EUREKA_SERVER=http://registry-service:8761/eureka/
     container_name: UmServiceContainer
     build:
       context: ./um-service
@@ -135,10 +126,9 @@ services:
       - "8083:8083"
     environment:
       EUREKA_SERVER: http://registry-service:8761/eureka/
-      MYSQL_DATASOURCE_URL: mysqldb:3306
       MYSQL_HOST: mysqldb
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
     networks:
       - docyard
 
