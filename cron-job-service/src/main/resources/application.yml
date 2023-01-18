@@ -1,9 +1,19 @@
-spring.application.name=job-service
-server.servlet.context-path=/job
-spring.profiles.active=dev
-spring.jpa.database=default
-spring.banner.charset=UTF-8
-spring.banner.location=classpath:banner.txt
-eureka.client.register-with-eureka=true
-eureka.client.fetch-registry=true
-eureka.client.service-url.deafult-zone=http://localhost:8761/eureka/
+spring:
+  jpa:
+    database: default
+  application:
+    name: job-service
+  profiles:
+    active: dev
+  banner:
+    location: classpath:banner.txt
+    charset: UTF-8
+server:
+  servlet:
+    context-path: /job
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_SERVER},http://localhost:8761/eureka/
