@@ -1,0 +1,29 @@
+
+spring:
+  jpa:
+    database: default
+  application:
+    name: doc-handling-service
+  servlet:
+    multipart:
+      max-file-size: 1024MB
+      enabled: true
+      max-request-size: 1024MB
+      file-size-threshold: 1536MB
+      location: ${java.io.tmpdir}
+  profiles:
+    active: dev
+  banner:
+    location: classpath:banner.txt
+    charset: UTF-8
+server:
+  servlet:
+    context-path: /dl
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    register-with-eureka: true
+    service-url:
+      defaultZone: ${EUREKA_SERVER},http://${eureka.instance.hostname}:8761/eureka/
+    fetch-registry: true
