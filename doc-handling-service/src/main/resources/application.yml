@@ -19,10 +19,6 @@ server:
   servlet:
     context-path: /dl
 eureka:
-  instance:
-    hostname: localhost
   client:
     register-with-eureka: true
-    service-url:
-      defaultZone: ${EUREKA_SERVER},http://${eureka.instance.hostname}:8761/eureka/
     fetch-registry: true

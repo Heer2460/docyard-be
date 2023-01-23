@@ -5,7 +5,7 @@ services:
     image: mysql:8.0
     container_name: mysqldb8
     environment:
-      MYSQL_DATABASE: dockyard_dev
+      MYSQL_DATABASE: docyard_dev
       MYSQL_ROOT_PASSWORD: root
       MYSQL_USER: admin
       MYSQL_PASSWORD: admin
@@ -49,6 +49,7 @@ services:
       - docyard
     depends_on:
       - mysqldb
+
   gateway-service:
     image: gatewayservice:${TAG}
     container_name: GatewayServiceContainer
@@ -63,6 +64,7 @@ services:
        EUREKA_SERVER: http://registry-service:8761/eureka/
     networks:
       - docyard
+
   doc-handling-service:
     image: dochandelingservice:${TAG}
     container_name: DocServiceContainer
@@ -70,13 +72,14 @@ services:
       context: ./doc-handling-service
       dockerfile: Dockerfile
     depends_on:
-      - registry-service
+      - gateway-service
     ports:
       - "8084:8084"
     environment:
       EUREKA_SERVER: http://registry-service:8761/eureka/
     networks:
       - docyard
+
   authentication-service:
     image: authenticationservice:${TAG}
     container_name: authServiceContainer
@@ -84,7 +87,7 @@ services:
       context: ./authentication-service
       dockerfile: Dockerfile
     depends_on:
-      - registry-service
+      - gateway-service
     ports:
       - "8081:8081"
     environment:
@@ -95,6 +98,7 @@ services:
         MYSQL_PORT: 3306
     networks:
       - docyard
+
   cron-job-service:
     image: cronjobservice:${TAG}
     container_name: CronServiceContainer
@@ -102,8 +106,7 @@ services:
       context: ./cron-job-service
       dockerfile: Dockerfile
     depends_on:
-      - mysqldb
-      - registry-service
+      - gateway-service
     ports:
       - "8085:8085"
     networks:
@@ -114,6 +117,7 @@ services:
       MYSQL_USER: admin
       MYSQL_PASSWORD: admin
       MYSQL_PORT: 3306
+
   um-service:
     image: umservice:${TAG}
     container_name: UmServiceContainer
@@ -121,7 +125,7 @@ services:
       context: ./um-service
       dockerfile: Dockerfile
     depends_on:
-      - registry-service
+      - gateway-service
     ports:
       - "8083:8083"
     environment:
