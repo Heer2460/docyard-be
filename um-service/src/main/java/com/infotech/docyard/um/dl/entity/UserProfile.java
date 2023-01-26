@@ -10,7 +10,7 @@ import java.io.Serializable;
 
 @Data
 @Entity
-@Table(name = "USER_PROFILE")
+@Table(name = "UM_USER_PROFILE")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @EqualsAndHashCode(callSuper = false)
 public class UserProfile extends BaseEntity implements Serializable {

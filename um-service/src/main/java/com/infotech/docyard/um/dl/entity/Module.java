@@ -9,7 +9,7 @@ import java.util.List;
 
 @Data
 @Entity
-@Table(name = "MODULES")
+@Table(name = "UM_MODULES")
 @JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"}, ignoreUnknown = true)
 @EqualsAndHashCode(callSuper = false)
 public class Module extends BaseEntity {
