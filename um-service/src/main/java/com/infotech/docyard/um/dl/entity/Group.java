@@ -10,7 +10,7 @@ import java.util.List;
 
 @Data
 @Entity
-@Table(name = "GROUPS_UM") // GROUPS is reserve word for MySQL
+@Table(name = "UM_GROUPS") // GROUPS is reserve word for MySQL
 @JsonIgnoreProperties(ignoreUnknown = true)
 @EqualsAndHashCode(callSuper = false)
 public class Group extends BaseEntity implements Serializable {

@@ -11,7 +11,7 @@ import java.io.Serializable;
 
 @Data
 @Entity
-@Table(name = "DEPARTMENTS")
+@Table(name = "UM_DEPARTMENTS")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @EqualsAndHashCode(callSuper = false)
 public class Department extends BaseEntity implements Serializable {

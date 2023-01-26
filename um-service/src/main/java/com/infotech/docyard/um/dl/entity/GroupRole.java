@@ -11,7 +11,7 @@ import java.time.ZonedDateTime;
 
 @Data
 @Entity
-@Table(name = "GROUP_ROLES")
+@Table(name = "UM_GROUP_ROLES")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @EqualsAndHashCode(callSuper = false)
 public class GroupRole extends BaseEntity implements Serializable {

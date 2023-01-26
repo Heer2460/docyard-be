@@ -10,7 +10,7 @@ import java.time.ZonedDateTime;
 
 @Data
 @Entity
-@Table(name = "USER")
+@Table(name = "UM_USER")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @EqualsAndHashCode(callSuper = false)
 public class User extends BaseEntity implements Serializable {

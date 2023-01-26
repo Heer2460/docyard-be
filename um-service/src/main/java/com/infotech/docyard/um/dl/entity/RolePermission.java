@@ -11,7 +11,7 @@ import java.time.ZonedDateTime;
 @EqualsAndHashCode(callSuper = false)
 @Data
 @Entity
-@Table(name = "ROLE_PERMISSIONS")
+@Table(name = "UM_ROLE_PERMISSIONS")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RolePermission extends BaseEntity {
 

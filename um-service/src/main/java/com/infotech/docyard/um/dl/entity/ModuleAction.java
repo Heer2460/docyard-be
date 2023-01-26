@@ -9,7 +9,7 @@ import javax.persistence.*;
 
 @Data
 @Entity
-@Table(name = "MODULES_ACTIONS")
+@Table(name = "UM_MODULES_ACTIONS")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @EqualsAndHashCode(callSuper = false)
 public class ModuleAction extends BaseEntity {
