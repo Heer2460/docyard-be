@@ -1,16 +1,77 @@
 spring:
   jpa:
     database: default
-  application:
-    name: um-service
   profiles:
     active: dev
+  generate-ddl: 'true'
+  hibernate:
+    ddl-auto: none
+    naming:
+      physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+  database-platform: org.hibernate.dialect.MySQL8Dialect
+  properties:
+    hibernate:
+      dialect: org.hibernate.dialect.MySQL8Dialect
+  show-sql: 'true'
+  application:
+    name: um-service
   banner:
     location: classpath:banner.txt
     charset: UTF-8
+  zipkin:
+    base-url: http://localhost:9411/
+  jackson:
+    serialization:
+      FAIL_ON_EMPTY_BEANS: 'false'
+  servlet:
+    multipart:
+      enabled: 'true'
+      max-file-size: 5MB
+      max-request-size: 10MB
+      file-size-threshold: 10KB
+      location: ${java.io.tmpdir}
+  datasource:
+    hikari:
+      data-source-properties:
+        useServerPrepStmts: 'true'
+        cacheResultSetMetadata: 'true'
+        cacheServerConfiguration: 'true'
+        cachePrepStmts: 'true'
+        rewriteBatchedStatements: 'true'
+        elideSetAutoCommits: 'true'
+        useLocalSessionState: 'true'
+        prepStmtCacheSize: '250'
+        maintainTimeStats: 'false'
+        prepStmtCacheSqlLimit: '2048'
+      idle-timeout: '50000'
+      maximum-pool-size: '20'
+      connection-timeout: '50000'
+      leak-detection-threshold: '5000'
+      pool-name: umServiceConnPool
+      minimum-idle: '10'
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    password: root
+    username: root
 server:
+  port: '8083'
   servlet:
     context-path: /um
+fe:
+  reset:
+    pass:
+      base:
+        link: http://localhost:4200/reset-password
+  base:
+    link: http://localhost:4200
+logging:
+  level:
+    org:
+      hibernate:
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
+        SQL: DEBUG
 infotech:
   gw:
     oauth:

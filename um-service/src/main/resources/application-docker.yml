@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: jdbc:mysql://mysqldb:3306/docyard_dev?useSSL=false&zeroDateTimeBehavior=convertToNull&autoReconnect=true&characterEncoding=UTF-8&characterSetResults=UTF-8&createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER}
+
