@@ -49,7 +49,6 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
         user.setUserName(this.userName);
         user.setPassword(this.password);
         user.setCreatedOn(AppUtility.isEmpty(this.createdOn) ? ZonedDateTime.now() : this.createdOn);
-        user.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
         user.setCreatedBy(this.getCreatedBy());
         user.setUpdatedBy(this.getUpdatedBy());
         user.setStatus(this.status);
@@ -67,8 +66,8 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
         return user;
     }
 
-    public User convertToEntityForUpdate() throws IOException {
-        User user = new User();
+    public User convertToEntityForUpdate(User user) throws IOException {
+
         user.setId(this.id);
         user.setUserName(this.userName);
         user.setPassword(this.password);
@@ -84,7 +83,6 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
         if (!AppUtility.isEmpty(this.departmentIds))
             user.setDepartmentIds(this.getDepartmentIds().stream().collect(Collectors.joining(",")));
 
-        user.setCreatedOn(AppUtility.isEmpty(this.createdOn) ? ZonedDateTime.now() : this.createdOn);
         user.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
         user.setUpdatedBy(this.getUpdatedBy());
         user.setCreatedBy(this.getCreatedBy());

@@ -1,6 +1,7 @@
 package com.infotech.docyard.um.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.infotech.docyard.um.dl.entity.Module;
 import com.infotech.docyard.um.dl.entity.*;
 import com.infotech.docyard.um.dl.repository.*;
 import com.infotech.docyard.um.dto.*;
@@ -201,7 +202,8 @@ public class UserService {
                     userDTO.getUserProfile().setProfilePhotoReceived(profileImg);
                 }
                 userDTO.setPassword(dbUser.get().getPassword());
-                return userRepository.save(userDTO.convertToEntityForUpdate());
+                User user = dbUser.get();
+                return userRepository.save(userDTO.convertToEntityForUpdate(user));
             } else {
                 throw new DataValidationException(AppUtility.getResourceMessage("user.can.not.change.username"));
             }
@@ -210,31 +212,26 @@ public class UserService {
         }
     }
 
-    public User updateProfilePicture(UserDTO userDTO, MultipartFile profileImg) throws Exception {
+    public User updateProfilePicture(Long id, MultipartFile profileImg) throws Exception {
         log.info("updateProfilePicture method called..");
 
-        Optional<User> dbUser = userRepository.findById(userDTO.getId());
-        if (dbUser.isPresent()) {
-            userDTO.convertToDTO(dbUser.get(), false);
-            if (!AppUtility.isEmpty(profileImg)) {
-                userDTO.getUserProfile().setProfilePhotoReceived(profileImg);
-            }
-            return userRepository.save(userDTO.convertToEntityForUpdate());
+        User dbUser = userRepository.findById(id).get();
+        if (dbUser != null && !AppUtility.isEmpty(profileImg)) {
+                dbUser.setProfilePhotoReceived(profileImg);
+            return userRepository.save(dbUser);
         } else {
-            throw new DataValidationException(AppUtility.getResourceMessage("user.not.found"));
+            throw new DataValidationException(AppUtility.getResourceMessage("user.or.profile.image.not.found"));
         }
     }
 
-    public User updateUserStatus(UserDTO userDTO) throws IOException {
+    public User updateUserStatus(UserStatusDTO userDTO) throws IOException {
         log.info("updateUserStatus method called..");
 
-        Optional<User> dbUser = userRepository.findById(userDTO.getId());
-        if (dbUser.isPresent()) {
-            String status = userDTO.getStatus();
-            userDTO.convertToDTO(dbUser.get(), false);
-            userDTO.setStatus(status);
-            userDTO.setUpdatedOn(ZonedDateTime.now());
-            return userRepository.save(userDTO.convertToEntityForUpdate());
+        User dbUser = userRepository.findById(userDTO.getId()).get();
+        if (dbUser != null) {
+            dbUser.setStatus(userDTO.getStatus());
+            dbUser.setUpdatedOn(ZonedDateTime.now());
+            return userRepository.save(dbUser);
         } else {
             throw new DataValidationException(AppUtility.getResourceMessage("user.not.found"));
         }
@@ -454,6 +451,8 @@ public class UserService {
                 userDTO.setTotalUsedSpace(Long.parseLong((String) map.get("totalUsedSpace")));
             }
             user.setUnsuccessfulLoginAttempt(0);
+            user.setLastLogin(ZonedDateTime.now());
+            user.setOnline(true);
             userRepository.save(user);
         } else {
             throw new NoDataFoundException("User not found.");
@@ -467,6 +466,7 @@ public class UserService {
 
         User user = userRepository.findByUserName(principal.getName());
         if (!AppUtility.isEmpty(user)) {
+            user.setOnline(false);
             userRepository.save(user);
         }
 //        String tokenValue = authHeader.replace("Bearer", "").trim();

@@ -1,8 +1,10 @@
 package com.infotech.docyard.um.dl.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.infotech.docyard.um.dto.UserProfileDTO;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -57,4 +59,6 @@ public class User extends BaseEntity implements Serializable {
     @OneToOne(targetEntity = UserProfile.class, orphanRemoval = true, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "PROFILE_ID")
     private UserProfile userProfile;
+
+    private transient MultipartFile profilePhotoReceived;
 }

@@ -2,10 +2,7 @@ package com.infotech.docyard.um.api;
 
 
 import com.infotech.docyard.um.dl.entity.User;
-import com.infotech.docyard.um.dto.ChangePasswordDTO;
-import com.infotech.docyard.um.dto.NameEmailDTO;
-import com.infotech.docyard.um.dto.ResetPasswordDTO;
-import com.infotech.docyard.um.dto.UserDTO;
+import com.infotech.docyard.um.dto.*;
 import com.infotech.docyard.um.exceptions.CustomException;
 import com.infotech.docyard.um.exceptions.DataValidationException;
 import com.infotech.docyard.um.exceptions.NoDataFoundException;
@@ -145,8 +142,8 @@ public class UserAPI {
                                      @RequestPart("data") UserDTO userDTO,
                                      @RequestPart(value = "logo", required = false) MultipartFile profileImg)
             throws CustomException, NoDataFoundException {
-        log.info("createUser API initiated...");
-        User user = null;
+        User user = null;        log.info("createUser API initiated...");
+
         try {
             user = userService.saveUser(userDTO, profileImg);
         } catch (Exception e) {
@@ -173,14 +170,14 @@ public class UserAPI {
 
     @RequestMapping(value = "/profile-picture", method = RequestMethod.PUT)
     public CustomResponse updateProfilePicture(HttpServletRequest request,
-                                               @RequestPart("data") UserDTO userDTO,
+                                               @RequestParam("id") Long id,
                                                @RequestPart(value = "profilePicture", required = false) MultipartFile profileImg)
             throws CustomException, NoDataFoundException {
         log.info("updateProfilePicture API initiated...");
 
         User user = null;
         try {
-            user = userService.updateProfilePicture(userDTO, profileImg);
+            user = userService.updateProfilePicture(id, profileImg);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -189,7 +186,7 @@ public class UserAPI {
 
     @RequestMapping(value = "/update-user-status", method = RequestMethod.PUT) // TODO
     public CustomResponse updateUserStatus(HttpServletRequest request,
-                                           @RequestBody UserDTO userDTO)
+                                           @RequestBody UserStatusDTO userDTO)
             throws CustomException, NoDataFoundException {
         log.info("updateUserStatus API initiated...");
 
