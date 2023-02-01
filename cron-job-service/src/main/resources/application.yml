@@ -1,6 +1,8 @@
+server:
+  port: 8085
+  servlet:
+    context-path: /job
 spring:
-  jpa:
-    database: default
   application:
     name: job-service
   profiles:
@@ -8,10 +10,77 @@ spring:
   banner:
     location: classpath:banner.txt
     charset: UTF-8
-server:
+  zipkin:
+    base-url: http://localhost:9411/
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: root
+    hikari:
+      connection-timeout: 50000
+      idle-timeout: 50000
+      maximum-pool-size: 20
+      minimum-idle: 10
+      leak-detection-threshold: 5000
+      pool-name: cronJobConnPool
+      data-source-properties:
+        cachePrepStmts: true
+        prepStmtCacheSize: 250
+        prepStmtCacheSqlLimit: 2048
+        useServerPrepStmts: true
+        useLocalSessionState: true
+        rewriteBatchedStatements: true
+        cacheResultSetMetadata: true
+        cacheServerConfiguration: true
+        elideSetAutoCommits: true
+        maintainTimeStats: false
+  jpa:
+    database: default
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    generate-ddl: true
+    show-sql: true
   servlet:
-    context-path: /job
+    multipart:
+      enabled: true
+      file-size-threshold: 10KB
+      max-file-size: 5MB
+      max-request-size: 10MB
+      location: ${java.io.tmpdir}
 eureka:
   client:
     register-with-eureka: true
     fetch-registry: true
+    service-url:
+        defaultZone: http://localhost:8761/eureka/
+
+#============================================================================
+# SFTP Client Setting
+#============================================================================
+sftp:
+  client:
+    protocol: ftp
+    host: 192.168.36.99
+    port: 21
+    username: ftp-user
+    password: Allahisone1
+    root: /Dev
+    privateKey:
+    passphrase:
+    sessionStrictHostKeyChecking: no
+    sessionConnectTimeout: 15000
+    channelConnectedTimeout: 15000
+
+#============================================================================
+# Tesseract Data
+#============================================================================
+
+infotech:
+  tesseractdata:
+    path: D:/Projects/Docyard/SupportingData/tesseractdata
