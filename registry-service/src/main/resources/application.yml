@@ -1,0 +1,35 @@
+server:
+  port: 8761
+spring:
+  application:
+    name: registry-service
+  profiles:
+    active: docker
+  banner:
+    location: classpath:banner.txt
+  jpa:
+    hibernate:
+      ddl-auto: none
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        naming:
+          physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        generate-ddl: true
+    show-sql: true
+  datasource:
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-timeout: 50000
+      idle-timeout: 50000
+      maximum-pool-size: 5
+      minimum-idle: 5
+      leak-detection-threshold: 5000
+      pool-name: registryConnPool
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false

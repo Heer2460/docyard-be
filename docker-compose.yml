@@ -3,6 +3,7 @@ version: "3.9"
 services:
   mysqldb:
     image: mysql:8.0
+    command: --lower_case_table_names=1
     container_name: mysqldb8
     environment:
       MYSQL_DATABASE: docyard_dev

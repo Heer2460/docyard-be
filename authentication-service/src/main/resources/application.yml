@@ -1,3 +1,5 @@
+server:
+  port: 8081
 spring:
   profiles:
     active: dev
@@ -7,13 +9,53 @@ spring:
     user:
       name: admin
       password: admin
-server:
-  port: 8081
+  jpa:
+    generate-ddl: 'true'
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    database-platform: rg.hibernate.dialect.MySQL8Dialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    show-sql: 'true'
+  datasource:
+    hikari:
+      data-source-properties:
+        useServerPrepStmts: 'true'
+        cacheResultSetMetadata: 'true'
+        cacheServerConfiguration: 'true'
+        cachePrepStmts: 'true'
+        rewriteBatchedStatements: 'true'
+        elideSetAutoCommits: 'true'
+        useLocalSessionState: 'true'
+        prepStmtCacheSize: '250'
+        maintainTimeStats: 'false'
+        prepStmtCacheSqlLimit: '2048'
+      idle-timeout: '50000'
+      maximum-pool-size: '10'
+      connection-timeout: '50000'
+      leak-detection-threshold: '5000'
+      pool-name: authServiceConnPool
+      minimum-idle: '5'
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    password: root
+    username: root
+    url: jdbc:mysql://localhost:3306/docyard_dev?useSSL=false&zeroDateTimeBehavior=convertToNull&autoReconnect=true&characterEncoding=UTF-8&characterSetResults=UTF-8&createDatabaseIfNotExist=true
+  servlet:
+    multipart:
+      enabled: 'true'
+      max-file-size: 5MB
+      max-request-size: 10MB
+      file-size-threshold: 10KB
+      location: ${java.io.tmpdir}
 eureka:
   client:
     register-with-eureka: true
     fetchRegistry: true
-
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
 infotech:
   gw:
     oauth:
@@ -21,3 +63,6 @@ infotech:
       clientSecret: docyard
       accessTokenValidity: 30000
       refreshTokenValidity: 240000
+
+
+

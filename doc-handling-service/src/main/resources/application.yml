@@ -1,8 +1,26 @@
+server:
+  port: 8084
+  servlet:
+    context-path: /dl
 spring:
-  jpa:
-    database: default
+  profiles:
+    active: dev
   application:
     name: doc-handling-service
+  zipkin:
+    base-url: http://localhost:9411/
+  jpa:
+    database: default
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    generate-ddl: true
+    show-sql: true
   servlet:
     multipart:
       max-file-size: 1024MB
@@ -10,15 +28,51 @@ spring:
       max-request-size: 1024MB
       file-size-threshold: 1536MB
       location: ${java.io.tmpdir}
-  profiles:
-    active: dev
   banner:
     location: classpath:banner.txt
     charset: UTF-8
-server:
-  servlet:
-    context-path: /dl
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: root
+    hikari:
+      connection-timeout: 50000
+      idle-timeout: 50000
+      maximum-pool-size: 20
+      minimum-idle: 10
+      leak-detection-threshold: 5000
+      pool-name: cronJobConnPool
+      data-source-properties:
+        cachePrepStmts: true
+        prepStmtCacheSize: 250
+        prepStmtCacheSqlLimit: 2048
+        useServerPrepStmts: true
+        useLocalSessionState: true
+        rewriteBatchedStatements: true
+        cacheResultSetMetadata: true
+        cacheServerConfiguration: true
+        elideSetAutoCommits: true
+        maintainTimeStats: false
 eureka:
   client:
     register-with-eureka: true
     fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+#============================================================================
+# SFTP Client Setting
+#============================================================================
+sftp:
+  client:
+    protocol: ftp
+    host: 192.168.36.99
+    port: 21
+    username: ftp-user
+    password: Allahisone1
+    root: /Dev
+    privateKey:
+    passphrase:
+    sessionStrictHostKeyChecking: no
+    sessionConnectTimeout: 15000
+    channelConnectedTimeout: 15000
