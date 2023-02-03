@@ -2,7 +2,7 @@ spring:
   jpa:
     database: default
   profiles:
-    active: dev
+    active: ${SPRING_PROFILES_ACTIVE:dev}
   generate-ddl: 'true'
   hibernate:
     ddl-auto: none
@@ -50,8 +50,8 @@ spring:
       pool-name: umServiceConnPool
       minimum-idle: '10'
     driver-class-name: com.mysql.cj.jdbc.Driver
-    password: root
-    username: root
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root}
 server:
   port: '8083'
   servlet:

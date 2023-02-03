@@ -4,7 +4,7 @@ spring:
   application:
     name: registry-service
   profiles:
-    active: docker
+    active: ${SPRING_PROFILES_ACTIVE:dev}
   banner:
     location: classpath:banner.txt
   jpa:
@@ -19,8 +19,8 @@ spring:
         generate-ddl: true
     show-sql: true
   datasource:
-    username: root
-    password: root
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       connection-timeout: 50000
