@@ -6,10 +6,9 @@ services:
     command: --lower_case_table_names=1
     container_name: mysqldb8
     environment:
-      MYSQL_DATABASE: docyard_dev
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: admin
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     networks:
       - docyard
     ports:
@@ -46,6 +45,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8761:8761"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
     networks:
       - docyard
     depends_on:
@@ -62,7 +63,8 @@ services:
     ports:
       - "8080:8080"
     environment:
-       EUREKA_SERVER: http://registry-service:8761/eureka/
+       EUREKA_SERVER: ${EUREKA_SERVER}
+       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
     networks:
       - docyard
 
@@ -77,7 +79,8 @@ services:
     ports:
       - "8084:8084"
     environment:
-      EUREKA_SERVER: http://registry-service:8761/eureka/
+      EUREKA_SERVER: ${EUREKA_SERVER}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
     networks:
       - docyard
 
@@ -92,11 +95,10 @@ services:
     ports:
       - "8081:8081"
     environment:
-        EUREKA_SERVER: http://registry-service:8761/eureka/
-        MYSQL_HOST: mysqldb
-        MYSQL_USER: admin
-        MYSQL_PASSWORD: admin
-        MYSQL_PORT: 3306
+        EUREKA_SERVER: ${EUREKA_SERVER}
+        SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+        MYSQL_USER: ${MYSQL_USER}
+        MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     networks:
       - docyard
 
@@ -113,11 +115,10 @@ services:
     networks:
       - docyard
     environment:
-      EUREKA_SERVER: http://registry-service:8761/eureka/
-      MYSQL_HOST: mysqldb
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: admin
-      MYSQL_PORT: 3306
+      EUREKA_SERVER: ${EUREKA_SERVER}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
 
   um-service:
     image: umservice:${TAG}
@@ -130,10 +131,10 @@ services:
     ports:
       - "8083:8083"
     environment:
-      EUREKA_SERVER: http://registry-service:8761/eureka/
-      MYSQL_HOST: mysqldb
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: admin
+      EUREKA_SERVER: ${EUREKA_SERVER}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     networks:
       - docyard
 
