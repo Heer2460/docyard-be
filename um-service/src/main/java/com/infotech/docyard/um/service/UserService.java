@@ -9,9 +9,7 @@ import com.infotech.docyard.um.enums.EmailStatusEnum;
 import com.infotech.docyard.um.enums.EmailTypeEnum;
 import com.infotech.docyard.um.exceptions.DataValidationException;
 import com.infotech.docyard.um.exceptions.NoDataFoundException;
-import com.infotech.docyard.um.util.AppConstants;
-import com.infotech.docyard.um.util.AppUtility;
-import com.infotech.docyard.um.util.NotificationUtility;
+import com.infotech.docyard.um.util.*;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -67,6 +65,9 @@ public class UserService {
     @Autowired
     private UserProfileRepository userProfileRepository;
 
+    @Autowired
+    EmailUtil emailUtil;
+
     @Value("${fe.reset.pass.base.link}")
     private String resetPassBaseFELink;
 
@@ -77,6 +78,7 @@ public class UserService {
         log.info("searchUser method called..");
 
         return advSearchRepository.searchUser(username, name, groupId, departmentId, status);
+
     }
 
     public List<User> getAllUsers() {
@@ -164,7 +166,7 @@ public class UserService {
             }
             userDTO.setPassword(new BCryptPasswordEncoder().encode(userDTO.getPassword()));
 
-            user = userRepository.save(userDTO.convertToEntity());
+            user = userRepository.save(userDTO.convertToEntityUpdate(userDTO));
 
             String content = NotificationUtility.buildCreateUserEmailContent(userDTO, baseFELink);
             if (!AppUtility.isEmpty(content)) {
@@ -202,8 +204,7 @@ public class UserService {
                     userDTO.getUserProfile().setProfilePhotoReceived(profileImg);
                 }
                 userDTO.setPassword(dbUser.get().getPassword());
-                User user = dbUser.get();
-                return userRepository.save(userDTO.convertToEntityForUpdate(user));
+                return userRepository.save(userDTO.convertToEntityForUpdate(dbUser.get(),userDTO));
             } else {
                 throw new DataValidationException(AppUtility.getResourceMessage("user.can.not.change.username"));
             }

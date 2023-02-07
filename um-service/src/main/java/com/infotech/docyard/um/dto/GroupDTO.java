@@ -32,6 +32,20 @@ public class GroupDTO extends BaseDTO<GroupDTO, Group> {
         group.setName(AppUtility.isEmpty(this.name) ? this.name : this.name.trim());
         group.setRemarks(this.remarks);
         group.setCreatedOn(AppUtility.isEmpty(this.createdOn) ? ZonedDateTime.now() : this.createdOn);
+  //      group.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
+        group.setCreatedBy(this.getCreatedBy());
+        group.setUpdatedBy(this.getUpdatedBy());
+
+        return group;
+    }
+
+    public Group convertToEntityUpdate(Group group) {
+        group.setId(this.id);
+        group.setCode(this.code);
+        group.setStatus(this.status);
+        group.setName(AppUtility.isEmpty(this.name) ? this.name : this.name.trim());
+        group.setRemarks(this.remarks);
+        group.setCreatedOn(group.getCreatedOn());
         group.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
         group.setCreatedBy(this.getCreatedBy());
         group.setUpdatedBy(this.getUpdatedBy());

@@ -66,7 +66,32 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
         return user;
     }
 
-    public User convertToEntityForUpdate(User user) throws IOException {
+
+    public User convertToEntityUpdate(UserDTO userDTO) throws IOException {
+        User user = new User();
+        user.setId(this.id);
+        user.setUserName(this.userName);
+        user.setPassword(this.password);
+        user.setCreatedOn(AppUtility.isEmpty(this.createdOn) ? ZonedDateTime.now() : this.createdOn);
+        user.setCreatedBy(userDTO.getCreatedBy());
+        user.setUpdatedBy(this.getUpdatedBy());
+        user.setStatus(this.status);
+        user.setUnsuccessfulLoginAttempt(this.unsuccessfulLoginAttempt);
+
+        if(!AppUtility.isEmpty(this.userProfile))
+            user.setUserProfile(this.userProfile.convertToEntity());
+
+        if (!AppUtility.isEmpty(this.groupId))
+            user.setGroup(new Group(this.groupId));
+
+        if (!AppUtility.isEmpty(this.departmentIds))
+            user.setDepartmentIds(this.getDepartmentIds().stream().collect(Collectors.joining(",")));
+
+        return user;
+    }
+
+
+    public User convertToEntityForUpdate(User user,UserDTO userDTO) throws IOException {
 
         user.setId(this.id);
         user.setUserName(this.userName);
@@ -84,7 +109,7 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
             user.setDepartmentIds(this.getDepartmentIds().stream().collect(Collectors.joining(",")));
 
         user.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
-        user.setUpdatedBy(this.getUpdatedBy());
+        user.setUpdatedBy(userDTO.getUpdatedBy());
         user.setCreatedBy(this.getCreatedBy());
         user.setUnsuccessfulLoginAttempt(this.unsuccessfulLoginAttempt);
         return user;
@@ -123,4 +148,6 @@ public class UserDTO extends BaseDTO<UserDTO, User> implements Serializable {
         userDTO.convertToDTO(entity, partialFill);
         return userDTO;
     }
+
+
 }

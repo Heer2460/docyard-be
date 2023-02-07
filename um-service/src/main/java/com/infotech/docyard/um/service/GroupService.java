@@ -74,7 +74,8 @@ public class GroupService {
     public Group UpdateGroup(GroupDTO groupDTO) {
         log.info("saveAndUpdateGroup method called..");
 
-        Group group = groupDTO.convertToEntity();
+        Optional<Group> optionalGroup = groupRepository.findById(groupDTO.getId());
+        Group group = groupDTO.convertToEntityUpdate(optionalGroup.get());
 
         if (groupDTO.getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND)) {
             if (groupRoleRepository.existsByGroup_IdAndRole_Status(groupDTO.getId(), AppConstants.Status.ACTIVE)

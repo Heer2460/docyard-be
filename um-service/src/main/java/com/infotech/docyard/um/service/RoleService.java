@@ -1,5 +1,6 @@
 package com.infotech.docyard.um.service;
 
+import com.infotech.docyard.um.dl.entity.GroupRole;
 import com.infotech.docyard.um.dl.entity.Role;
 import com.infotech.docyard.um.dl.repository.AdvSearchRepository;
 import com.infotech.docyard.um.dl.repository.GroupRoleRepository;
@@ -71,7 +72,8 @@ public class RoleService {
     public Role UpdateRole(RoleDTO roleDTO) {
         log.info("saveAndUpdateRole method called..");
 
-        Role role = roleDTO.convertToEntity();
+        Optional<Role> roleOptional = roleRepository.findById(roleDTO.getId());
+        Role role = roleDTO.convertToEntityUpdate(roleOptional.get());
         if (roleDTO.getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND)) {
             if (groupRoleRepository.existsByRole_Id(roleDTO.getId())) {
                 throw new DataValidationException(AppUtility.getResourceMessage("record.cannot.be.suspended.dependency"));

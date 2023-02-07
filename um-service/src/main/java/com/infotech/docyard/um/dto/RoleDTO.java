@@ -6,8 +6,11 @@ import com.infotech.docyard.um.dl.entity.RolePermission;
 import com.infotech.docyard.um.util.AppUtility;
 import lombok.Data;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,6 +23,8 @@ public class RoleDTO extends BaseDTO<RoleDTO, Role> {
     private String status;
     private String remarks;
     private List<Long> moduleActionList;
+    CharSequence text = "00-00-0000 00:00:00";
+
 
 
     @Override
@@ -31,6 +36,18 @@ public class RoleDTO extends BaseDTO<RoleDTO, Role> {
         role.setName(AppUtility.isEmpty(this.name) ? this.name : this.name.trim());
         role.setRemarks(this.remarks);
         role.setCreatedOn(AppUtility.isEmpty(this.createdOn) ? ZonedDateTime.now() : this.createdOn);
+        role.setCreatedBy(this.getCreatedBy());
+        role.setUpdatedBy(this.getUpdatedBy());
+
+        return role;
+    }
+    public Role convertToEntityUpdate(Role role) {
+        role.setId(this.id);
+        role.setCode(this.code);
+        role.setStatus(this.status);
+        role.setName(AppUtility.isEmpty(this.name) ? this.name : this.name.trim());
+        role.setRemarks(this.remarks);
+        role.setCreatedOn(role.getCreatedOn());
         role.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
         role.setCreatedBy(this.getCreatedBy());
         role.setUpdatedBy(this.getUpdatedBy());

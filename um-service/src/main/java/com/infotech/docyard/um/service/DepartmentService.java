@@ -65,13 +65,14 @@ public class DepartmentService {
     public Department UpdateDepartment(DepartmentDTO departmentDTO) {
         log.info("UpdateDepartment method called..");
 
+        Optional<Department> department = departmentRepository.findById(departmentDTO.getId());
         if (departmentDTO.getStatus().equalsIgnoreCase(AppConstants.Status.SUSPEND)) {
             if (userRepository.existsByDepartmentIdsAndStatus(departmentDTO.getId().toString(), AppConstants.Status.ACTIVE)) {
                 throw new DataValidationException(AppUtility.getResourceMessage("record.cannot.be.suspended.dependency"));
             }
         }
 
-        return departmentRepository.save(departmentDTO.convertToEntity());
+        return departmentRepository.save(departmentDTO.convertToEntityUpdate(department.get()));
     }
 
     @Transactional

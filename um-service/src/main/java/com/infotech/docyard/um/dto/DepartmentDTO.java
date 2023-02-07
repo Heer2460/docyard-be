@@ -23,6 +23,19 @@ public class DepartmentDTO extends BaseDTO<DepartmentDTO, Department> {
         department.setStatus(this.status);
         department.setName(AppUtility.isEmpty(this.name) ? this.name : this.name.trim());
         department.setCreatedOn(AppUtility.isEmpty(this.createdOn) ? ZonedDateTime.now() : this.createdOn);
+   //     department.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
+        department.setCreatedBy(this.getCreatedBy());
+        department.setUpdatedBy(this.getUpdatedBy());
+
+        return department;
+    }
+
+    public Department convertToEntityUpdate(Department department) {
+        department.setId(this.id);
+        department.setCode(this.code);
+        department.setStatus(this.status);
+        department.setName(AppUtility.isEmpty(this.name) ? this.name : this.name.trim());
+        department.setCreatedOn(department.getCreatedOn());
         department.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
         department.setCreatedBy(this.getCreatedBy());
         department.setUpdatedBy(this.getUpdatedBy());
