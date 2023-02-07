@@ -65,9 +65,6 @@ public class UserService {
     @Autowired
     private UserProfileRepository userProfileRepository;
 
-    @Autowired
-    EmailUtil emailUtil;
-
     @Value("${fe.reset.pass.base.link}")
     private String resetPassBaseFELink;
 
