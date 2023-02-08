@@ -11,7 +11,7 @@ import javax.persistence.Table;
 @EqualsAndHashCode(callSuper = false)
 @Data
 @Entity
-@Table(name = "EMAIL_INSTANCES")
+@Table(name = "UM_EMAIL_INSTANCES")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EmailInstance extends BaseEntity {
 

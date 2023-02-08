@@ -12,7 +12,7 @@ import java.time.ZonedDateTime;
 @EqualsAndHashCode(callSuper = false)
 @Data
 @Entity
-@Table(name = "FORGOT_PASSWORD_LINKS")
+@Table(name = "UM_FORGOT_PASSWORD_LINKS")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ForgotPasswordLink extends BaseEntity {
 

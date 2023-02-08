@@ -13,7 +13,7 @@ import java.time.ZonedDateTime;
 
 @Data
 @Entity
-@Table(name = "DL_DOCUMENT_COMMENTS")
+@Table(name = "UM_DL_DOCUMENT_COMMENTS")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @EqualsAndHashCode(callSuper = false)
 public class DLDocumentComment extends BaseEntity implements Serializable {

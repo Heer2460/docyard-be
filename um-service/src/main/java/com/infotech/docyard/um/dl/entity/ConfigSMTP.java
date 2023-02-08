@@ -6,7 +6,7 @@ import javax.persistence.*;
 
 @Entity
 @Data
-@Table(name = "CONFIG_SMTP")
+@Table(name = "UM_CONFIG_SMTP")
 public class ConfigSMTP extends BaseEntity {
 
     @Column(name = "SMTP_SERVER")

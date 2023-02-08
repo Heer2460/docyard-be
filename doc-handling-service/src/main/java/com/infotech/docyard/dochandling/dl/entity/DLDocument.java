@@ -12,7 +12,7 @@ import java.util.List;
 
 @Data
 @Entity
-@Table(name = "DL_DOCUMENTS")
+@Table(name = "UM_DL_DOCUMENTS")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class DLDocument extends BaseEntity implements Serializable {

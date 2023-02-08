@@ -12,7 +12,7 @@ import java.time.ZonedDateTime;
 
 @Data
 @Entity
-@Table(name = "DL_DOCUMENT_ACTIVITIES")
+@Table(name = "UM_DL_DOCUMENT_ACTIVITIES")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @EqualsAndHashCode(callSuper = false)
 public class DLDocumentActivity extends BaseEntity implements Serializable {
