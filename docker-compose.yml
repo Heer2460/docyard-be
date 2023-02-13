@@ -37,7 +37,7 @@ services:
 #    networks:
 #      - docyard
   registry-service:
-    image: registrysevice:${TAG}
+    image: registrysevice:dev
     container_name: RegistryServiceContainer
     hostname: registry-service
     build:
@@ -46,7 +46,7 @@ services:
     ports:
       - "8761:8761"
     environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_PROFILES_ACTIVE: docker
     networks:
       - docyard
     depends_on:
