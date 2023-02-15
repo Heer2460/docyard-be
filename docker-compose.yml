@@ -37,7 +37,6 @@ services:
 #      - db-data:/var/lib/mysql
 #    networks:
 #      - docyard
-
   registry-service:
     image: registrysevice:dev
     container_name: RegistryServiceContainer
