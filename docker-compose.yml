@@ -39,7 +39,7 @@ services:
 #      - docyard
 
   registry-service:
-    image: registrysevice:dev
+    image: registrysevice:${TAG}
     container_name: RegistryServiceContainer
     hostname: registry-service
     build:
