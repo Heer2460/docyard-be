@@ -1,14 +1,11 @@
 pipeline {
     agent any
-    triggers {
-        githubPush()
-    }
     stages {
-        stage('Clone Code') {
+      /*   stage('Clone Code') {
             steps {
-                checkout changelog: false, poll: false, scm: scmGit(branches: [[name: '*/devRemoteFeature']], extensions: [], userRemoteConfigs: [[credentialsId: '7032a7b7-8a6a-46db-8b20-947d4b955a1d', url: 'https://github.com/infotechirfannasim/docyard-be.git']])
+                checkout changelog: false, poll: false, scm: scmGit(branches: [[name: '*//* devRemoteFeature']], extensions: [], userRemoteConfigs: [[credentialsId: '7032a7b7-8a6a-46db-8b20-947d4b955a1d', url: 'https://github.com/infotechirfannasim/docyard-be.git']])
             }
-        }
+        } */
          stage('clean code') {
             steps {
                bat 'mvn -B -DskipTests clean'
