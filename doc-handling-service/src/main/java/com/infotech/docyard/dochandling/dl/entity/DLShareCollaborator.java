@@ -12,7 +12,7 @@ import java.io.Serializable;
 
 @Data
 @Entity
-@Table(name = "UM_DL_SHARE_COLLABORATORS")
+@Table(name = "DHS_SHARE_COLLABORATORS")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class DLShareCollaborator extends BaseEntity implements Serializable {

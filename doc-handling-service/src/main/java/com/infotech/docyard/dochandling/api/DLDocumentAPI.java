@@ -17,12 +17,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.zip.ZipOutputStream;
 
 @RestController
 @RequestMapping("/dl-document")
@@ -415,6 +417,32 @@ public class DLDocumentAPI {
         }
         try {
             inputStreamResource = dlDocumentService.downloadDLDocument(dlDocumentId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return new ResponseEntity<>(inputStreamResource, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/download/folder/{dlDocumentId}")
+    public ResponseEntity<InputStreamResource> downloadDLFolder(HttpServletRequest request,
+                                                                @PathVariable(value = "dlDocumentId") Long dlDocumentId)
+            throws DataValidationException, NoDataFoundException, CustomException {
+        log.info("downloadFolder API initiated...");
+        ZipOutputStream zos = null;
+
+
+        if (AppUtility.isEmpty(dlDocumentId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.valueOf("application/zip"));
+        InputStreamResource inputStreamResource = null;
+        if (AppUtility.isEmpty(dlDocumentId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
+        }
+        try {
+            inputStreamResource = dlDocumentService.downloadDLFolder(dlDocumentId);
+
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }

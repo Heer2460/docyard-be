@@ -108,7 +108,7 @@ public class NotificationService {
                 ownerDTO.setEmail((String) map.get("email"));
                 ownerDTO.setUsername((String) map.get("username"));
             }
-            for (int i = 0; i <= names.size() - 1; i++) {
+            for (int i = 0; i <= names.size(); i++) {
                 String content = null;
                 if (shareRequest.getShareType().equals("RESTRICTED")) {
                     content = NotificationUtility.buildRestrictedShareFileEmailContent(ownerDTO, names.get(i), docName, shareRequest.getAppContextPath() +

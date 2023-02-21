@@ -10,7 +10,7 @@ import java.util.List;
 
 @Data
 @Entity
-@Table(name = "UM_DL_COLLABORATORS")
+@Table(name = "DHS_COLLABORATORS")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class DLCollaborator extends BaseEntity implements Serializable {
