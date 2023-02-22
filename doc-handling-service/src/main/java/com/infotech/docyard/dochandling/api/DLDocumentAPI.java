@@ -448,4 +448,52 @@ public class DLDocumentAPI {
         }
         return new ResponseEntity<>(inputStreamResource, headers, HttpStatus.OK);
     }
+
+    @GetMapping(value = "/convert/docx/download/{dlDocumentId}")
+    public ResponseEntity<InputStreamResource> downloadImageToDocxDocument(HttpServletRequest request,
+                                                                  @PathVariable(value = "dlDocumentId") Long dlDocumentId)
+            throws DataValidationException, NoDataFoundException, CustomException {
+
+        log.info("downloadImageToDocxDocument API initiated...");
+        InputStreamResource inputStreamResource = null;
+
+        if (AppUtility.isEmpty(dlDocumentId))
+            throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.add("Content-Disposition", "attachment; filename=file.docx");
+
+        try {
+            inputStreamResource = dlDocumentService.transferImageToDocument(dlDocumentId, Boolean.FALSE);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+
+        return new ResponseEntity<>(inputStreamResource, headers, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/convert/txt/download/{dlDocumentId}")
+    public ResponseEntity<InputStreamResource> downloadImageToTextDocument(HttpServletRequest request,
+                                                                           @PathVariable(value = "dlDocumentId") Long dlDocumentId)
+            throws DataValidationException, NoDataFoundException, CustomException {
+
+        log.info("downloadImageToTextDocument API initiated...");
+        InputStreamResource inputStreamResource = null;
+
+        if (AppUtility.isEmpty(dlDocumentId))
+            throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.add("Content-Disposition", "attachment; filename=file.txt");
+
+        try {
+            inputStreamResource = dlDocumentService.transferImageToDocument(dlDocumentId, Boolean.TRUE);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+
+        return new ResponseEntity<>(inputStreamResource, headers, HttpStatus.OK);
+    }
 }
