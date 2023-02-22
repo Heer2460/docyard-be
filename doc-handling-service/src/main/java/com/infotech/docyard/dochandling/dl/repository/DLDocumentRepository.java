@@ -92,4 +92,7 @@ public interface DLDocumentRepository extends JpaRepository<DLDocument, Long> {
             "OR c.message LIKE %:searchKey%) " +
             "order by d.updatedOn desc")
     List<DLDocument> findDLDocumentBySearchKey(@Param("searchKey") String searchKey, @Param("userId") Long userId);
+
+    @Query("SELECT DISTINCT d FROM DLDocument d WHERE d.parentId =:parentId")
+    List<DLDocument> findAllByParentId(@Param("parentId") Long parentId);
 }

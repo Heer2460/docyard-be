@@ -344,7 +344,7 @@ public class DLShareService {
                 }
                 HashMap<?, ?> namesMap = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response1).get("names");
                 if (namesMap.get("names") instanceof ArrayList) {
-                    emails = (List<String>) emailsMap.get("names");
+                    names = (List<String>) emailsMap.get("names");
                 } else {
                     String name = (String) emailsMap.get("names");
                     names.add(name);

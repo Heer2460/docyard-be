@@ -20,27 +20,30 @@ import net.sourceforge.tess4j.TesseractException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Service
 @Log4j2
@@ -64,6 +67,10 @@ public class DLDocumentService {
     private DLDocumentActivityRepository dlDocumentActivityRepository;
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    HttpServletResponse response;
+    List<String> filesListInDir = new ArrayList<String>();
 
     public List<DLDocumentDTO> searchDLDocuments(String searchKey, Long userId) {
         log.info("DLDocumentService - searchDLDocuments method called...");
@@ -947,6 +954,184 @@ public class DLDocumentService {
         return inputStreamResource;
     }
 
+    public InputStreamResource transferImageToDocument(Long dlDocumentId, boolean isText) throws Exception {
+
+        log.info("DLDocumentService - transferImageToDocument method called...");
+        InputStreamResource inputStreamResource = null;
+        FileOutputStream fos = null;
+        XWPFDocument document = null;
+
+        Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
+
+        if (opDoc.isPresent()) {
+
+            DLDocument doc = opDoc.get();
+
+            if (!doc.getFolder()) {
+
+                File image = ftpService.downloadFile(doc.getVersionGUId());
+                Tesseract tesseract = new Tesseract();
+                tesseract.setDatapath("D:\\Tess4J\\tessdata");
+                //tesseract.setLanguage("eng");
+                //tesseract.setPageSegMode(1);
+                //tesseract.setOcrEngineMode(1);
+
+                try {
+
+                    String imageText = tesseract.doOCR(image);
+                    System.out.println("Text: " + imageText);
+
+                    if(isText) {
+
+                        Path file = Paths.get("file.txt");
+                        Files.write(file, imageText.getBytes(StandardCharsets.UTF_8));
+                        inputStreamResource = new InputStreamResource(new ByteArrayInputStream(imageText.getBytes(StandardCharsets.UTF_8)));
+
+                    } else {
+
+                        String outputFileName = doc.getTitle()+".doc";
+
+                        document = new XWPFDocument();
+                        XWPFParagraph paragraph = document.createParagraph();
+                        paragraph.setFirstLineIndent(400);
+                        // paragraph.setAlignment(ParagraphAlignment.DISTRIBUTE);
+                        // paragraph.setWordWrapped(true);
+
+                        XWPFRun run = paragraph.createRun();
+                        run.setText(imageText);
+
+                        fos = new FileOutputStream(outputFileName);
+                        document.write(fos);
+
+                        File file = ResourceUtils.getFile(outputFileName);
+                        byte[] contents = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
+                        inputStreamResource = new InputStreamResource(new ByteArrayInputStream(contents));
+                    }
+                } catch (TesseractException ex) {
+                    log.error(ex);
+                } finally {
+                    if (fos != null) {
+                        try {
+                            fos.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if (document != null) {
+                        try {
+                            document.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+                DLDocumentActivity activity = new DLDocumentActivity(doc.getCreatedBy(), DLActivityTypeEnum.DOWNLOADED.getValue(),
+                        doc.getId(), doc.getId());
+                dlDocumentActivityRepository.save(activity);
+            } else {
+            }
+        } else {
+            throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+        }
+
+        return inputStreamResource;
+    }
+    public InputStreamResource downloadDLFolder(Long dlDocumentId) throws Exception {
+        log.info("DLDocumentService - downloadFolder method called...");
+
+        Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
+        List<DLDocument> locationList = dlDocumentRepository.findAllByParentId(opDoc.get().getId());
+        File folderTozip = new File("C:\\Users\\admin\\Desktop\\" + opDoc.get().getName());
+        String dir = "C:\\Users\\admin\\Desktop\\" + opDoc.get().getName() + ".zip";
+        DLDocument doc;
+        File nFolder = null;
+        File newFile = null;
+        InputStream inputStream = null;
+        InputStreamResource inputStreamResource;
+        FileInputStream fis = null;
+        ZipOutputStream zos = null;
+        FileOutputStream fos;
+        if (opDoc.isPresent()) {
+            doc = opDoc.get();
+            if (doc.getFolder()) {
+                for (DLDocument dbFiles : locationList) {
+                    if (dbFiles.getFolder()){
+                         nFolder = new File(folderTozip.toString()+"\\"+dbFiles.getName());
+                        nFolder.mkdirs();
+                        List<DLDocument> fileList = dlDocumentRepository.findAllByParentId(dbFiles.getId());
+                        for (DLDocument dbFile:fileList){
+                            inputStream = ftpService.downloadInputStream(dbFile.getVersionGUId());
+                            newFile = new File(nFolder.toString() + File.separator + dbFile.getName());
+                            FileUtils.copyInputStreamToFile(inputStream, newFile);
+                        }
+                        break;
+                    }
+                    inputStream = ftpService.downloadInputStream(dbFiles.getVersionGUId());
+                    newFile = new File(folderTozip.toString() + File.separator + dbFiles.getName());
+                    FileUtils.copyInputStreamToFile(inputStream, newFile);
+                    inputStreamResource = new InputStreamResource(inputStream);
+                }
+                File newDirectory = new File(folderTozip.toString());
+                boolean isCreated = newDirectory.mkdirs();
+                if (isCreated) {
+                    log.info("Successfully created directories, path:%s",newDirectory.getCanonicalPath());
+                } else if (newDirectory.exists()) {
+                    log.info("Directory path already exist, path:%s",newDirectory.getCanonicalPath());
+                } else {
+                    log.error("Unable to create directory");
+                }
+                populateFilesList(folderTozip);
+                fos = new FileOutputStream(dir);
+                zos = new ZipOutputStream(fos);
+                for (String filePath : filesListInDir) {
+                    log.info("Zipping " + filePath);
+
+                    //for ZipEntry we need to keep only relative file path, so we used substring on absolute path
+                    ZipEntry ze = new ZipEntry(filePath.substring(folderTozip.getAbsolutePath().length() + 1, filePath.length()));
+                    zos.putNextEntry(ze);
+                    //read the file and write to ZipOutputStream
+                    fis = new FileInputStream(filePath);
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = fis.read(buffer)) > 0) {
+                        zos.write(buffer, 0, len);
+                    }
+                    zos.closeEntry();
+                    fis.close();
+                }
+                filesListInDir.clear();
+
+                zos.close();
+                fos.close();
+
+                DLDocumentActivity activity = new DLDocumentActivity(doc.getCreatedBy(), DLActivityTypeEnum.DOWNLOADED.getValue(),
+                        doc.getId(), doc.getId());
+                dlDocumentActivityRepository.save(activity);
+            } else {
+                throw new DataValidationException(AppUtility.getResourceMessage("folder.not.found"));
+            }
+        } else {
+            throw new DataValidationException(AppUtility.getResourceMessage("folder.not.found"));
+        }
+        File file = new File(dir);
+        FileInputStream stream = new FileInputStream(file);
+        inputStreamResource = new InputStreamResource(stream);
+
+        return inputStreamResource;
+    }
+    /**
+     * This method populates all the files in a directory to a List
+     * @param dir
+     * @throws IOException
+     */
+    private void populateFilesList(File dir) throws IOException {
+        File[] files = dir.listFiles();
+        for(File fil : files){
+            if(fil.isFile()) filesListInDir.add(fil.getAbsolutePath());
+            else populateFilesList(fil);
+        }
+    }
     public Boolean checkIsParent(Long dlDocumentId) {
         log.info("DLDocumentService - checkIsParent method called...");
 

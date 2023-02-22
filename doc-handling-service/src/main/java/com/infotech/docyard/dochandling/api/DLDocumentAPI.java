@@ -17,12 +17,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.zip.ZipOutputStream;
 
 @RestController
 @RequestMapping("/dl-document")
@@ -418,6 +420,80 @@ public class DLDocumentAPI {
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
+        return new ResponseEntity<>(inputStreamResource, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/download/folder/{dlDocumentId}")
+    public ResponseEntity<InputStreamResource> downloadDLFolder(HttpServletRequest request,
+                                                                @PathVariable(value = "dlDocumentId") Long dlDocumentId)
+            throws DataValidationException, NoDataFoundException, CustomException {
+        log.info("downloadFolder API initiated...");
+        ZipOutputStream zos = null;
+
+
+        if (AppUtility.isEmpty(dlDocumentId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.valueOf("application/zip"));
+        InputStreamResource inputStreamResource = null;
+        if (AppUtility.isEmpty(dlDocumentId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
+        }
+        try {
+            inputStreamResource = dlDocumentService.downloadDLFolder(dlDocumentId);
+
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return new ResponseEntity<>(inputStreamResource, headers, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/convert/docx/download/{dlDocumentId}")
+    public ResponseEntity<InputStreamResource> downloadImageToDocxDocument(HttpServletRequest request,
+                                                                  @PathVariable(value = "dlDocumentId") Long dlDocumentId)
+            throws DataValidationException, NoDataFoundException, CustomException {
+
+        log.info("downloadImageToDocxDocument API initiated...");
+        InputStreamResource inputStreamResource = null;
+
+        if (AppUtility.isEmpty(dlDocumentId))
+            throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.add("Content-Disposition", "attachment; filename=file.docx");
+
+        try {
+            inputStreamResource = dlDocumentService.transferImageToDocument(dlDocumentId, Boolean.FALSE);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+
+        return new ResponseEntity<>(inputStreamResource, headers, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/convert/txt/download/{dlDocumentId}")
+    public ResponseEntity<InputStreamResource> downloadImageToTextDocument(HttpServletRequest request,
+                                                                           @PathVariable(value = "dlDocumentId") Long dlDocumentId)
+            throws DataValidationException, NoDataFoundException, CustomException {
+
+        log.info("downloadImageToTextDocument API initiated...");
+        InputStreamResource inputStreamResource = null;
+
+        if (AppUtility.isEmpty(dlDocumentId))
+            throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.add("Content-Disposition", "attachment; filename=file.txt");
+
+        try {
+            inputStreamResource = dlDocumentService.transferImageToDocument(dlDocumentId, Boolean.TRUE);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+
         return new ResponseEntity<>(inputStreamResource, headers, HttpStatus.OK);
     }
 }
