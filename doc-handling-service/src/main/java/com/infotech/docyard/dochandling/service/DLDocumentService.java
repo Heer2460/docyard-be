@@ -969,20 +969,31 @@ public class DLDocumentService {
             doc = opDoc.get();
             if (doc.getFolder()) {
                 for (DLDocument dbFiles : locationList) {
+                    if (dbFiles.getFolder()){
+                         nFolder = new File(folderTozip.toString()+"\\"+dbFiles.getName());
+                        nFolder.mkdirs();
+                        List<DLDocument> fileList = dlDocumentRepository.findAllByParentId(dbFiles.getId());
+                        for (DLDocument dbFile:fileList){
+                            inputStream = ftpService.downloadInputStream(dbFile.getVersionGUId());
+                            newFile = new File(nFolder.toString() + File.separator + dbFile.getName());
+                            FileUtils.copyInputStreamToFile(inputStream, newFile);
+                        }
+                        break;
+                    }
                     inputStream = ftpService.downloadInputStream(dbFiles.getVersionGUId());
                     newFile = new File(folderTozip.toString() + File.separator + dbFiles.getName());
                     FileUtils.copyInputStreamToFile(inputStream, newFile);
                     inputStreamResource = new InputStreamResource(inputStream);
                 }
-                   File newDirectory = new File(folderTozip.toString());
-                    boolean isCreated = newDirectory.mkdirs();
-                    if (isCreated) {
-                        log.info("Successfully created directories, path:%s",newDirectory.getCanonicalPath());
-                    } else if (newDirectory.exists()) {
-                        log.info("Directory path already exist, path:%s",newDirectory.getCanonicalPath());
-                    } else {
-                        log.error("Unable to create directory");
-                    }
+                File newDirectory = new File(folderTozip.toString());
+                boolean isCreated = newDirectory.mkdirs();
+                if (isCreated) {
+                    log.info("Successfully created directories, path:%s",newDirectory.getCanonicalPath());
+                } else if (newDirectory.exists()) {
+                    log.info("Directory path already exist, path:%s",newDirectory.getCanonicalPath());
+                } else {
+                    log.error("Unable to create directory");
+                }
                 populateFilesList(folderTozip);
                 fos = new FileOutputStream(dir);
                 zos = new ZipOutputStream(fos);
