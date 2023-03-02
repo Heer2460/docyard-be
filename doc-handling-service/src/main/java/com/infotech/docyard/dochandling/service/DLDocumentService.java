@@ -19,9 +19,11 @@ import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.xslf.usermodel.*;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,6 +69,9 @@ public class DLDocumentService {
     private DLDocumentActivityRepository dlDocumentActivityRepository;
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private Environment environment;
 
     @Autowired
     HttpServletResponse response;
@@ -954,7 +959,7 @@ public class DLDocumentService {
         return inputStreamResource;
     }
 
-    public InputStreamResource transferImageToDocument(Long dlDocumentId, boolean isText) throws Exception {
+    public InputStreamResource transferImageToDocument(Long dlDocumentId, boolean isText, boolean isPpt) throws Exception {
 
         log.info("DLDocumentService - transferImageToDocument method called...");
         InputStreamResource inputStreamResource = null;
@@ -971,7 +976,7 @@ public class DLDocumentService {
 
                 File image = ftpService.downloadFile(doc.getVersionGUId());
                 Tesseract tesseract = new Tesseract();
-                tesseract.setDatapath("D:\\Tess4J\\tessdata");
+                tesseract.setDatapath(environment.getProperty("ocr.tessdata.path"));
                 //tesseract.setLanguage("eng");
                 //tesseract.setPageSegMode(1);
                 //tesseract.setOcrEngineMode(1);
@@ -979,13 +984,41 @@ public class DLDocumentService {
                 try {
 
                     String imageText = tesseract.doOCR(image);
-                    System.out.println("Text: " + imageText);
 
                     if(isText) {
 
                         Path file = Paths.get("file.txt");
                         Files.write(file, imageText.getBytes(StandardCharsets.UTF_8));
                         inputStreamResource = new InputStreamResource(new ByteArrayInputStream(imageText.getBytes(StandardCharsets.UTF_8)));
+
+                    } else if(isPpt) {
+
+                        String outputFileName = doc.getTitle()+".pptx";
+
+                        XMLSlideShow ppt = new XMLSlideShow();
+                        XSLFSlideMaster defaultMaster = ppt.getSlideMasters().get(0);
+                        XSLFSlideLayout layout = defaultMaster.getLayout(SlideLayout.TITLE_AND_CONTENT);
+                        XSLFSlide slide = ppt.createSlide(layout);
+
+                        XSLFTextShape title = slide.getPlaceholder(0);
+                        title.setText("Image Text");
+
+                        XSLFTextShape content = slide.getPlaceholder(1);
+                        content.clearText();
+                        XSLFTextParagraph p = content.addNewTextParagraph();
+                        p.setBullet(false);
+                        XSLFTextRun r = p.addNewTextRun();
+                        r.setText(imageText);
+                        //r.setFontColor(Color.green);
+                        //r.setFontSize(24.);
+
+                        FileOutputStream out = new FileOutputStream(outputFileName);
+                        ppt.write(out);
+                        out.close();
+
+                        File file = ResourceUtils.getFile(outputFileName);
+                        byte[] contents = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
+                        inputStreamResource = new InputStreamResource(new ByteArrayInputStream(contents));
 
                     } else {
 
