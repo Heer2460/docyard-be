@@ -720,6 +720,111 @@ public class DLDocumentService {
         }
         return doc;
     }
+    @Transactional(rollbackFor = {Throwable.class})
+    protected DLDocument buildFolderDocument(MultipartFile file, UploadFolderDTO request, boolean isDocUpload,String folderName) {
+        DLDocument doc = new DLDocument();
+        DLDocument dbDocs = dlDocumentRepository.findByName(folderName);
+
+        try {
+            String title = file.getOriginalFilename().substring(0, file.getOriginalFilename().lastIndexOf('.'));
+            doc.setTitle(title);
+            doc.setName(file.getOriginalFilename());
+            int extDot = file.getOriginalFilename().lastIndexOf('.');
+            String extension = extDot > 0 ? file.getOriginalFilename().substring(extDot + 1) : "";
+            doc.setExtension(extension);
+            doc.setMimeType(DocumentUtil.getMimeType(extension));
+            doc.setSize(DocumentUtil.getFileSize(file.getSize()));
+            doc.setSizeBytes(file.getSize());
+            doc.setCreatedBy(request.getCreatedBy());
+            doc.setUpdatedBy(request.getCreatedBy());
+            doc.setCreatedOn(ZonedDateTime.now());
+            doc.setLocation(folderName+"/");
+            doc.setUpdatedOn(ZonedDateTime.now());
+            doc.setParentId(dbDocs.getId());
+            if (request.getFolderId() != 0) {
+                doc.setParentId(request.getFolderId());
+            }
+            doc.setShared(null);
+            doc.setFolder(false);
+            if (DocumentUtil.isOCRType(doc)) {
+                doc.setOcrSupported(true);
+                doc.setOcrDone(false);
+            } else {
+                doc.setOcrSupported(false);
+                doc.setOcrDone(true);
+            }
+            doc = dlDocumentRepository.save(doc);
+            doc.setArchived(false);
+            doc.setCurrentVersion(AppConstants.FIRST_VERSION);
+            doc.setVersion(AppConstants.FIRST_VERSION);
+            doc.setCreatedOn(ZonedDateTime.now());
+            doc.setDocumentVersions(new ArrayList<>());
+            DLDocumentVersion documentVersion = createFirstDocumentVersion(doc, request.getCreatedBy());
+            documentVersion = dlDocumentVersionRepository.save(documentVersion);
+
+            doc.getDocumentVersions().add(documentVersion);
+
+            if (!isDocUpload) {
+                switch (extension) {
+                    case AppConstants.FileType.EXT_HTML:
+                        doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
+                                + AppConstants.FileType.EXT_HTML);
+                        doc.setExtension(AppConstants.FileType.EXT_HTML);
+                        doc.setMimeType(AppConstants.MimeType.MIME_HTML);
+                        break;
+                    case AppConstants.FileType.EXT_DOC:
+                        doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
+                                + AppConstants.FileType.EXT_DOC);
+                        doc.setExtension(AppConstants.FileType.EXT_DOC);
+                        doc.setMimeType(AppConstants.MimeType.MIME_DOC);
+                        break;
+                    case AppConstants.FileType.EXT_DOCX:
+                        doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
+                                + AppConstants.FileType.EXT_DOCX);
+                        doc.setExtension(AppConstants.FileType.EXT_DOCX);
+                        doc.setMimeType(AppConstants.MimeType.MIME_DOCX);
+                        break;
+                    case AppConstants.FileType.EXT_XLS:
+                        doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
+                                + AppConstants.FileType.EXT_XLS);
+                        doc.setExtension(AppConstants.FileType.EXT_XLS);
+                        doc.setMimeType(AppConstants.MimeType.MIME_XLS);
+                        break;
+                    case AppConstants.FileType.EXT_XLSX:
+                        doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
+                                + AppConstants.FileType.EXT_XLSX);
+                        doc.setExtension(AppConstants.FileType.EXT_XLSX);
+                        doc.setMimeType(AppConstants.MimeType.MIME_XLSX);
+                        break;
+                    case AppConstants.FileType.EXT_PPT:
+                        doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
+                                + AppConstants.FileType.EXT_PPT);
+                        doc.setExtension(AppConstants.FileType.EXT_PPT);
+                        doc.setMimeType(AppConstants.MimeType.MIME_PPT);
+                        break;
+                    case AppConstants.FileType.EXT_PPTX:
+                        doc.setName(doc.getTitle().replaceAll(" ", "_") + "."
+                                + AppConstants.FileType.EXT_PPTX);
+                        doc.setExtension(AppConstants.FileType.EXT_PPTX);
+                        doc.setMimeType(AppConstants.MimeType.MIME_PPTX);
+                        break;
+                }
+            } else {
+                doc.setExtension(extension.toLowerCase());
+                doc.setMimeType(DocumentUtil.getMimeType(extension.toLowerCase()));
+            }
+            doc.setVersionGUId(documentVersion.getGuId() + "."
+                    + doc.getExtension());
+            documentVersion.setGuId(documentVersion.getGuId() + "."
+                    + doc.getExtension());
+
+            if (FileTypeEnum.getByExtensionForcefully(doc.getExtension()).getSupportedViewer() == FileViewerEnum.IMAGE_VIEWER) {//doc.setThumbnailSupported(true);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return doc;
+    }
 
     private StringBuffer getNodePath(DLDocument selectedFolderNode) {
         return getSelectedPath(selectedFolderNode,
@@ -974,6 +1079,17 @@ public class DLDocumentService {
                         nFolder.mkdirs();
                         List<DLDocument> fileList = dlDocumentRepository.findAllByParentId(dbFiles.getId());
                         for (DLDocument dbFile:fileList){
+                            if (dbFile.getFolder()){
+                                File sFolder = new File(nFolder.toString()+"\\"+dbFile.getName());
+                                sFolder.mkdirs();
+                                List<DLDocument> sFileList = dlDocumentRepository.findAllByParentId(dbFile.getId());
+                                for (DLDocument sDbFile:sFileList){
+                                    inputStream = ftpService.downloadInputStream(sDbFile.getVersionGUId());
+                                    newFile = new File(sFolder.toString() + File.separator + sDbFile.getName());
+                                    FileUtils.copyInputStreamToFile(inputStream, newFile);
+                                }
+                                break;
+                            }
                             inputStream = ftpService.downloadInputStream(dbFile.getVersionGUId());
                             newFile = new File(nFolder.toString() + File.separator + dbFile.getName());
                             FileUtils.copyInputStreamToFile(inputStream, newFile);
@@ -1166,5 +1282,63 @@ public class DLDocumentService {
 
     public Boolean isFolder(DLDocument doc) {
         return doc.getFolder();
+    }
+
+    @Transactional(rollbackFor = {Throwable.class})
+    public DLDocument uploadFolder(UploadFolderDTO uploadFolderDTO, MultipartFile[] files,String folderName) throws Exception {
+        log.info("DLDocumentService - uploadDocuments method called...");
+
+        DLDocument dlDoc = null;
+        if (files.length > 0) {
+            for (MultipartFile file : files) {
+                double allowedSize = 200 * 1024 * 1024;
+                if (file.getSize() > allowedSize) {
+                    throw new DataValidationException(AppUtility.getResourceMessage("invalid.file.size"));
+                }
+                if (StringUtils.containsAny(file.getOriginalFilename(), "/\\:*?\"<>|")) {
+                    throw new DataValidationException(AppUtility.getResourceMessage("invalid.doc.name"));
+                }
+                log.info("DLDocumentService - buildDocument object started...");
+                dlDoc = this.buildFolderDocument(file, uploadFolderDTO, true,folderName);
+                log.info("DLDocumentService - buildDocument object ended...");
+
+                String docLocation = dlDoc.getLocation();
+                log.info("DLDocumentService - DocumentResponseWrapper locations is:" + docLocation);
+
+
+                log.info("DLDocumentService - Creating temp file to upload....");
+                File f = File.createTempFile(docLocation, dlDoc.getExtension());
+                f.deleteOnExit();
+                FileUtils.writeByteArrayToFile(f, file.getBytes());
+
+                // UPLOADING ON FTP
+                log.info("DLDocumentService - Uploaded on FTP started....");
+                boolean isDocUploaded = ftpService.uploadFile(docLocation, dlDoc.getVersionGUId(), file.getInputStream());
+                log.info("DLDocumentService - Uploaded on FTP ended with success: " + isDocUploaded);
+
+                if (isDocUploaded) {
+                    dlDoc = dlDocumentRepository.save(dlDoc);
+                    DLDocumentActivity activity = new DLDocumentActivity(dlDoc.getCreatedBy(), DLActivityTypeEnum.UPLOADED.getValue(),
+                            dlDoc.getId(), dlDoc.getId());
+                    dlDocumentActivityRepository.save(activity);
+                }
+            }
+        }
+        return dlDoc;
+    }
+    public void uploadfolderName(String folderName,UploadFolderDTO uploadFolderDTO){
+        DLDocument dlDocument = new DLDocument();
+        dlDocument.setTitle(folderName);
+        dlDocument.setName(folderName);
+        dlDocument.setFolder(true);
+        dlDocument.setCreatedBy(uploadFolderDTO.getCreatedBy());
+        dlDocument.setUpdatedBy(uploadFolderDTO.getUpdatedBy());
+        dlDocument.setCreatedOn(ZonedDateTime.now());
+        dlDocument.setUpdatedOn(ZonedDateTime.now());
+        dlDocument.setArchived(false);
+        dlDocument.setOcrDone(false);
+        dlDocument.setOcrSupported(false);
+        dlDocument.setLeafNode(false);
+        dlDocumentRepository.save(dlDocument);
     }
 }

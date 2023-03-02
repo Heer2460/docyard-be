@@ -1,10 +1,7 @@
 package com.infotech.docyard.dochandling.api;
 
 import com.infotech.docyard.dochandling.dl.entity.DLDocument;
-import com.infotech.docyard.dochandling.dto.DLDocumentDTO;
-import com.infotech.docyard.dochandling.dto.DLDocumentListDTO;
-import com.infotech.docyard.dochandling.dto.UploadDocumentDTO;
-import com.infotech.docyard.dochandling.dto.UserSpaceOccupiedDTO;
+import com.infotech.docyard.dochandling.dto.*;
 import com.infotech.docyard.dochandling.exceptions.CustomException;
 import com.infotech.docyard.dochandling.exceptions.DataValidationException;
 import com.infotech.docyard.dochandling.exceptions.NoDataFoundException;
@@ -447,5 +444,26 @@ public class DLDocumentAPI {
             ResponseUtility.exceptionResponse(e);
         }
         return new ResponseEntity<>(inputStreamResource, headers, HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/upload/folder")
+    public CustomResponse uploadFolder(HttpServletRequest request,
+                                          @RequestPart(name = "reqObj",required = false) UploadFolderDTO uploadFolderDTO,
+                                          @RequestPart(value = "path", required = false) String folderName,
+                                          @RequestParam(name = "doc",required = false) MultipartFile[] files)
+            throws CustomException, DataValidationException, NoDataFoundException {
+        log.info("uploadFolder API initiated...");
+
+        if (AppUtility.isEmpty(uploadFolderDTO) || AppUtility.isEmpty(files) || AppUtility.isEmpty(folderName)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
+        DLDocument dlDocument = null;
+        dlDocumentService.uploadfolderName(folderName,uploadFolderDTO);
+        try {
+            dlDocument = dlDocumentService.uploadFolder(uploadFolderDTO, files,folderName);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.buildResponseObject(dlDocument, new DLDocumentDTO(), true);
     }
 }
