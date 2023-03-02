@@ -7,7 +7,8 @@ services:
     container_name: mysqldb8
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_ROOT_PASSWORD : ${MYSQL_PASSWORD}
+     # MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     networks:
       - docyard
@@ -36,6 +37,7 @@ services:
 #      - db-data:/var/lib/mysql
 #    networks:
 #      - docyard
+
   registry-service:
     image: registrysevice:${TAG}
     container_name: RegistryServiceContainer

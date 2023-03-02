@@ -19,12 +19,15 @@ import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.xslf.usermodel.*;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,7 +36,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -64,6 +69,9 @@ public class DLDocumentService {
     private DLDocumentActivityRepository dlDocumentActivityRepository;
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private Environment environment;
 
     @Autowired
     HttpServletResponse response;
@@ -1053,6 +1061,118 @@ public class DLDocumentService {
         } else {
             throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
         }
+        return inputStreamResource;
+    }
+
+    public InputStreamResource transferImageToDocument(Long dlDocumentId, boolean isText, boolean isPpt) throws Exception {
+
+        log.info("DLDocumentService - transferImageToDocument method called...");
+        InputStreamResource inputStreamResource = null;
+        FileOutputStream fos = null;
+        XWPFDocument document = null;
+
+        Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
+
+        if (opDoc.isPresent()) {
+
+            DLDocument doc = opDoc.get();
+
+            if (!doc.getFolder()) {
+
+                File image = ftpService.downloadFile(doc.getVersionGUId());
+                Tesseract tesseract = new Tesseract();
+                tesseract.setDatapath(environment.getProperty("ocr.tessdata.path"));
+                //tesseract.setLanguage("eng");
+                //tesseract.setPageSegMode(1);
+                //tesseract.setOcrEngineMode(1);
+
+                try {
+
+                    String imageText = tesseract.doOCR(image);
+
+                    if(isText) {
+
+                        Path file = Paths.get("file.txt");
+                        Files.write(file, imageText.getBytes(StandardCharsets.UTF_8));
+                        inputStreamResource = new InputStreamResource(new ByteArrayInputStream(imageText.getBytes(StandardCharsets.UTF_8)));
+
+                    } else if(isPpt) {
+
+                        String outputFileName = doc.getTitle()+".pptx";
+
+                        XMLSlideShow ppt = new XMLSlideShow();
+                        XSLFSlideMaster defaultMaster = ppt.getSlideMasters().get(0);
+                        XSLFSlideLayout layout = defaultMaster.getLayout(SlideLayout.TITLE_AND_CONTENT);
+                        XSLFSlide slide = ppt.createSlide(layout);
+
+                        XSLFTextShape title = slide.getPlaceholder(0);
+                        title.setText("Image Text");
+
+                        XSLFTextShape content = slide.getPlaceholder(1);
+                        content.clearText();
+                        XSLFTextParagraph p = content.addNewTextParagraph();
+                        p.setBullet(false);
+                        XSLFTextRun r = p.addNewTextRun();
+                        r.setText(imageText);
+                        //r.setFontColor(Color.green);
+                        //r.setFontSize(24.);
+
+                        FileOutputStream out = new FileOutputStream(outputFileName);
+                        ppt.write(out);
+                        out.close();
+
+                        File file = ResourceUtils.getFile(outputFileName);
+                        byte[] contents = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
+                        inputStreamResource = new InputStreamResource(new ByteArrayInputStream(contents));
+
+                    } else {
+
+                        String outputFileName = doc.getTitle()+".doc";
+
+                        document = new XWPFDocument();
+                        XWPFParagraph paragraph = document.createParagraph();
+                        paragraph.setFirstLineIndent(400);
+                        // paragraph.setAlignment(ParagraphAlignment.DISTRIBUTE);
+                        // paragraph.setWordWrapped(true);
+
+                        XWPFRun run = paragraph.createRun();
+                        run.setText(imageText);
+
+                        fos = new FileOutputStream(outputFileName);
+                        document.write(fos);
+
+                        File file = ResourceUtils.getFile(outputFileName);
+                        byte[] contents = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
+                        inputStreamResource = new InputStreamResource(new ByteArrayInputStream(contents));
+                    }
+                } catch (TesseractException ex) {
+                    log.error(ex);
+                } finally {
+                    if (fos != null) {
+                        try {
+                            fos.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if (document != null) {
+                        try {
+                            document.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+                DLDocumentActivity activity = new DLDocumentActivity(doc.getCreatedBy(), DLActivityTypeEnum.DOWNLOADED.getValue(),
+                        doc.getId(), doc.getId());
+                dlDocumentActivityRepository.save(activity);
+            } else {
+            }
+        } else {
+            throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+        }
+
         return inputStreamResource;
     }
     public InputStreamResource downloadDLFolder(Long dlDocumentId) throws Exception {
