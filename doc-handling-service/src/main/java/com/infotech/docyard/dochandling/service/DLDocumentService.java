@@ -19,7 +19,11 @@ import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xslf.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1064,7 +1068,7 @@ public class DLDocumentService {
         return inputStreamResource;
     }
 
-    public InputStreamResource transferImageToDocument(Long dlDocumentId, boolean isText, boolean isPpt) throws Exception {
+    public InputStreamResource transferImageToDocument(Long dlDocumentId, boolean isText, boolean isPpt, boolean isExcel) throws Exception {
 
         log.info("DLDocumentService - transferImageToDocument method called...");
         InputStreamResource inputStreamResource = null;
@@ -1082,7 +1086,7 @@ public class DLDocumentService {
                 File image = ftpService.downloadFile(doc.getVersionGUId());
                 Tesseract tesseract = new Tesseract();
                 tesseract.setDatapath(environment.getProperty("ocr.tessdata.path"));
-                //tesseract.setLanguage("eng");
+                tesseract.setLanguage("eng");
                 //tesseract.setPageSegMode(1);
                 //tesseract.setOcrEngineMode(1);
 
@@ -1125,7 +1129,26 @@ public class DLDocumentService {
                         byte[] contents = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
                         inputStreamResource = new InputStreamResource(new ByteArrayInputStream(contents));
 
-                    } else {
+                    } else if(isExcel) {
+
+                        String outputFileName = doc.getTitle()+".xlsx";
+
+                        XSSFWorkbook workbook = new XSSFWorkbook();
+                        XSSFSheet sheet = workbook.createSheet("Sheet1");
+                        Row row = sheet.createRow(1);
+                        Cell cell = row.createCell(1);
+                        cell.setCellValue(imageText);
+
+
+                        FileOutputStream out = new FileOutputStream(outputFileName);
+                        workbook.write(out);
+                        out.close();
+
+                        File file = ResourceUtils.getFile(outputFileName);
+                        byte[] contents = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
+                        inputStreamResource = new InputStreamResource(new ByteArrayInputStream(contents));
+
+                    }else {
 
                         String outputFileName = doc.getTitle()+".doc";
 
