@@ -467,9 +467,10 @@ public class DLDocumentAPI {
         return ResponseUtility.buildResponseObject(dlDocument, new DLDocumentDTO(), true);
     }
 
-    @GetMapping(value = "/convert/docx/download/{dlDocumentId}")
+    @GetMapping(value = "/convert/docx/download/{dlDocumentId}/{extension}")
     public ResponseEntity<InputStreamResource> downloadImageToDocxDocument(HttpServletRequest request,
-                                                                           @PathVariable(value = "dlDocumentId") Long dlDocumentId)
+                                                                           @PathVariable(value = "dlDocumentId") Long dlDocumentId,
+                                                                           @PathVariable(value = "extension") String dlDocumentExtension)
             throws DataValidationException, NoDataFoundException, CustomException {
 
         log.info("downloadImageToDocxDocument API initiated...");
@@ -483,7 +484,12 @@ public class DLDocumentAPI {
         headers.add("Content-Disposition", "attachment; filename=file.docx");
 
         try {
-            inputStreamResource = dlDocumentService.transferImageToDocument(dlDocumentId, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
+            if(dlDocumentExtension.equalsIgnoreCase("pdf")) {
+                inputStreamResource = dlDocumentService.transferPDFToDocument(dlDocumentId, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
+            } else {
+                inputStreamResource = dlDocumentService.transferImageToDocument(dlDocumentId, Boolean.FALSE, Boolean.FALSE, Boolean.FALSE);
+            }
+
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -491,9 +497,10 @@ public class DLDocumentAPI {
         return new ResponseEntity<>(inputStreamResource, headers, HttpStatus.OK);
     }
 
-    @GetMapping(value = "/convert/txt/download/{dlDocumentId}")
+    @GetMapping(value = "/convert/txt/download/{dlDocumentId}/{extension}")
     public ResponseEntity<InputStreamResource> downloadImageToTextDocument(HttpServletRequest request,
-                                                                           @PathVariable(value = "dlDocumentId") Long dlDocumentId)
+                                                                           @PathVariable(value = "dlDocumentId") Long dlDocumentId,
+                                                                           @PathVariable(value = "extension") String dlDocumentExtension)
             throws DataValidationException, NoDataFoundException, CustomException {
 
         log.info("downloadImageToTextDocument API initiated...");
@@ -507,7 +514,11 @@ public class DLDocumentAPI {
         headers.add("Content-Disposition", "attachment; filename=file.txt");
 
         try {
-            inputStreamResource = dlDocumentService.transferImageToDocument(dlDocumentId, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE);
+            if(dlDocumentExtension.equalsIgnoreCase("pdf")) {
+                inputStreamResource = dlDocumentService.transferPDFToDocument(dlDocumentId, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE);
+            } else {
+                inputStreamResource = dlDocumentService.transferImageToDocument(dlDocumentId, Boolean.TRUE, Boolean.FALSE, Boolean.FALSE);
+            }
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -515,9 +526,10 @@ public class DLDocumentAPI {
         return new ResponseEntity<>(inputStreamResource, headers, HttpStatus.OK);
     }
 
-    @GetMapping(value = "/convert/ppt/download/{dlDocumentId}")
+    @GetMapping(value = "/convert/ppt/download/{dlDocumentId}/{extension}")
     public ResponseEntity<InputStreamResource> downloadImageToPptDocument(HttpServletRequest request,
-                                                                          @PathVariable(value = "dlDocumentId") Long dlDocumentId)
+                                                                          @PathVariable(value = "dlDocumentId") Long dlDocumentId,
+                                                                          @PathVariable(value = "extension") String dlDocumentExtension)
             throws DataValidationException, NoDataFoundException, CustomException {
 
         log.info("downloadImageToTextDocument API initiated...");
@@ -531,7 +543,11 @@ public class DLDocumentAPI {
         headers.add("Content-Disposition", "attachment; filename=file.pptx");
 
         try {
-            inputStreamResource = dlDocumentService.transferImageToDocument(dlDocumentId, Boolean.FALSE , Boolean.TRUE, Boolean.FALSE);
+            if(dlDocumentExtension.equalsIgnoreCase("pdf")) {
+                inputStreamResource = dlDocumentService.transferPDFToDocument(dlDocumentId, Boolean.FALSE , Boolean.TRUE, Boolean.FALSE);
+            } else {
+                inputStreamResource = dlDocumentService.transferImageToDocument(dlDocumentId, Boolean.FALSE , Boolean.TRUE, Boolean.FALSE);
+            }
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -539,9 +555,10 @@ public class DLDocumentAPI {
         return new ResponseEntity<>(inputStreamResource, headers, HttpStatus.OK);
     }
 
-    @GetMapping(value = "/convert/excel/download/{dlDocumentId}")
+    @GetMapping(value = "/convert/excel/download/{dlDocumentId}/{extension}")
     public ResponseEntity<InputStreamResource> downloadImageToExcelDocument(HttpServletRequest request,
-                                                                           @PathVariable(value = "dlDocumentId") Long dlDocumentId)
+                                                                           @PathVariable(value = "dlDocumentId") Long dlDocumentId,
+                                                                            @PathVariable(value = "extension") String dlDocumentExtension)
             throws DataValidationException, NoDataFoundException, CustomException {
 
         log.info("downloadImageToExcelDocument API initiated...");
@@ -555,7 +572,11 @@ public class DLDocumentAPI {
         headers.add("Content-Disposition", "attachment; filename=file.xlsx");
 
         try {
-            inputStreamResource = dlDocumentService.transferImageToDocument(dlDocumentId, Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
+            if(dlDocumentExtension.equalsIgnoreCase("pdf")) {
+                inputStreamResource = dlDocumentService.transferPDFToDocument(dlDocumentId, Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
+            } else {
+                inputStreamResource = dlDocumentService.transferImageToDocument(dlDocumentId, Boolean.FALSE, Boolean.FALSE, Boolean.TRUE);
+            }
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }

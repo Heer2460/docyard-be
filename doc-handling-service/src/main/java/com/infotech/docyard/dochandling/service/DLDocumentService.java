@@ -19,6 +19,9 @@ import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xslf.usermodel.*;
@@ -1068,6 +1071,134 @@ public class DLDocumentService {
         return inputStreamResource;
     }
 
+    public InputStreamResource transferPDFToDocument(Long dlDocumentId, boolean isText, boolean isPpt, boolean isExcel) throws Exception {
+        log.info("DLDocumentService - transferPDFToDocument method called...");
+        InputStreamResource inputStreamResource = null;
+        FileOutputStream fos = null;
+        XWPFDocument document = null;
+
+        Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
+        if (opDoc.isPresent()) {
+            DLDocument doc = opDoc.get();
+            if (!doc.getFolder()) {
+                File image = ftpService.downloadFile(doc.getVersionGUId());
+                PDDocument doc1 = PDDocument.load(image);
+                PDFRenderer pdfRenderer = new PDFRenderer(doc1);
+
+                BufferedImage bufferedImage = pdfRenderer.renderImageWithDPI(0, 300, ImageType.RGB);
+                // Create a temp image file
+                File tempFile = File.createTempFile("tempfile_" + 0, ".png");
+                ImageIO.write(bufferedImage, "png", tempFile);
+
+                Tesseract tesseract = new Tesseract();
+                tesseract.setDatapath(environment.getProperty("ocr.tessdata.path"));
+                tesseract.setLanguage("eng");
+
+                try {
+                    String imageText = tesseract.doOCR(tempFile);
+                    if(isText) {
+                        Path file = Paths.get("file.txt");
+                        Files.write(file, imageText.getBytes(StandardCharsets.UTF_8));
+                        inputStreamResource = new InputStreamResource(new ByteArrayInputStream(imageText.getBytes(StandardCharsets.UTF_8)));
+
+                    } else if(isPpt) {
+
+                        String outputFileName = doc.getTitle()+".pptx";
+
+                        XMLSlideShow ppt = new XMLSlideShow();
+                        XSLFSlideMaster defaultMaster = ppt.getSlideMasters().get(0);
+                        XSLFSlideLayout layout = defaultMaster.getLayout(SlideLayout.TITLE_AND_CONTENT);
+                        XSLFSlide slide = ppt.createSlide(layout);
+
+                        XSLFTextShape title = slide.getPlaceholder(0);
+                        title.setText("Image Text");
+
+                        XSLFTextShape content = slide.getPlaceholder(1);
+                        content.clearText();
+                        XSLFTextParagraph p = content.addNewTextParagraph();
+                        p.setBullet(false);
+                        XSLFTextRun r = p.addNewTextRun();
+                        r.setText(imageText);
+                        //r.setFontColor(Color.green);
+                        //r.setFontSize(24.);
+
+                        FileOutputStream out = new FileOutputStream(outputFileName);
+                        ppt.write(out);
+                        out.close();
+
+                        File file = ResourceUtils.getFile(outputFileName);
+                        byte[] contents = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
+                        inputStreamResource = new InputStreamResource(new ByteArrayInputStream(contents));
+
+                    } else if(isExcel) {
+
+                        String outputFileName = doc.getTitle()+".xlsx";
+
+                        XSSFWorkbook workbook = new XSSFWorkbook();
+                        XSSFSheet sheet = workbook.createSheet("Sheet1");
+                        Row row = sheet.createRow(1);
+                        Cell cell = row.createCell(1);
+                        cell.setCellValue(imageText);
+
+
+                        FileOutputStream out = new FileOutputStream(outputFileName);
+                        workbook.write(out);
+                        out.close();
+
+                        File file = ResourceUtils.getFile(outputFileName);
+                        byte[] contents = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
+                        inputStreamResource = new InputStreamResource(new ByteArrayInputStream(contents));
+
+                    }else {
+
+                        String outputFileName = doc.getTitle()+".doc";
+
+                        document = new XWPFDocument();
+                        XWPFParagraph paragraph = document.createParagraph();
+                        paragraph.setFirstLineIndent(400);
+                        // paragraph.setAlignment(ParagraphAlignment.DISTRIBUTE);
+                        // paragraph.setWordWrapped(true);
+
+                        XWPFRun run = paragraph.createRun();
+                        run.setText(imageText);
+
+                        fos = new FileOutputStream(outputFileName);
+                        document.write(fos);
+
+                        File file = ResourceUtils.getFile(outputFileName);
+                        byte[] contents = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
+                        inputStreamResource = new InputStreamResource(new ByteArrayInputStream(contents));
+                    }
+                } catch (TesseractException ex) {
+                    log.error(ex);
+                } finally {
+                    if (fos != null) {
+                        try {
+                            fos.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if (document != null) {
+                        try {
+                            document.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+                DLDocumentActivity activity = new DLDocumentActivity(doc.getCreatedBy(), DLActivityTypeEnum.DOWNLOADED.getValue(),
+                        doc.getId(), doc.getId());
+                dlDocumentActivityRepository.save(activity);
+            } else {
+            }
+        } else {
+            throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+        }
+
+        return inputStreamResource;
+    }
     public InputStreamResource transferImageToDocument(Long dlDocumentId, boolean isText, boolean isPpt, boolean isExcel) throws Exception {
 
         log.info("DLDocumentService - transferImageToDocument method called...");
