@@ -735,7 +735,7 @@ public class DLDocumentService {
     @Transactional(rollbackFor = {Throwable.class})
     protected DLDocument buildFolderDocument(MultipartFile file, UploadFolderDTO request, boolean isDocUpload,String folderName) {
         DLDocument doc = new DLDocument();
-        DLDocument dbDocs = dlDocumentRepository.findByName(folderName);
+        DLDocument dbDocs = dlDocumentRepository.findLatestDocumentByName(folderName);
 
         try {
             String title = file.getOriginalFilename().substring(0, file.getOriginalFilename().lastIndexOf('.'));
@@ -1202,7 +1202,8 @@ public class DLDocumentService {
         log.info("DLDocumentService - downloadFolder method called...");
 
         Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
-        List<DLDocument> locationList = dlDocumentRepository.findAllByParentId(opDoc.get().getId());
+        List<DLDocument> locationList = dlDocumentRepository.findAllByParentIdAndArchivedStatus(opDoc.get().getId(),false);
+        List<String> dbFileNames = new ArrayList<>();
         File folderTozip = new File("C:\\Users\\admin\\Desktop\\" + opDoc.get().getName());
         String dir = "C:\\Users\\admin\\Desktop\\" + opDoc.get().getName() + ".zip";
         DLDocument doc;
@@ -1220,24 +1221,28 @@ public class DLDocumentService {
                     if (dbFiles.getFolder()){
                          nFolder = new File(folderTozip.toString()+"\\"+dbFiles.getName());
                         nFolder.mkdirs();
-                        List<DLDocument> fileList = dlDocumentRepository.findAllByParentId(dbFiles.getId());
+                        List<DLDocument> fileList = dlDocumentRepository.findAllByParentIdAndArchivedStatus(dbFiles.getId(),false);
                         for (DLDocument dbFile:fileList){
                             if (dbFile.getFolder()){
                                 File sFolder = new File(nFolder.toString()+"\\"+dbFile.getName());
                                 sFolder.mkdirs();
-                                List<DLDocument> sFileList = dlDocumentRepository.findAllByParentId(dbFile.getId());
+                                List<DLDocument> sFileList = dlDocumentRepository.findAllByParentIdAndArchivedStatus(dbFile.getId(),false);
                                 for (DLDocument sDbFile:sFileList){
                                     inputStream = ftpService.downloadInputStream(sDbFile.getVersionGUId());
                                     newFile = new File(sFolder.toString() + File.separator + sDbFile.getName());
                                     FileUtils.copyInputStreamToFile(inputStream, newFile);
                                 }
                                 break;
+                            }else {
+                                dbFileNames.add(dbFile.getName());
                             }
                             inputStream = ftpService.downloadInputStream(dbFile.getVersionGUId());
                             newFile = new File(nFolder.toString() + File.separator + dbFile.getName());
                             FileUtils.copyInputStreamToFile(inputStream, newFile);
                         }
                         break;
+                    } else {
+                        dbFileNames.add(dbFiles.getName());
                     }
                     inputStream = ftpService.downloadInputStream(dbFiles.getVersionGUId());
                     newFile = new File(folderTozip.toString() + File.separator + dbFiles.getName());
@@ -1253,7 +1258,7 @@ public class DLDocumentService {
                 } else {
                     log.error("Unable to create directory");
                 }
-                populateFilesList(folderTozip);
+                populateFilesList(folderTozip,dbFileNames);
                 fos = new FileOutputStream(dir);
                 zos = new ZipOutputStream(fos);
                 for (String filePath : filesListInDir) {
@@ -1297,11 +1302,15 @@ public class DLDocumentService {
      * @param dir
      * @throws IOException
      */
-    private void populateFilesList(File dir) throws IOException {
+    private void populateFilesList(File dir, List<String> dbFileNames) throws IOException {
         File[] files = dir.listFiles();
         for(File fil : files){
-            if(fil.isFile()) filesListInDir.add(fil.getAbsolutePath());
-            else populateFilesList(fil);
+            if(fil.isFile()) {
+                if(dbFileNames.contains(fil.getName())) {
+                    filesListInDir.add(fil.getAbsolutePath());
+                }
+            }
+            else populateFilesList(fil,dbFileNames);
         }
     }
     public Boolean checkIsParent(Long dlDocumentId) {
