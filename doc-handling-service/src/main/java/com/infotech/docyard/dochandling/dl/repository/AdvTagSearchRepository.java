@@ -36,7 +36,7 @@ public class AdvTagSearchRepository {
         return em.createQuery(dlTag).getResultList();
     }
 
-    public List<DLDocument> searchFavorite(String message) {
+    public List<DLDocument> searchFavorite(Boolean message) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<DLDocument> dlTag = cb.createQuery(DLDocument.class);
 
@@ -52,7 +52,7 @@ public class AdvTagSearchRepository {
         return em.createQuery(dlTag).getResultList();
     }
 
-    public List<DLDocument> searchShared(String message) {
+    public List<DLDocument> searchShared(Boolean message) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<DLDocument> dlTag = cb.createQuery(DLDocument.class);
 

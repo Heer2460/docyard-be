@@ -112,7 +112,7 @@ public class DLDocTagAPI {
 
     @GetMapping(value = "/favorite/search")
     public CustomResponse searchFavorite(HttpServletRequest request,
-                                    @RequestParam(value = "message", required = false) String message) throws CustomException {
+                                    @RequestParam(value = "message", required = false) Boolean message) throws CustomException {
         log.info("searchFavorite API initiated...");
 
         List<DLDocument> tagList = null;
@@ -125,7 +125,7 @@ public class DLDocTagAPI {
     }
     @GetMapping(value = "/shared/search")
     public CustomResponse searchShared(HttpServletRequest request,
-                                         @RequestParam(value = "message", required = false) String message) throws CustomException {
+                                         @RequestParam(value = "message", required = false) Boolean message) throws CustomException {
         log.info("searchShared API initiated...");
 
         List<DLDocument> tagList = null;

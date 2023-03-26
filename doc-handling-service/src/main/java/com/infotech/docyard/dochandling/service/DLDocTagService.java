@@ -98,13 +98,13 @@ public class DLDocTagService {
         return advTagSearchRepository.searchTags(message);
     }
 
-    public List<DLDocument> searchFavorite(String message) {
+    public List<DLDocument> searchFavorite(Boolean message) {
         log.info("searchFavorite method called..");
 
         return advTagSearchRepository.searchFavorite(message);
     }
 
-    public List<DLDocument> searchShared(String message) {
+    public List<DLDocument> searchShared(Boolean message) {
         log.info("searchShared method called..");
 
         return advTagSearchRepository.searchShared(message);
