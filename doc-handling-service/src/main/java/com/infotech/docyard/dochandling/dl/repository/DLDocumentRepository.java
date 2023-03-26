@@ -95,4 +95,10 @@ public interface DLDocumentRepository extends JpaRepository<DLDocument, Long> {
 
     @Query("SELECT DISTINCT d FROM DLDocument d WHERE d.parentId =:parentId")
     List<DLDocument> findAllByParentId(@Param("parentId") Long parentId);
+
+    @Query("SELECT DISTINCT d FROM DLDocument d WHERE d.parentId =:parentId AND d.archived =:archived")
+    List<DLDocument> findAllByParentIdAndArchivedStatus(@Param("parentId") Long parentId, @Param("archived") boolean archived);
+
+    @Query(value = "SELECT * FROM dhs_documents  WHERE NAME = :name ORDER BY id DESC LIMIT 1", nativeQuery = true)
+    DLDocument findLatestDocumentByName(String name);
 }
