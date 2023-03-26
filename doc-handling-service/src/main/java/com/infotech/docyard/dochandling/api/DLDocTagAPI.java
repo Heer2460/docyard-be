@@ -11,15 +11,12 @@ import com.infotech.docyard.dochandling.service.DLDocTagService;
 import com.infotech.docyard.dochandling.util.AppUtility;
 import com.infotech.docyard.dochandling.util.CustomResponse;
 import com.infotech.docyard.dochandling.util.ResponseUtility;
-import com.infotech.docyard.um.dl.entity.User;
-import com.infotech.docyard.um.dto.UserDTO;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-
 
 @RestController
 @RequestMapping("/dl-doc-tag")
@@ -96,46 +93,47 @@ public class DLDocTagAPI {
         return ResponseUtility.deleteSuccessResponse(null, AppUtility.getResourceMessage("deleted.success"));
     }
 
-    @GetMapping(value = "/tag/search")
+    @GetMapping(value = "/tag/search/{userId}")
     public CustomResponse searchTag(HttpServletRequest request,
-                                    @RequestParam(value = "message", required = false) String message) throws CustomException {
+                                    @RequestParam(value = "searchKey") String searchKey,
+                                    @PathVariable(value = "userId") Long userId) throws CustomException {
         log.info("searchTag API initiated...");
 
         List<DLDocumentTag> tagList = null;
         try {
-            tagList = tagService.searchTags(message);
+            tagList = tagService.searchTags(searchKey);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
         return ResponseUtility.buildResponseList(tagList, new DLDocumentTagDTO(), false);
     }
 
-    @GetMapping(value = "/favorite/search")
+    @GetMapping(value = "/favorite/search/{userId}")
     public CustomResponse searchFavorite(HttpServletRequest request,
-                                    @RequestParam(value = "message", required = false) Boolean message) throws CustomException {
+                                         @RequestParam(value = "searchKey") boolean searchKey,
+                                         @PathVariable(value = "userId") Long userId) throws CustomException {
         log.info("searchFavorite API initiated...");
 
         List<DLDocument> tagList = null;
         try {
-            tagList = tagService.searchFavorite(message);
+            tagList = tagService.searchFavorite(searchKey);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
         return ResponseUtility.buildResponseList(tagList, new DLDocumentDTO(), false);
     }
-    @GetMapping(value = "/shared/search")
+    @GetMapping(value = "/shared/search/{userId}")
     public CustomResponse searchShared(HttpServletRequest request,
-                                         @RequestParam(value = "message", required = false) Boolean message) throws CustomException {
+                                       @RequestParam(value = "searchKey") boolean searchKey,
+                                       @PathVariable(value = "userId") Long userId) throws CustomException {
         log.info("searchShared API initiated...");
 
         List<DLDocument> tagList = null;
         try {
-            tagList = tagService.searchShared(message);
+            tagList = tagService.searchShared(searchKey);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
         return ResponseUtility.buildResponseList(tagList, new DLDocumentDTO(), false);
     }
-
-
 }

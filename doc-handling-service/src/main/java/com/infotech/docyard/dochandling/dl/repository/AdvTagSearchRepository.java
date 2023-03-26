@@ -36,15 +36,15 @@ public class AdvTagSearchRepository {
         return em.createQuery(dlTag).getResultList();
     }
 
-    public List<DLDocument> searchFavorite(Boolean message) {
+    public List<DLDocument> searchFavorite(Boolean favourite) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<DLDocument> dlTag = cb.createQuery(DLDocument.class);
 
         Root<DLDocument> dptRoot = dlTag.from(DLDocument.class);
 
         List<Predicate> predicates = new ArrayList<>();
-        if (!AppUtility.isEmpty(message)) {
-            predicates.add(cb.like(dptRoot.get("message"), "%" + message + "%"));
+        if (!AppUtility.isEmpty(favourite)) {
+            predicates.add(cb.like(dptRoot.get("favourite"), "%" + favourite + "%"));
         }
         dlTag.where(predicates.toArray(new Predicate[0]))
                 .distinct(true);
@@ -52,15 +52,15 @@ public class AdvTagSearchRepository {
         return em.createQuery(dlTag).getResultList();
     }
 
-    public List<DLDocument> searchShared(Boolean message) {
+    public List<DLDocument> searchShared(Boolean shared) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<DLDocument> dlTag = cb.createQuery(DLDocument.class);
 
         Root<DLDocument> dptRoot = dlTag.from(DLDocument.class);
 
         List<Predicate> predicates = new ArrayList<>();
-        if (!AppUtility.isEmpty(message)) {
-            predicates.add(cb.like(dptRoot.get("message"), "%" + message + "%"));
+        if (!AppUtility.isEmpty(shared)) {
+            predicates.add(cb.like(dptRoot.get("shared"), "%" + shared + "%"));
         }
         dlTag.where(predicates.toArray(new Predicate[0]))
                 .distinct(true);
