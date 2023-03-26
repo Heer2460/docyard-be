@@ -36,10 +36,13 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
+import java.awt.Desktop;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -1483,5 +1486,112 @@ public class DLDocumentService {
         dlDocument.setOcrSupported(false);
         dlDocument.setLeafNode(false);
         dlDocumentRepository.save(dlDocument);
+    }
+    public InputStreamResource viewDLDocument(Long dlDocumentId) throws Exception {
+        log.info("DLDocumentService - viewDLDocument method called...");
+
+        Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
+        File file;
+        File viewFilePath;
+        InputStreamResource inputStreamResource1 = null;
+
+        if (opDoc.isPresent()) {
+            DLDocument doc = opDoc.get();
+            viewFilePath = new File("C:\\Users\\admin\\WebstormProjects\\docyard-fe\\src\\assets\\files");
+            if (!doc.getFolder()) {
+                InputStream inputStream = ftpService.downloadInputStream(doc.getVersionGUId());
+                file = new File(viewFilePath.toString() + File.separator + doc.getName());
+                FileUtils.copyInputStreamToFile(inputStream, file);
+                inputStreamResource1 = new InputStreamResource(inputStream);
+
+                DLDocumentActivity activity = new DLDocumentActivity(doc.getCreatedBy(), DLActivityTypeEnum.FILE_VIEWED.getValue(),
+                        doc.getId(), doc.getId());
+                dlDocumentActivityRepository.save(activity);
+            } else {
+
+            }
+        } else {
+            throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+        }
+        return inputStreamResource1;
+    }
+
+    public InputStreamResource lockDLDocument(Long dlDocumentId) throws Exception {
+        log.info("DLDocumentService - lockDLDocument method called...");
+
+        Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
+        File file;
+        InputStreamResource inputStreamResource1 = null;
+        FileLock lock = null;
+        RandomAccessFile fileToLock;
+        FileChannel channel;
+
+        if (opDoc.isPresent()) {
+            DLDocument doc = opDoc.get();
+            if (!doc.getFolder()) {
+                InputStream inputStream = ftpService.downloadInputStream(doc.getVersionGUId());
+                file = new File(doc.getName());
+                file.setReadOnly();
+                fileToLock = new RandomAccessFile(inputStream.toString(), "rw");
+                channel = fileToLock.getChannel();
+                lock = channel.lock();
+                if (lock.isValid()){
+                    log.info("File locked Successfully!");
+                }
+           //     FileUtils.copyInputStreamToFile(inputStream, file);
+                inputStreamResource1 = new InputStreamResource(inputStream);
+
+                DLDocumentActivity activity = new DLDocumentActivity(doc.getCreatedBy(), DLActivityTypeEnum.FILE_VIEWED.getValue(),
+                        doc.getId(), doc.getId());
+                dlDocumentActivityRepository.save(activity);
+            } else {
+                throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+            }
+        } else {
+            throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+        }
+        fileToLock.close();
+        channel.close();
+        return inputStreamResource1;
+    }
+
+    public InputStreamResource unLockDLDocument(Long dlDocumentId) throws Exception {
+        log.info("DLDocumentService - unLockDLDocument method called...");
+
+        Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
+        File file;
+        InputStreamResource inputStreamResource1 = null;
+        FileLock lock = null;
+        RandomAccessFile fileToUnLock;
+        FileChannel channel;
+
+        if (opDoc.isPresent()) {
+            DLDocument doc = opDoc.get();
+            if (!doc.getFolder()) {
+                InputStream inputStream = ftpService.downloadInputStream(doc.getVersionGUId());
+                file = new File(doc.getName());
+                file.setWritable(true);
+                fileToUnLock = new RandomAccessFile(inputStream.toString(), "rw");
+                channel = fileToUnLock.getChannel();
+                lock = channel.lock();
+                if (lock.isValid()){
+                    lock.release();
+                }
+                FileUtils.copyInputStreamToFile(inputStream, file);
+                inputStreamResource1 = new InputStreamResource(inputStream);
+
+                DLDocumentActivity activity = new DLDocumentActivity(doc.getCreatedBy(), DLActivityTypeEnum.FILE_VIEWED.getValue(),
+                        doc.getId(), doc.getId());
+                dlDocumentActivityRepository.save(activity);
+            } else {
+                throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+            }
+        } else {
+            throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+        }
+        fileToUnLock.close();
+        channel.close();
+
+        return inputStreamResource1;
     }
 }

@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.awt.Desktop;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.zip.ZipOutputStream;
 
@@ -561,6 +564,55 @@ public class DLDocumentAPI {
         }
 
         return new ResponseEntity<>(inputStreamResource, headers, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/file/view/{dlDocumentId}")
+    public ResponseEntity<InputStreamResource> viewDLDocumentById(HttpServletRequest request,
+                                            @PathVariable(value = "dlDocumentId") Long dlDocumentId) throws CustomException {
+        log.info("viewDLDocumentById API initiated...");
+
+        if (AppUtility.isEmpty(dlDocumentId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
+        InputStreamResource inputStreamResource = null;
+        try {
+            inputStreamResource = dlDocumentService.viewDLDocument(dlDocumentId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return new ResponseEntity<>(inputStreamResource, HttpStatus.OK);
+    }
+    @GetMapping(value = "/file/lock/{dlDocumentId}")
+    public ResponseEntity<InputStreamResource> lockDLDocument(HttpServletRequest request,
+                                                                  @PathVariable(value = "dlDocumentId") Long dlDocumentId) throws CustomException {
+        log.info("lockDLDocument API initiated...");
+
+        if (AppUtility.isEmpty(dlDocumentId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
+        InputStreamResource inputStreamResource = null;
+        try {
+            inputStreamResource = dlDocumentService.lockDLDocument(dlDocumentId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return new ResponseEntity<>(inputStreamResource, HttpStatus.OK);
+    }
+    @GetMapping(value = "/file/unlock/{dlDocumentId}")
+    public ResponseEntity<InputStreamResource> unLockDLDocument(HttpServletRequest request,
+                                                              @PathVariable(value = "dlDocumentId") Long dlDocumentId) throws CustomException {
+        log.info("lockDLDocument API initiated...");
+
+        if (AppUtility.isEmpty(dlDocumentId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
+        InputStreamResource inputStreamResource = null;
+        try {
+            inputStreamResource = dlDocumentService.unLockDLDocument(dlDocumentId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return new ResponseEntity<>(inputStreamResource, HttpStatus.OK);
     }
 
 }

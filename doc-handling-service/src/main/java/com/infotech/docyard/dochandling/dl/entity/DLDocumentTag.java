@@ -11,33 +11,28 @@ import java.time.ZonedDateTime;
 
 @Data
 @Entity
-@Table(name = "DHS_DOCUMENT_COMMENTS")
+@Table(name = "DHS_DOCUMENT_TAG")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @EqualsAndHashCode(callSuper = false)
-public class DLDocumentComment extends BaseEntity implements Serializable {
-
+public class DLDocumentTag extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
-
     @Column(name = "USER_ID")
     private Long userId;
-
     @Column(name = "MESSAGE")
     private String message;
-
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "DOC_ID", nullable = false)
     private DLDocument dlDocument;
 
-    public DLDocumentComment() {
+    public DLDocumentTag() {
     }
 
-    public DLDocumentComment(Long userId, String message, DLDocument dlDocument) {
+    public DLDocumentTag(Long userId, String message, DLDocument dlDocument) {
         this.userId = userId;
         this.message = message;
         this.dlDocument = dlDocument;
         this.setCreatedOn(ZonedDateTime.now());
         this.setUpdatedOn(ZonedDateTime.now());
     }
-
 }
