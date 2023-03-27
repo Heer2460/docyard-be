@@ -99,13 +99,13 @@ public class DLDocTagAPI {
                                     @PathVariable(value = "userId") Long userId) throws CustomException {
         log.info("searchTag API initiated...");
 
-        List<DLDocumentTag> tagList = null;
+        List<DLDocument> tagList = null;
         try {
-            tagList = tagService.searchTags(searchKey);
+            tagList = tagService.searchTags(searchKey,userId);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
-        return ResponseUtility.buildResponseList(tagList, new DLDocumentTagDTO(), false);
+        return ResponseUtility.buildResponseList(tagList, new DLDocumentDTO(), false);
     }
 
     @GetMapping(value = "/favorite/search/{userId}")

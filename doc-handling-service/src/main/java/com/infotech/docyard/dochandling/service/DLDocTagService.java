@@ -92,10 +92,10 @@ public class DLDocTagService {
         }
     }
 
-    public List<DLDocumentTag> searchTags(String message) {
+    public List<DLDocument> searchTags(String searchKey, Long userId) {
         log.info("searchTags method called..");
 
-        return advTagSearchRepository.searchTags(message);
+        return dlDocumentRepository.findDLDocumentByTagKey(searchKey,userId);
     }
 
     public List<DLDocument> searchFavorite(Boolean favourite) {

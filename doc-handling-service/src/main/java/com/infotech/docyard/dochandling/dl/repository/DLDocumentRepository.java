@@ -107,4 +107,15 @@ public interface DLDocumentRepository extends JpaRepository<DLDocument, Long> {
 
     @Query("SELECT DISTINCT d FROM DLDocument d WHERE d.shared =:shared")
     List<DLDocument> findAllByShared(@Param("shared") boolean shared);
+
+    @Query("SELECT DISTINCT d FROM DLDocument d LEFT JOIN d.documentTags c " +
+            "WHERE d.archived = false " +
+            "AND d.createdBy = :userId " +
+            "AND (d.name LIKE %:searchKey% " +
+            "OR d.title LIKE %:searchKey% " +
+            "OR d.versionGUId LIKE %:searchKey% " +
+            "OR d.content LIKE %:searchKey% " +
+            "OR c.message LIKE %:searchKey%) " +
+            "order by d.updatedOn desc")
+    List<DLDocument> findDLDocumentByTagKey(@Param("searchKey") String searchKey, @Param("userId") Long userId);
 }

@@ -102,6 +102,9 @@ public class DLDocument extends BaseEntity implements Serializable {
     private List<DLDocumentComment> documentComments;
 
     @OneToMany(mappedBy = "dlDocument", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DLDocumentTag> documentTags;
+
+    @OneToMany(mappedBy = "dlDocument", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DLDocumentVersion> documentVersions;
 
     @Column(name = "SHARE_LINK_COUNT", columnDefinition = "int default 0")
