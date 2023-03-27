@@ -101,4 +101,10 @@ public interface DLDocumentRepository extends JpaRepository<DLDocument, Long> {
 
     @Query(value = "SELECT * FROM dhs_documents  WHERE NAME = :name ORDER BY id DESC LIMIT 1", nativeQuery = true)
     DLDocument findLatestDocumentByName(String name);
+
+    @Query("SELECT DISTINCT d FROM DLDocument d WHERE d.favourite =:favourite")
+    List<DLDocument> findAllByFavourite(@Param("favourite") boolean favourite);
+
+    @Query("SELECT DISTINCT d FROM DLDocument d WHERE d.shared =:shared")
+    List<DLDocument> findAllByShared(@Param("shared") boolean shared);
 }
