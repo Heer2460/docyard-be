@@ -1734,4 +1734,28 @@ public class DLDocumentService {
 
         return inputStreamResource1;
     }
+
+    public List<DLDocumentDTO> getAllArchivedDLDocumentByDocId(Long parentId,boolean archived) {
+        log.info("DLDocumentService - getAllArchivedDLDocumentByOwnerId method called...");
+
+        List<DLDocumentDTO> documentDTOList = new ArrayList<>();
+        List<DLDocument> archivedDlDocuments = dlDocumentRepository.findAllByParentIdAndArchivedStatus(parentId,archived);
+        for (DLDocument doc : archivedDlDocuments) {
+            DLDocumentDTO dto = new DLDocumentDTO();
+            dto.convertToDTO(doc, false);
+
+            if (doc.getFolder()) {
+                int fileCount = dlDocumentRepository.countAllByArchivedFalseAndFolderFalseAndParentId(doc.getId());
+                dto.setSize(fileCount + " Files");
+            }
+            Object response = restTemplate.getForObject("http://um-service/um/user/" + parentId, Object.class);
+            if (!AppUtility.isEmpty(response)) {
+                HashMap<?, ?> map = (HashMap<?, ?>) ((LinkedHashMap<?, ?>) response).get("data");
+                dto.setCreatedByName((String) map.get("name"));
+                dto.setUpdatedByName((String) map.get("name"));
+            }
+            documentDTOList.add(dto);
+        }
+        return documentDTOList;
+    }
 }

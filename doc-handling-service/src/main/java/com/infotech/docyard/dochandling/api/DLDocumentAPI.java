@@ -20,9 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import java.awt.Desktop;
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.zip.ZipOutputStream;
 
@@ -635,5 +632,25 @@ public class DLDocumentAPI {
         }
         return new ResponseEntity<>(inputStreamResource, HttpStatus.OK);
     }
+
+    @RequestMapping(value = "/archived/parentId/{parentId}", method = RequestMethod.GET)
+    public CustomResponse getAllArchivedDLDocumentByDocId(HttpServletRequest request,
+                                                          @PathVariable(value = "parentId") Long parentId,
+                                                          @RequestParam(value = "archive") Boolean archive) throws CustomException {
+        log.info("getAllTrashDLDocumentByOwnerId API initiated...");
+
+        if (AppUtility.isEmpty(parentId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
+        List<DLDocumentDTO> documentDTOList = null;
+        try {
+            documentDTOList = dlDocumentService.getAllArchivedDLDocumentByDocId(parentId,archive);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.buildResponseList(documentDTOList);
+    }
+
+
 
 }
