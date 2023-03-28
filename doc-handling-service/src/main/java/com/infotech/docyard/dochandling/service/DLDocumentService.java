@@ -28,7 +28,9 @@ import org.apache.poi.xslf.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
-import org.apache.poi.xwpf.usermodel.*;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.InputStreamResource;
@@ -39,7 +41,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
-import java.awt.Desktop;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -881,7 +882,7 @@ public class DLDocumentService {
         return folder;
     }
 
-    public DLDocument archiveDlDocument(Long dlDocumentId, Boolean archive) {
+    public DLDocument archiveDlDocument(Long dlDocumentId) {
         log.info("archiveDlDocument method called..");
 
         Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
@@ -889,7 +890,7 @@ public class DLDocumentService {
         if (opDoc.isPresent()) {
             doc = opDoc.get();
             doc.setDaysArchived(0);
-            doc.setArchived(archive);
+            doc.setArchived(true);
             doc.setArchivedOn(ZonedDateTime.now());
             dlDocumentRepository.save(doc);
         }

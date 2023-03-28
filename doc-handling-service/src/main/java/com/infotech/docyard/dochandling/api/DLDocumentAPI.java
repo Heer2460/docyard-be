@@ -342,12 +342,11 @@ public class DLDocumentAPI {
 
     @RequestMapping(value = "/archive/{dlDocumentId}", method = RequestMethod.PUT)
     public CustomResponse archiveDlDocument(HttpServletRequest request,
-                                            @PathVariable(value = "dlDocumentId") Long dlDocumentId,
-                                            @RequestParam(value = "archive") Boolean archive)
+                                            @PathVariable(value = "dlDocumentId") Long dlDocumentId)
             throws DataValidationException, NoDataFoundException, CustomException {
         log.info("archiveDlDocument API initiated...");
 
-        if (AppUtility.isEmpty(dlDocumentId) || AppUtility.isEmpty(archive)) {
+        if (AppUtility.isEmpty(dlDocumentId)) {
             throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
         }
         DLDocument dlDocument = null;
@@ -355,7 +354,7 @@ public class DLDocumentAPI {
             throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
         }
         try {
-            dlDocument = dlDocumentService.archiveDlDocument(dlDocumentId, archive);
+            dlDocument = dlDocumentService.archiveDlDocument(dlDocumentId);
         } catch (Exception e) {
             ResponseUtility.exceptionResponse(e);
         }
@@ -650,7 +649,4 @@ public class DLDocumentAPI {
         }
         return ResponseUtility.buildResponseList(documentDTOList);
     }
-
-
-
 }
