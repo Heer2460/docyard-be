@@ -41,7 +41,9 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
     private ZonedDateTime archivedOn;
     private Boolean archived;
     private Boolean folder;
+    private Boolean checkedIn;
     private Long parentId;
+    private Long checkedInBy;
     private List<Long> documentActivityIds;
     private List<Long> documentCommentIds;
     private List<Long> documentTagIds;
@@ -121,6 +123,8 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         this.createdOn = entity.getCreatedOn();
         this.updatedBy = entity.getUpdatedBy();
         this.createdBy = entity.getCreatedBy();
+        this.checkedIn = entity.getCheckedIn();
+        this.checkedInBy=entity.getCheckedInBy();
         this.updatedOnDetail = DateTimeUtil.convertDateToUFDateFormat(entity.getUpdatedOn());
         if (!partialFill) {
             fillDlDocumentComments(entity.getDocumentComments());

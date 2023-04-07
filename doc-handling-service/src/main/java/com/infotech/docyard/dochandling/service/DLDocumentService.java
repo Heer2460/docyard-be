@@ -1782,16 +1782,23 @@ public class DLDocumentService {
     public void checkInCheckOutDLDocument(Long documentId,Long userId,Boolean flag) {
         log.info("DLDocumentService - checkInCheckOutDLDocument method called...");
 
+        String activityType = null;
         Optional<DLDocument> dlDocument = dlDocumentRepository.findById(documentId);
         if (dlDocument.isPresent()) {
             if (dlDocument.get().getCheckedIn().equals(flag)){
                 throw new DataValidationException(AppUtility.getResourceMessage("The file has already been checked-in by another user."));
             }else {
                 dlDocument.get().setCheckedIn(flag);
-                dlDocument.get().setCheckInBy(userId);
             }
-                dlDocumentRepository.save(dlDocument.get());
-            DLDocumentActivity activity = new DLDocumentActivity(dlDocument.get().getCreatedBy(), DLActivityTypeEnum.CHECKED_IN.getValue(),
+            if (flag) {
+                dlDocument.get().setCheckedInBy(userId);
+                activityType =DLActivityTypeEnum.CHECKED_IN.getValue();
+            }else {
+                dlDocument.get().setCheckedInBy(null);
+                activityType =DLActivityTypeEnum.CHECKED_OUT.getValue();
+            }
+            dlDocumentRepository.save(dlDocument.get());
+            DLDocumentActivity activity = new DLDocumentActivity(dlDocument.get().getCreatedBy(), activityType,
                     dlDocument.get().getId(), dlDocument.get().getId());
             dlDocumentActivityRepository.save(activity);
         } else {
