@@ -88,6 +88,8 @@ public class DLDocumentDTO extends BaseDTO<DLDocumentDTO, DLDocument> implements
         dlDocument.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
         dlDocument.setCreatedBy(this.getCreatedBy());
         dlDocument.setUpdatedBy(this.getUpdatedBy());
+        dlDocument.setCheckedIn(this.checkedIn);
+        dlDocument.setCheckedInBy(this.checkedInBy);
         return dlDocument;
     }
 

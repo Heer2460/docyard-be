@@ -1779,27 +1779,35 @@ public class DLDocumentService {
     }
 
     @Transactional(rollbackFor = {Throwable.class})
-    public void checkInCheckOutDLDocument(Long documentId,Long userId,Boolean flag) {
-        log.info("DLDocumentService - checkInCheckOutDLDocument method called...");
+    public void checkInCheckOutDLDocument(Long documentId, Long userId, Boolean flag) {
 
-        String activityType = null;
+        log.info("DLDocumentService - checkInCheckOutDLDocument method called...");
+        String activityType;
+
         Optional<DLDocument> dlDocument = dlDocumentRepository.findById(documentId);
+
         if (dlDocument.isPresent()) {
-            if (dlDocument.get().getCheckedIn().equals(flag)){
+
+            DLDocument document = dlDocument.get();
+
+            if (document.getCheckedIn() != null && document.getCheckedIn().equals(flag)){
                 throw new DataValidationException(AppUtility.getResourceMessage("The file has already been checked-in by another user."));
-            }else {
-                dlDocument.get().setCheckedIn(flag);
+            } else {
+                document.setCheckedIn(flag);
             }
+
             if (flag) {
-                dlDocument.get().setCheckedInBy(userId);
-                activityType =DLActivityTypeEnum.CHECKED_IN.getValue();
-            }else {
-                dlDocument.get().setCheckedInBy(null);
-                activityType =DLActivityTypeEnum.CHECKED_OUT.getValue();
+                document.setCheckedInBy(userId);
+                activityType = DLActivityTypeEnum.CHECKED_IN.getValue();
+            } else {
+                document.setCheckedInBy(null);
+                activityType = DLActivityTypeEnum.CHECKED_OUT.getValue();
             }
-            dlDocumentRepository.save(dlDocument.get());
-            DLDocumentActivity activity = new DLDocumentActivity(dlDocument.get().getCreatedBy(), activityType,
-                    dlDocument.get().getId(), dlDocument.get().getId());
+
+            dlDocumentRepository.save(document);
+
+            DLDocumentActivity activity = new DLDocumentActivity(document.getCreatedBy(), activityType,
+                    document.getId(), document.getId());
             dlDocumentActivityRepository.save(activity);
         } else {
             throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
