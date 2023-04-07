@@ -649,4 +649,22 @@ public class DLDocumentAPI {
         }
         return ResponseUtility.buildResponseList(documentDTOList);
     }
+
+    @PostMapping(value = "/check-in-out/{dlDocumentId}")
+    public ResponseEntity<Void> checkInCheckOutDLDocument(HttpServletRequest request,
+                                                                @PathVariable(value = "dlDocumentId") Long dlDocumentId,
+                                                                @RequestParam(value = "userId") Long userId,
+                                                                @RequestParam(value = "flag") Boolean flag) throws CustomException {
+        log.info("checkInCheckOutDLDocument API initiated...");
+
+        if (AppUtility.isEmpty(dlDocumentId) || AppUtility.isEmpty(userId) || AppUtility.isEmpty(flag)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
+        try {
+             dlDocumentService.checkInCheckOutDLDocument(dlDocumentId,userId,flag);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

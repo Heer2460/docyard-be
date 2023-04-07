@@ -1759,4 +1759,25 @@ public class DLDocumentService {
         }
         return documentDTOList;
     }
+
+    @Transactional(rollbackFor = {Throwable.class})
+    public void checkInCheckOutDLDocument(Long documentId,Long userId,Boolean flag) {
+        log.info("DLDocumentService - checkInCheckOutDLDocument method called...");
+
+        Optional<DLDocument> dlDocument = dlDocumentRepository.findById(documentId);
+        if (dlDocument.isPresent()) {
+            if (dlDocument.get().getCheckedIn().equals(flag)){
+                throw new DataValidationException(AppUtility.getResourceMessage("The file has already been checked-in by another user."));
+            }else {
+                dlDocument.get().setCheckedIn(flag);
+                dlDocument.get().setCheckInBy(userId);
+            }
+                dlDocumentRepository.save(dlDocument.get());
+            DLDocumentActivity activity = new DLDocumentActivity(dlDocument.get().getCreatedBy(), DLActivityTypeEnum.CHECKED_IN.getValue(),
+                    dlDocument.get().getId(), dlDocument.get().getId());
+            dlDocumentActivityRepository.save(activity);
+        } else {
+            throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+        }
+    }
 }

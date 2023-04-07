@@ -95,6 +95,17 @@ public class DLDocument extends BaseEntity implements Serializable {
     @Column(name = "DL_SHARE_ID")
     private Long dlShareId;
 
+    @Column(name = "checked_in")
+    private Boolean checkedIn;
+
+    @Column(name = "checked_out")
+    private Boolean checkedOut;
+
+    @Column(name = "checked_in_by")
+    private Long checkInBy;
+
+
+
     @Column(name = "DAYS_ARCHIVED", columnDefinition = "int default 0")
     private Integer daysArchived;
 

@@ -20,6 +20,8 @@ public enum DLActivityTypeEnum {
     COMMENT_DELETED("COMMENT_DELETED"),
     OPEN_LINK_SHARE("SHARED_WITH_OPEN_LINK"),
     RESTRICTED_SHARE("RESTRICTED_SHARE"),
+    CHECKED_IN("CHECKED_IN"),
+    CHECKED_OUT("CHECKED_OUT"),
     NO_SHARING("NO_SHARING");
 
     private static final HashMap<String, DLActivityTypeEnum> map = new HashMap<>();
