@@ -361,6 +361,27 @@ public class DLDocumentAPI {
         return ResponseUtility.successResponseForPut(dlDocument, "Document Archived");
     }
 
+    @RequestMapping(value = "/un-archive/{dlDocumentId}", method = RequestMethod.PUT)
+    public CustomResponse unArchiveDlDocument(HttpServletRequest request,
+                                            @PathVariable(value = "dlDocumentId") Long dlDocumentId)
+            throws DataValidationException, NoDataFoundException, CustomException {
+        log.info("unArchiveDlDocument API initiated...");
+
+        if (AppUtility.isEmpty(dlDocumentId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("validation.error"));
+        }
+        DLDocument dlDocument = null;
+        if (AppUtility.isEmpty(dlDocumentId)) {
+            throw new DataValidationException(AppUtility.getResourceMessage("id.not.found"));
+        }
+        try {
+            dlDocument = dlDocumentService.unArchiveDlDocument(dlDocumentId);
+        } catch (Exception e) {
+            ResponseUtility.exceptionResponse(e);
+        }
+        return ResponseUtility.successResponseForPut(dlDocument, "Document Un-Archived");
+    }
+
     @RequestMapping(value = "/restore-archived", method = RequestMethod.PUT)
     public CustomResponse restoreArchivedDlDocument(HttpServletRequest request,
                                                     @RequestBody DLDocumentListDTO dlDocumentIds)

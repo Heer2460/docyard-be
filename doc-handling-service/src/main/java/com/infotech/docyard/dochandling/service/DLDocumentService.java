@@ -900,6 +900,24 @@ public class DLDocumentService {
         return doc;
     }
 
+    public DLDocument unArchiveDlDocument(Long dlDocumentId) {
+        log.info("unArchiveDlDocument method called..");
+
+        Optional<DLDocument> opDoc = dlDocumentRepository.findById(dlDocumentId);
+        DLDocument doc = null;
+        if (opDoc.isPresent()) {
+            doc = opDoc.get();
+            doc.setDaysArchived(0);
+            doc.setArchived(Boolean.FALSE);
+            doc.setArchivedOn(ZonedDateTime.now());
+            dlDocumentRepository.save(doc);
+        }
+        DLDocumentActivity activity = new DLDocumentActivity(doc.getCreatedBy(), DLActivityTypeEnum.RESTORED_ARCHIVED.getValue(),
+                doc.getId(), doc.getId());
+        dlDocumentActivityRepository.save(activity);
+        return doc;
+    }
+
     @Transactional(rollbackFor = {Throwable.class})
     public void deleteDLDocument(DLDocumentListDTO dlDocumentIds) throws Exception {
         if (!AppUtility.isEmpty(dlDocumentIds)) {
