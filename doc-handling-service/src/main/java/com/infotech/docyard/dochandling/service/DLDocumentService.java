@@ -1797,6 +1797,7 @@ public class DLDocumentService {
                 dlDocument.get().setCheckedInBy(null);
                 activityType =DLActivityTypeEnum.CHECKED_OUT.getValue();
             }
+            dlDocument.get().setUpdatedOn(ZonedDateTime.now());
             dlDocumentRepository.save(dlDocument.get());
             DLDocumentActivity activity = new DLDocumentActivity(dlDocument.get().getCreatedBy(), activityType,
                     dlDocument.get().getId(), dlDocument.get().getId());

@@ -187,4 +187,24 @@ public class JobService {
             }
         }
     }
+
+    @Transactional(rollbackFor = {Throwable.class})
+    public void checkInCheckOutDLDocument(Long documentId) {
+        log.info("DLDocumentService - checkInCheckOutDLDocument method called...");
+
+        Optional<DLDocument> dlDocument = dlDocumentRepository.findById(documentId);
+        if (dlDocument.isPresent()) {
+            if (dlDocument.get().getUpdatedOn().plusMinutes(30).isBefore(ZonedDateTime.now())){
+                dlDocument.get().setCheckedIn(false);
+                dlDocument.get().setCheckedInBy(null);
+            }
+            dlDocument.get().setUpdatedOn(ZonedDateTime.now());
+            dlDocumentRepository.save(dlDocument.get());
+            DLDocumentActivity activity = new DLDocumentActivity(dlDocument.get().getCreatedBy(), DLActivityTypeEnum.CHECKED_OUT.getValue(),
+                    dlDocument.get().getId(), dlDocument.get().getId());
+            dlDocumentActivityRepository.save(activity);
+        } else {
+            throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
+        }
+    }
 }
