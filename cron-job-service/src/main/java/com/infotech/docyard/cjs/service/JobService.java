@@ -189,22 +189,25 @@ public class JobService {
     }
 
     @Transactional(rollbackFor = {Throwable.class})
-    public void checkInCheckOutDLDocument(Long documentId) {
+    public void checkInCheckOutDLDocument() {
         log.info("DLDocumentService - checkInCheckOutDLDocument method called...");
 
-        Optional<DLDocument> dlDocument = dlDocumentRepository.findById(documentId);
-        if (dlDocument.isPresent()) {
-            if (dlDocument.get().getUpdatedOn().plusMinutes(30).isBefore(ZonedDateTime.now())){
-                dlDocument.get().setCheckedIn(false);
-                dlDocument.get().setCheckedInBy(null);
+        List<DLDocument> dlDocumentList = dlDocumentRepository.findAllByCheckedInTrue();
+        if (!dlDocumentList.isEmpty()) {
+            for (DLDocument dlDocument:dlDocumentList) {
+                List<DLDocumentActivity> docActivityList = dlDocumentActivityRepository.findAllByDocIdOrderByIdDesc(dlDocument.getId());
+                for (DLDocumentActivity docActivity:docActivityList) {
+                    if (docActivity.getUpdatedOn().plusMinutes(30).isBefore(ZonedDateTime.now())) {
+                        dlDocument.setCheckedIn(false);
+                        dlDocument.setCheckedInBy(null);
+                    }
+                    dlDocument.setUpdatedOn(ZonedDateTime.now());
+                    dlDocumentRepository.save(dlDocument);
+                    DLDocumentActivity activity = new DLDocumentActivity(dlDocument.getCreatedBy(), DLActivityTypeEnum.CHECKED_OUT.getValue(),
+                            dlDocument.getId(), dlDocument.getId());
+                    dlDocumentActivityRepository.save(activity);
+                }
             }
-            dlDocument.get().setUpdatedOn(ZonedDateTime.now());
-            dlDocumentRepository.save(dlDocument.get());
-            DLDocumentActivity activity = new DLDocumentActivity(dlDocument.get().getCreatedBy(), DLActivityTypeEnum.CHECKED_OUT.getValue(),
-                    dlDocument.get().getId(), dlDocument.get().getId());
-            dlDocumentActivityRepository.save(activity);
-        } else {
-            throw new DataValidationException(AppUtility.getResourceMessage("document.not.found"));
         }
     }
 }

@@ -14,4 +14,6 @@ public interface DLDocumentActivityRepository extends JpaRepository<DLDocumentAc
 
     List<DLDocumentActivity> findAllByUserIdOrderByUpdatedOnDesc(Long id);
 
+    List<DLDocumentActivity> findAllByDocIdOrderByIdDesc(Long docId);
+
 }

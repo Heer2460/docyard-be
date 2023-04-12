@@ -15,10 +15,9 @@ public class DlDocumentCheckOutJob {
 
     @Autowired
     private JobService jobService;
-    private Long documentId;
 
 
-    @Scheduled(cron = "0 */30 * ? * *") //every 30 mins
+    @Scheduled(cron = "0 */5 * ? * *") //every 30 mins
     public void dlDocumentCheckOutJob() {
         log.info("DlDocumentCheckOutJob - dlDocumentCheckOut Job started at: " + LocalDateTime.now());
         try {
@@ -35,7 +34,6 @@ public class DlDocumentCheckOutJob {
     public static class DlDocumentCheckOutJobThread implements Runnable {
 
         private final JobService jobservice;
-        private Long documentId;
 
         public DlDocumentCheckOutJobThread(JobService dlDocumentService) {
             this.jobservice = dlDocumentService;
@@ -45,13 +43,13 @@ public class DlDocumentCheckOutJob {
         public void run() {
             System.out.println("DlDocumentCheckOutJobThread Started:  " + Thread.currentThread().getName());
             try {
-                System.out.println("checkInCheckOutDLDocument method calling started...");
-                jobservice.checkInCheckOutDLDocument(documentId);
+                log.info("checkInCheckOutDLDocument method calling started...");
+                jobservice.checkInCheckOutDLDocument();
             } catch (Exception exception) {
-                System.out.println("checkInCheckOutDLDocument failed due to exception...");
+                log.info("checkInCheckOutDLDocument failed due to exception...");
                 exception.printStackTrace();
             }
-            System.out.println("DlDocumentCheckOutJobThread End: " + Thread.currentThread().getName());
+            log.info("DlDocumentCheckOutJobThread End: " + Thread.currentThread().getName());
         }
     }
 }
