@@ -671,7 +671,7 @@ public class DLDocumentAPI {
         return ResponseUtility.buildResponseList(documentDTOList);
     }
 
-    @PostMapping(value = "/check-in-out/{dlDocumentId}")
+    @PutMapping(value = "/check-in-out/{dlDocumentId}")
     public ResponseEntity<Void> checkInCheckOutDLDocument(HttpServletRequest request,
                                                                 @PathVariable(value = "dlDocumentId") Long dlDocumentId,
                                                                 @RequestParam(value = "userId") Long userId,
