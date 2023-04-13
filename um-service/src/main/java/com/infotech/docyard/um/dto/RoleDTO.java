@@ -36,6 +36,7 @@ public class RoleDTO extends BaseDTO<RoleDTO, Role> {
         role.setName(AppUtility.isEmpty(this.name) ? this.name : this.name.trim());
         role.setRemarks(this.remarks);
         role.setCreatedOn(AppUtility.isEmpty(this.createdOn) ? ZonedDateTime.now() : this.createdOn);
+        role.setUpdatedOn(AppUtility.isEmpty(this.updatedOn) ? ZonedDateTime.now() : this.updatedOn);
         role.setCreatedBy(this.getCreatedBy());
         role.setUpdatedBy(this.getUpdatedBy());
 
@@ -53,6 +54,27 @@ public class RoleDTO extends BaseDTO<RoleDTO, Role> {
         role.setUpdatedBy(this.getUpdatedBy());
 
         return role;
+    }
+
+    public List<RolePermission> convertToEntityPermissionUpdate(RoleDTO roleDTO) {
+        List<RolePermission> rolePermissionsList = new ArrayList<>();
+
+        for (Long rolePermissionId:roleDTO.getModuleActionList()){
+            RolePermission permission = new RolePermission();
+            Role role = new Role();
+            ModuleAction moduleAction = new ModuleAction();
+            moduleAction.setId(rolePermissionId);
+            role.setId(roleDTO.id);
+            permission.setModuleAction(moduleAction);
+            permission.setRole(role);
+            permission.setCreatedBy(roleDTO.getCreatedBy());
+            permission.setUpdatedBy(roleDTO.getUpdatedBy());
+            permission.setCreatedOn(ZonedDateTime.now());
+            permission.setUpdatedOn(ZonedDateTime.now());
+
+            rolePermissionsList.add(permission);
+        }
+        return rolePermissionsList;
     }
 
     @Override

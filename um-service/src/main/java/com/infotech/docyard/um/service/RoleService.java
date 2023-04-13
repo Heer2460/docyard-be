@@ -2,10 +2,8 @@ package com.infotech.docyard.um.service;
 
 import com.infotech.docyard.um.dl.entity.GroupRole;
 import com.infotech.docyard.um.dl.entity.Role;
-import com.infotech.docyard.um.dl.repository.AdvSearchRepository;
-import com.infotech.docyard.um.dl.repository.GroupRoleRepository;
-import com.infotech.docyard.um.dl.repository.RolePermissionRepository;
-import com.infotech.docyard.um.dl.repository.RoleRepository;
+import com.infotech.docyard.um.dl.entity.RolePermission;
+import com.infotech.docyard.um.dl.repository.*;
 import com.infotech.docyard.um.dto.RoleDTO;
 import com.infotech.docyard.um.exceptions.DBConstraintViolationException;
 import com.infotech.docyard.um.exceptions.DataValidationException;
@@ -23,6 +21,8 @@ import java.util.Optional;
 @Service
 @Transactional
 public class RoleService {
+    @Autowired
+    private ModuleActionRepository moduleActionRepository;
 
     @Autowired
     private RoleRepository roleRepository;
@@ -79,9 +79,13 @@ public class RoleService {
                 throw new DataValidationException(AppUtility.getResourceMessage("record.cannot.be.suspended.dependency"));
             }
         }
+        rolePermissionRepository.deleteAll(role.getRolePermissions());
+        List<RolePermission> rolePermission = roleDTO.convertToEntityPermissionUpdate(roleDTO);
+
         if (AppUtility.isEmpty(role.getRolePermissions())) {
             role.setRolePermissions(roleDTO.RolePermission(role));
         }
+        rolePermissionRepository.saveAll(rolePermission);
         return roleRepository.save(role);
     }
 
